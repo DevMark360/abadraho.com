@@ -48,6 +48,15 @@ const OTP_DAILY_MAX_FAILURES = 20;
 const OTP_SENDS_PER_WINDOW = 3;
 const OTP_SEND_WINDOW_MS = 10 * 60 * 1000;
 
+/** User-facing text for a failed send; Meta's exact reason is logged as [whatsapp:meta]. */
+function whatsappFailureMessage(error?: string): string {
+  if (error === "no_provider") {
+    return "Could not send WhatsApp OTP. Set WHATSAPP_CLOUD_ACCESS_TOKEN and WHATSAPP_CLOUD_PHONE_NUMBER_ID in .env.";
+  }
+  if (error === "no_phone") return "Add your WhatsApp number first.";
+  return "Could not send the WhatsApp code right now. Please try again in a few minutes.";
+}
+
 type OtpState = { expiresAt: number; failures: number };
 
 /**
@@ -230,13 +239,13 @@ export async function submitPhoneNumber(
   });
   markOtpIssued(userId);
 
-  const { sent: whatsappSent } = await sendPhoneOtpWhatsApp(phone, otp);
+  const { sent: whatsappSent, error: whatsappError } = await sendPhoneOtpWhatsApp(phone, otp);
 
   if (!whatsappSent && !shouldExposeOtpDev()) {
     return {
       success: false,
       message:
-        "Could not send WhatsApp OTP. Set WHATSAPP_CLOUD_ACCESS_TOKEN and WHATSAPP_CLOUD_PHONE_NUMBER_ID in .env.",
+        whatsappFailureMessage(whatsappError),
       whatsappSent: false,
       smsSent: false,
     };
@@ -334,13 +343,15 @@ export async function resendPhoneOtp(
   markOtpIssued(userId);
 
   const phone = user.phoneNumber ?? "";
-  const { sent: whatsappSent } = phone ? await sendPhoneOtpWhatsApp(phone, otp) : { sent: false };
+  const { sent: whatsappSent, error: whatsappError } = phone
+    ? await sendPhoneOtpWhatsApp(phone, otp)
+    : { sent: false, error: "no_phone" };
 
   if (!whatsappSent && !shouldExposeOtpDev()) {
     return {
       success: false,
       message:
-        "Could not send WhatsApp OTP. Set WHATSAPP_CLOUD_ACCESS_TOKEN and WHATSAPP_CLOUD_PHONE_NUMBER_ID in .env.",
+        whatsappFailureMessage(whatsappError),
       whatsappSent: false,
       smsSent: false,
     };

@@ -22,7 +22,7 @@ type MetaTemplateComponent =
     }
   | {
       type: "button";
-      sub_type: "otp" | "url";
+      sub_type: "url";
       index: string;
       parameters: Array<{ type: "text"; text: string }>;
     };
@@ -43,20 +43,11 @@ function buildMetaOtpTemplateComponents(otp: string): MetaTemplateComponent[] {
 
   if (buttonType === "none") return components;
 
-  if (buttonType === "copy_code" || buttonType === "url") {
-    components.push({
-      type: "button",
-      sub_type: "url",
-      index: "0",
-      parameters: [{ type: "text", text: otp }],
-    });
-    return components;
-  }
-
-  // Default: Meta authentication template with one-tap / copy OTP button
+  // Authentication templates' copy-code / one-tap buttons are sent as sub_type "url" —
+  // Meta rejects "otp" as a sub_type, so "otp"/"copy_code"/"url" all map here.
   components.push({
     type: "button",
-    sub_type: "otp",
+    sub_type: "url",
     index: "0",
     parameters: [{ type: "text", text: otp }],
   });
