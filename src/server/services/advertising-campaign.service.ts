@@ -759,7 +759,14 @@ export async function issueAdCampaignRefund(
     return { success: false, error: "Nothing to refund — this campaign fully delivered" };
   }
 
-  await prisma.$transaction(async (tx) => {
+  // Claim the refund (refundedAt still null) inside the transaction so a double-click or two
+  // admins at once can't both pass the refundedAt check above and credit twice.
+  const refunded = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.adCampaign.updateMany({
+      where: { id: campaignId, refundedAt: null },
+      data: { refundedAt: new Date(), refundAmount: amount },
+    });
+    if (claimed.count === 0) return false;
     const wallet = await tx.adWallet.upsert({
       where: { builderId: campaign.builderId },
       create: { builderId: campaign.builderId },
@@ -781,11 +788,11 @@ export async function issueAdCampaignRefund(
         confirmedByActorId: actor.id,
       },
     });
-    await tx.adCampaign.update({
-      where: { id: campaignId },
-      data: { refundedAt: new Date(), refundAmount: amount },
-    });
+    return true;
   });
+  if (!refunded) {
+    return { success: false, error: "A refund has already been issued for this campaign" };
+  }
 
   createNotification({
     recipientType: "builder",

@@ -17,9 +17,13 @@ function formatUserName(user: {
   return name || user.email || "—";
 }
 
+/** Credential columns never sent to the admin UI (users/admins rows are listed raw). */
+const SECRET_FIELDS = new Set(["password", "phoneNoOtp", "rememberToken"]);
+
 function serializeRow(row: Row): Row {
   const out: Row = {};
   for (const [k, v] of Object.entries(row)) {
+    if (SECRET_FIELDS.has(k)) continue;
     if (v instanceof Date) out[k] = v.toISOString();
     else if (typeof v === "bigint") out[k] = v.toString();
     else if (typeof v === "object" && v !== null && "toNumber" in (v as object)) {

@@ -1,16 +1,17 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { imageExtension, validateImageFile } from "@/lib/admin-file-upload";
 
 export async function saveEventCoverImage(file: File): Promise<{
   filename: string | null;
   error?: string;
 }> {
   if (!file.size) return { filename: null };
-  const maxBytes = 5 * 1024 * 1024;
-  if (file.size > maxBytes) return { filename: null, error: "Cover image must be under 5MB" };
+  // Images only — an .html/.svg/.php upload here would be served from the site's own domain.
+  const check = validateImageFile(file);
+  if (!check.ok) return { filename: null, error: check.error };
 
-  const ext = path.extname(file.name) || ".jpg";
-  const safeExt = ext.replace(/[^a-zA-Z0-9.]/g, "") || ".jpg";
+  const safeExt = imageExtension(file);
   const filename = `event_${Date.now()}${safeExt}`;
   const dir = path.join(process.cwd(), "public", "uploads", "events");
 

@@ -83,6 +83,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/blogs", destination: "/blog", permanent: true },
       { source: "/builder/:slug", destination: "/:slug", permanent: true },
+      // Old duplicate builder page at a misspelled URL; the real page is the [slug] route.
+      { source: "/roomi-bulder", destination: "/roomi-builder", permanent: true },
       { source: "/admin/change-password", destination: "/admin/admin-change-password", permanent: false },
       { source: "/admin/profile", destination: "/admin/admin-profile", permanent: false },
     ];

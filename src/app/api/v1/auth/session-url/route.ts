@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { REDIRECT_COOKIE, redirectCookieOptions } from "@/lib/session";
 import { z } from "zod";
+import { isSafeRelativePath } from "@/lib/post-login-redirect";
 
 /** Legacy: POST /requested-session-url — store post-login redirect */
 export async function POST(request: NextRequest) {
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
   }
 
   const url = parsed.data.url;
-  if (!url.startsWith("/") || url.startsWith("//")) {
+  if (!isSafeRelativePath(url)) {
     return NextResponse.json({ success: false, message: "Invalid redirect URL" }, { status: 422 });
   }
 

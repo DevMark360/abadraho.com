@@ -121,14 +121,15 @@ export async function decideAdWalletTransaction(
   }
 
   if (action === "reject") {
-    await prisma.adWalletTransaction.update({
-      where: { id: transactionId },
+    const rejected = await prisma.adWalletTransaction.updateMany({
+      where: { id: transactionId, status: "pending" },
       data: {
         status: "rejected",
         confirmedByActorSource: actor.source,
         confirmedByActorId: actor.id,
       },
     });
+    if (rejected.count === 0) return { success: false, error: "Transaction already processed" };
     createNotification({
       recipientType: "builder",
       recipientId: transaction.wallet.builderId,
@@ -140,22 +141,29 @@ export async function decideAdWalletTransaction(
     return { success: true };
   }
 
+  // Claim the pending row first, inside the transaction, so a double-click or two admins at
+  // once can't both pass the pending check above and credit the wallet twice.
   const wallet = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.adWalletTransaction.updateMany({
+      where: { id: transactionId, status: "pending" },
+      data: {
+        status: "confirmed",
+        confirmedByActorSource: actor.source,
+        confirmedByActorId: actor.id,
+      },
+    });
+    if (claimed.count === 0) return null;
     const updatedWallet = await tx.adWallet.update({
       where: { id: transaction.walletId },
       data: { balance: { increment: transaction.amount } },
     });
     await tx.adWalletTransaction.update({
       where: { id: transactionId },
-      data: {
-        status: "confirmed",
-        balanceAfter: updatedWallet.balance,
-        confirmedByActorSource: actor.source,
-        confirmedByActorId: actor.id,
-      },
+      data: { balanceAfter: updatedWallet.balance },
     });
     return updatedWallet;
   });
+  if (!wallet) return { success: false, error: "Transaction already processed" };
 
   createNotification({
     recipientType: "builder",

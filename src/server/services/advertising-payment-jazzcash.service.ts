@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { isDatabaseEnabled } from "@/lib/db";
 import { getSiteUrl } from "@/lib/app-url";
@@ -145,8 +145,9 @@ export async function handleJazzCashCallback(
   const receivedHash = fields.pp_SecureHash;
   if (!receivedHash) return { success: false, error: "Missing pp_SecureHash" };
 
-  const expectedHash = buildSecureHash(fields, config.integritySalt);
-  if (expectedHash !== receivedHash) {
+  const expectedHash = Buffer.from(buildSecureHash(fields, config.integritySalt).toLowerCase());
+  const givenHash = Buffer.from(receivedHash.trim().toLowerCase());
+  if (expectedHash.length !== givenHash.length || !timingSafeEqual(expectedHash, givenHash)) {
     return { success: false, error: "Hash verification failed — possible tampering" };
   }
 
@@ -166,8 +167,8 @@ export async function handleJazzCashCallback(
   const isSuccess = fields.pp_ResponseCode === "000";
 
   if (!isSuccess) {
-    await prisma.adWalletTransaction.update({
-      where: { id: transaction.id },
+    await prisma.adWalletTransaction.updateMany({
+      where: { id: transaction.id, status: "pending" },
       data: {
         status: "rejected",
         referenceNote: `JazzCash: ${fields.pp_ResponseMessage ?? fields.pp_ResponseCode ?? "declined"}`,
@@ -176,7 +177,15 @@ export async function handleJazzCashCallback(
     return { success: true, status: "rejected", builderId: transaction.wallet.builderId };
   }
 
+  // Claim the pending row inside the transaction (conditional update) before crediting, so
+  // two simultaneous callbacks (browser redirect + retry) can't both pass the pending check
+  // above and credit the wallet twice — the loser's updateMany matches 0 rows.
   const updatedWallet = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.adWalletTransaction.updateMany({
+      where: { id: transaction.id, status: "pending" },
+      data: { status: "confirmed" },
+    });
+    if (claimed.count === 0) return null;
     const wallet = await tx.adWallet.update({
       where: { id: transaction.walletId },
       data: { balance: { increment: transaction.amount } },
@@ -184,13 +193,15 @@ export async function handleJazzCashCallback(
     await tx.adWalletTransaction.update({
       where: { id: transaction.id },
       data: {
-        status: "confirmed",
         balanceAfter: wallet.balance,
         referenceNote: `JazzCash: confirmed (${fields.pp_RetreivalReferenceNo ?? txnRefNo})`,
       },
     });
     return wallet;
   });
+  if (!updatedWallet) {
+    return { success: true, status: "confirmed", builderId: transaction.wallet.builderId };
+  }
 
   createNotification({
     recipientType: "builder",
