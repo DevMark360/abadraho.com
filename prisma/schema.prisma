@@ -199,11 +199,6 @@ model Project {
   metaDescription   String?   @map("meta_description")
   metaTags          String?   @map("meta_tags") @db.Text
   marketedBy        String?   @map("marketed_by")
-  // Added by markproperties.pk (Mark Properties' own site, sharing this DB) —
-  // per-project phone number for its "Prefer to talk now?" card. Column
-  // exists on dev; see markproperties/backend/migrations for the same
-  // ALTER TABLE against production.
-  contactPhone      String?   @map("contact_phone") @db.VarChar(30)
   addedTime         DateTime? @map("added_time")
   propertyId        String?   @map("property_id")
   // Advertising Phase 2 targeting dimension: luxury | premium | mid_range | affordable
