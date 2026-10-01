@@ -40,8 +40,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === "resend") {
-    const ip = request.headers.get("x-forwarded-for") ?? "local";
-    const result = await resendPhoneOtp(session.id, `${session.id}:${ip}`);
+    const result = await resendPhoneOtp(session.id);
     return NextResponse.json(result, { status: result.success ? 200 : 429 });
   }
 

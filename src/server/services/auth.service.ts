@@ -22,6 +22,7 @@ import {
 import { sendPhoneOtpWhatsApp } from "@/lib/whatsapp-otp";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import type { User } from "@prisma/client";
+import { randomInt } from "crypto";
 
 export type SafeUser = {
   id: number;
@@ -35,7 +36,40 @@ export type SafeUser = {
 };
 
 function generateOtp(): string {
-  return String(Math.floor(1000 + Math.random() * 9000));
+  return String(randomInt(1000, 10000));
+}
+
+/** 4-digit codes only resist guessing with a short lifetime and a small attempt budget. */
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_MAX_FAILURES = 5;
+/** Daily ceiling on wrong guesses per user, across every code issued that day. */
+const OTP_DAILY_MAX_FAILURES = 20;
+/** Codes sent per user (submit-phone + resend share it) — also caps WhatsApp spend. */
+const OTP_SENDS_PER_WINDOW = 3;
+const OTP_SEND_WINDOW_MS = 10 * 60 * 1000;
+
+type OtpState = { expiresAt: number; failures: number };
+
+/**
+ * Expiry/attempt tracking lives in memory (single Passenger worker) because phone_no_otp only
+ * holds the hash. After a restart a pending code has no entry: it stays usable, with a fresh
+ * attempt budget and expiry starting at the first guess.
+ */
+const otpStates = new Map<number, OtpState>();
+
+function markOtpIssued(userId: number) {
+  otpStates.set(userId, { expiresAt: Date.now() + OTP_TTL_MS, failures: 0 });
+}
+
+function checkOtpSendLimit(userId: number) {
+  return checkRateLimit(`otp-send:${userId}`, OTP_SENDS_PER_WINDOW, OTP_SEND_WINDOW_MS);
+}
+
+function sweepOtpStates() {
+  const now = Date.now();
+  for (const [id, state] of otpStates) {
+    if (now > state.expiresAt) otpStates.delete(id);
+  }
 }
 
 function storeOtpHash(otp: string): string {
@@ -184,11 +218,17 @@ export async function submitPhoneNumber(
     return { success: false, message: "This WhatsApp number is already in use" };
   }
 
+  const limit = checkOtpSendLimit(userId);
+  if (!limit.allowed) {
+    return { success: false, message: `Too many attempts. Retry in ${limit.retryAfterSec}s` };
+  }
+
   const otp = generateOtp();
   await prisma.user.update({
     where: { id: userId },
     data: { phoneNumber: phone, phoneNoOtp: storeOtpHash(otp), isPhoneNoVerified: false },
   });
+  markOtpIssued(userId);
 
   const { sent: whatsappSent } = await sendPhoneOtpWhatsApp(phone, otp);
 
@@ -228,12 +268,42 @@ export async function verifyPhoneOtp(
 ): Promise<{ success: boolean; message: string; user?: SafeUser }> {
   const user = await findUserById(userId);
   if (!user) return { success: false, message: "User not found" };
+  if (!user.phoneNoOtp) {
+    return { success: false, message: "No active code. Request a new OTP." };
+  }
+
+  sweepOtpStates();
+  let state = otpStates.get(userId);
+  if (!state) {
+    state = { expiresAt: Date.now() + OTP_TTL_MS, failures: 0 };
+    otpStates.set(userId, state);
+  }
+
+  const burnCode = async (message: string) => {
+    otpStates.delete(userId);
+    await prisma.user.update({ where: { id: userId }, data: { phoneNoOtp: null } });
+    return { success: false, message };
+  };
+
+  if (Date.now() > state.expiresAt) {
+    return burnCode("This code has expired. Request a new OTP.");
+  }
+  if (!checkRateLimit(`otp-verify-day:${userId}`, OTP_DAILY_MAX_FAILURES, 24 * 60 * 60 * 1000).allowed) {
+    return { success: false, message: "Too many incorrect codes today. Try again tomorrow." };
+  }
+
   if (!verifyStoredSecret(otp, user.phoneNoOtp)) {
+    state.failures += 1;
+    if (state.failures >= OTP_MAX_FAILURES) {
+      return burnCode("Too many incorrect codes. Request a new OTP.");
+    }
     return {
       success: false,
       message: "Incorrect OTP. Check the code from WhatsApp or request a new one.",
     };
   }
+
+  otpStates.delete(userId);
   const updated = await prisma.user.update({
     where: { id: userId },
     data: { isPhoneNoVerified: true, phoneNoOtp: null },
@@ -242,10 +312,10 @@ export async function verifyPhoneOtp(
 }
 
 export async function resendPhoneOtp(
-  userId: number,
-  rateKey: string
+  userId: number
 ): Promise<{ success: boolean; message: string; otpDev?: string; whatsappSent?: boolean; smsSent?: boolean }> {
-  const limit = checkRateLimit(`otp:${rateKey}`, 3, 10 * 60 * 1000);
+  // Keyed by user only — an IP in the key let callers rotate X-Forwarded-For for unlimited resends.
+  const limit = checkOtpSendLimit(userId);
   if (!limit.allowed) {
     return {
       success: false,
@@ -261,6 +331,7 @@ export async function resendPhoneOtp(
     where: { id: userId },
     data: { phoneNoOtp: storeOtpHash(otp) },
   });
+  markOtpIssued(userId);
 
   const phone = user.phoneNumber ?? "";
   const { sent: whatsappSent } = phone ? await sendPhoneOtpWhatsApp(phone, otp) : { sent: false };

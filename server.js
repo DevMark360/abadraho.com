@@ -23,6 +23,11 @@ const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
   const server = http.createServer((req, res) => {
+    // Trusted client IP for rate limits: drop any client-sent copy, then record the
+    // socket peer address (X-Forwarded-For is client-controlled and cannot be trusted alone).
+    delete req.headers["x-abadraho-client-ip"];
+    const peer = req.socket && req.socket.remoteAddress;
+    if (peer) req.headers["x-abadraho-client-ip"] = peer;
     const parsedUrl = parse(req.url, true);
     handle(req, res, parsedUrl);
   });

@@ -61,12 +61,37 @@ export function checkRateLimit(
   return { allowed: true };
 }
 
+/**
+ * Client IP for rate-limit keys and logs. X-Real-IP is a last resort only: it is spoofable
+ * without a proxy that sets it, but falling straight to "unknown" would put every visitor in
+ * one shared bucket and lock everyone out of login.
+ */
 export function clientIp(request: Request): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown"
-  );
+  return trustedClientIp(request) ?? request.headers.get("x-real-ip")?.trim() ?? "unknown";
+}
+
+function isLoopback(ip: string): boolean {
+  return ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
+}
+
+/**
+ * Client IP that a visitor cannot spoof. Prefers the socket peer address recorded by
+ * server.js; behind local proxies (nginx/Apache in front of Passenger, loopback peer) takes the
+ * right-most non-loopback X-Forwarded-For entry — the one appended by our own proxy chain.
+ * Left-most entries are whatever the client sent and are never used.
+ * Returns null when no per-visitor address is known (every request would share one key).
+ */
+export function trustedClientIp(request: Request): string | null {
+  const peer = request.headers.get("x-abadraho-client-ip")?.trim();
+  if (peer && !isLoopback(peer)) return peer;
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const parts = forwarded.split(",").map((p) => p.trim()).filter(Boolean);
+    for (let i = parts.length - 1; i >= 0; i--) {
+      if (!isLoopback(parts[i])) return parts[i];
+    }
+  }
+  return null;
 }
 
 export function enforceRateLimits(

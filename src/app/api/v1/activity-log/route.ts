@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
+import { clientIp } from "@/lib/rate-limit";
 import { isTrackableVisitorRole } from "@/lib/roles";
 import { createCustomActivityLog } from "@/server/services/activity-log-client.service";
 
@@ -40,9 +41,7 @@ export async function POST(request: NextRequest) {
       body.duration_in_second != null ? Number(body.duration_in_second) : undefined,
     properties: typeof body === "object" ? activityProperties(body) : undefined,
     userId: session.id,
-    ip:
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      request.headers.get("x-real-ip"),
+    ip: clientIp(request) === "unknown" ? null : clientIp(request),
   });
 
   return NextResponse.json({

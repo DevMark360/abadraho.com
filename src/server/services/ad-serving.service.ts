@@ -57,7 +57,7 @@ export async function getSlotRotation(
   const campaigns = await prisma.adCampaign.findMany({
     where: { id: { in: rows.map((r) => r.campaignId) }, status: "live" },
     include: {
-      builder: { select: { fullName: true } },
+      builder: { select: { fullName: true, adWallet: { select: { balance: true } } } },
       project: {
         select: {
           id: true,
@@ -77,6 +77,10 @@ export async function getSlotRotation(
   for (const row of rows) {
     const campaign = campaignById.get(row.campaignId);
     if (!campaign) continue; // re-check — a row can go stale mid-cycle if the campaign paused/completed since the last cron run
+    // Billing never takes a wallet below zero, so a wallet that can't pay for one impression
+    // would otherwise get its ads shown for free until the next auction run.
+    const balance = Number(campaign.builder.adWallet?.balance ?? 0);
+    if (balance < Number(row.effectiveCpm) / 1000) continue;
     slots.push({
       campaignId: campaign.id,
       slotKey,
@@ -115,34 +119,45 @@ function startOfToday(): Date {
 }
 
 /**
- * Fire-and-forget, called once per rotation slice actually confirmed visible (see
+ * Called once per rotation slice actually confirmed visible (see
  * /api/v1/ads/impression/[campaignId] — never called directly from a page render anymore, since
  * under rotation nothing is billable just because it was rendered; it has to have been seen).
  * Cost per impression = effectiveCpm / 1000 (CPM = price per 1000 impressions), deducted
- * from the builder's wallet immediately. This is a Phase 1 approximation, not hard
- * overdraft protection — a campaign can run slightly over its budgetCap between auction
- * runs; scripts/run-ad-auction.mjs's auto-stop check bounds that overrun to roughly one
- * auction cycle.
+ * from the builder's wallet immediately. The wallet never goes below zero, but a campaign can
+ * still run slightly over its budgetCap between auction runs; scripts/run-ad-auction.mjs's
+ * auto-stop check bounds that overrun to roughly one auction cycle.
+ * Returns true when the impression was billed and counted.
  */
-export async function recordAdSliceImpression(campaignId: number, effectiveCpm: number): Promise<void> {
-  if (!isDatabaseEnabled()) return;
+export async function recordAdSliceImpression(
+  campaignId: number,
+  effectiveCpm: number
+): Promise<boolean> {
+  if (!isDatabaseEnabled()) return false;
   const date = startOfToday();
   const cost = effectiveCpm / 1000;
-
-  await prisma.adDailyStat.upsert({
-    where: { campaignId_date: { campaignId, date } },
-    create: { campaignId, date, impressions: 1, spend: cost },
-    update: { impressions: { increment: 1 }, spend: { increment: cost } },
-  });
+  if (!Number.isFinite(cost) || cost <= 0) return false;
 
   const campaign = await prisma.adCampaign.findUnique({
     where: { id: campaignId },
     select: { builderId: true },
   });
-  if (!campaign) return;
-  await prisma.adWallet.updateMany({
-    where: { builderId: campaign.builderId },
-    data: { balance: { decrement: cost } },
+  if (!campaign) return false;
+
+  // Wallet debit and stat row move together, and the debit only applies while the balance
+  // covers it — an empty wallet stops billing (and counting) instead of going negative.
+  return prisma.$transaction(async (tx) => {
+    const debit = await tx.adWallet.updateMany({
+      where: { builderId: campaign.builderId, balance: { gte: cost } },
+      data: { balance: { decrement: cost } },
+    });
+    if (debit.count === 0) return false;
+
+    await tx.adDailyStat.upsert({
+      where: { campaignId_date: { campaignId, date } },
+      create: { campaignId, date, impressions: 1, spend: cost },
+      update: { impressions: { increment: 1 }, spend: { increment: cost } },
+    });
+    return true;
   });
 }
 
