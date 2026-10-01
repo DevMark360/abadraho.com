@@ -1,0 +1,1222 @@
+// AbadRaho v2 — maps to legacy Laravel MySQL tables (adjust @@map if names differ on your DB)
+
+generator client {
+  provider   = "prisma-client-js"
+  // cPanel/CloudLinux: avoid Rust query-engine panics ("timer has gone away")
+  engineType = "client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users & auth ───────────────────────────────────────────────
+
+model User {
+  id                Int       @id @default(autoincrement())
+  firstName         String    @map("first_name")
+  lastName          String?   @map("last_name")
+  username          String?
+  email             String?
+  password          String
+  phoneNumber       String?   @map("phone_number")
+  phoneNoOtp        String?   @map("phone_no_otp")
+  userTypeId        Int?      @map("user_type_id")
+  staffRoleId       Int?      @map("staff_role_id")
+  image             String?
+  avatar            String?
+  address           String?   @map("Address")
+  city              String?
+  aboutMe           String?   @map("about_me")
+  recordId          String?   @map("record_id")
+  provider          String?
+  rememberToken     String?   @map("remember_token")
+  isPhoneNoVerified Boolean   @default(false) @map("is_phone_no_verified")
+  isArchive         Boolean   @default(false) @map("is_archive")
+  emailVerifiedAt   DateTime? @map("email_verified_at")
+  createdAt         DateTime? @map("created_at")
+  updatedAt         DateTime? @map("updated_at")
+
+  wishlists        Wishlist[]
+  reviews          Review[]
+  broker           Broker?
+  searchHistory    UserSearchHistory[]
+  userVouchers     UserVoucher[]
+  teamUsers        TeamUser[]
+  paymentSchedules PaymentSchedule[]
+  activityLogs     ActivityLog[]       @relation("ActivityCauser")
+  recentViews      RecentView[]
+  userCompares     UserCompare[]
+  staffRole        StaffRole?          @relation(fields: [staffRoleId], references: [id])
+
+  @@map("users")
+}
+
+model PasswordReset {
+  email     String
+  token     String
+  createdAt DateTime? @map("created_at")
+
+  @@id([email, token])
+  @@map("password_resets")
+}
+
+model Admin {
+  id          Int        @id @default(autoincrement())
+  email       String     @unique
+  password    String
+  name        String?
+  staffRoleId Int?       @map("staff_role_id")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  staffRole   StaffRole? @relation(fields: [staffRoleId], references: [id])
+
+  @@map("admins")
+}
+
+model StaffRole {
+  id           Int                   @id @default(autoincrement())
+  name         String
+  slug         String                @unique
+  description  String?               @db.Text
+  isSystem     Boolean               @default(false) @map("is_system")
+  isSuperAdmin Boolean               @default(false) @map("is_super_admin")
+  createdAt    DateTime?             @default(now()) @map("created_at")
+  updatedAt    DateTime?             @updatedAt @map("updated_at")
+  permissions  StaffRolePermission[]
+  users        User[]
+  admins       Admin[]
+
+  @@map("staff_roles")
+}
+
+model StaffRolePermission {
+  id            Int       @id @default(autoincrement())
+  roleId        Int       @map("role_id")
+  permissionKey String    @map("permission_key") @db.VarChar(120)
+  role          StaffRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionKey])
+  @@map("staff_role_permissions")
+}
+
+// ─── Core property domain ───────────────────────────────────────
+
+model Area {
+  id        BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name      String
+  cityId    Int?      @map("city_id")
+  createdAt DateTime? @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  city          City?            @relation(fields: [cityId], references: [id])
+  projectAreas  ProjectArea[]
+  projects      Project[]        @relation("ProjectLocation")
+  adCampaigns   AdCampaignArea[]
+  adFloorPrices AdFloorPrice[]
+
+  @@map("areas")
+}
+
+model City {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  createdAt DateTime? @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  areas Area[]
+
+  @@map("cities")
+}
+
+model ProjectType {
+  id        Int     @id @default(autoincrement())
+  title     String  @map("title")
+  isArchive Boolean @default(false) @map("is_archive")
+
+  projects      Project[]
+  units         Unit[]
+  adCampaigns   AdCampaignProjectType[]
+  adFloorPrices AdFloorPrice[]
+
+  @@map("project_type")
+}
+
+model Progress {
+  id       Int     @id @default(autoincrement())
+  name     String  @map("progress_status_name")
+  isActive Boolean @default(true) @map("isActive")
+
+  projects Project[]
+
+  @@map("progress_status")
+}
+
+model Builder {
+  id          Int     @id @default(autoincrement())
+  fullName    String  @map("full_name")
+  userId      Int?    @map("user_id")
+  email       String?
+  phoneNumber String? @map("phone_number")
+  isArchive   Boolean @default(false) @map("is_archive")
+
+  projectOwners      ProjectOwner[]
+  teamBuilders       TeamBuilder[]
+  events             Event[]
+  adCampaigns        AdCampaign[]
+  adWallet           AdWallet?
+  adWhatsappPackages AdWhatsappPackage[]
+
+  @@map("builders")
+}
+
+model Project {
+  id                Int       @id @default(autoincrement())
+  name              String
+  slug              String    @unique
+  address           String?
+  areaId            BigInt?   @map("area") @db.UnsignedBigInt
+  details           String?   @db.Text
+  status            Int       @default(1)
+  projectTypeId     Int?      @map("project_type_id")
+  progressLabel     String?   @map("progress")
+  progressStatusId  Int?      @map("progress_status_id")
+  projectCoverImg   String?   @map("project_cover_img")
+  projectDoc        String?   @map("project_doc")
+  projectVideo      String?   @map("project_video")
+  projectImgs       String?   @map("project_imgs") @db.Text
+  rooms             String?
+  latitude          Decimal?  @db.Decimal(10, 8)
+  longitude         Decimal?  @db.Decimal(11, 8)
+  minPrice          Decimal?  @map("min_price") @db.Decimal(15, 2)
+  discountPrice     Decimal?  @map("discount_price") @db.Decimal(15, 2)
+  installmentLength Int?      @map("installment_length")
+  views             Int       @default(0)
+  isArchive         Boolean   @default(false) @map("is_archive")
+  metaTitle         String?   @map("meta_title")
+  metaDescription   String?   @map("meta_description")
+  metaTags          String?   @map("meta_tags") @db.Text
+  marketedBy        String?   @map("marketed_by")
+  // Added by markproperties.pk (Mark Properties' own site, sharing this DB) —
+  // per-project phone number for its "Prefer to talk now?" card. Column
+  // exists on dev; see markproperties/backend/migrations for the same
+  // ALTER TABLE against production.
+  contactPhone      String?   @map("contact_phone") @db.VarChar(30)
+  addedTime         DateTime? @map("added_time")
+  propertyId        String?   @map("property_id")
+  // Advertising Phase 2 targeting dimension: luxury | premium | mid_range | affordable
+  tier              String?   @db.VarChar(20)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  projectInfo              ProjectInfo?
+  projectType              ProjectType?              @relation(fields: [projectTypeId], references: [id])
+  progress                 Progress?                 @relation(fields: [progressStatusId], references: [id])
+  location                 Area?                     @relation("ProjectLocation", fields: [areaId], references: [id])
+  units                    Unit[]
+  owners                   ProjectOwner[]
+  areas                    ProjectArea[]
+  reviews                  Review[]
+  wishlists                Wishlist[]
+  inquiries                Inquiry[]
+  projectAmenities         ProjectAmenity[]
+  projectUtilities         ProjectUtility[]
+  projectTags              ProjectTag[]
+  teamProjects             TeamProject[]
+  paymentSchedules         PaymentSchedule[]
+  roomTypeUnits            RoomTypeUnit[]
+  recentViews              RecentView[]
+  searchHistory            UserSearchHistory[]
+  userCompares             UserCompare[]
+  brokerAssignments        BrokerProjectAssignment[]
+  brokerCommissions        BrokerCommission[]
+  brokerLeads              BrokerLead[]
+  brokerAssignmentRequests BrokerAssignmentRequest[]
+  events                   Event[]
+  adCampaigns              AdCampaign[]
+  adWhatsappPackages       AdWhatsappPackage[]
+
+  @@index([status, isArchive])
+  @@map("projects")
+}
+
+model ProjectOwner {
+  id        Int @id @default(autoincrement())
+  projectId Int @map("project_id")
+  builderId Int @map("builder_id")
+
+  project Project @relation(fields: [projectId], references: [id])
+  builder Builder @relation(fields: [builderId], references: [id])
+
+  @@map("project_owners")
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(200)
+  slug        String    @unique @db.VarChar(220)
+  eventType   String    @map("event_type") @db.VarChar(30)
+  description String?   @db.Text
+  venue       String?   @db.VarChar(255)
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  coverImage  String?   @map("cover_image") @db.VarChar(500)
+  status      String    @default("pending") @db.VarChar(20)
+  builderId   Int       @map("builder_id")
+  projectId   Int?      @map("project_id")
+  isArchive   Boolean   @default(false) @map("is_archive")
+  createdAt   DateTime? @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+
+  builder Builder  @relation(fields: [builderId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@index([status, isArchive])
+  @@index([builderId])
+  @@map("events")
+}
+
+model ProjectInfo {
+  id          Int       @id @default(autoincrement())
+  projectId   Int       @unique @map("project_id")
+  mainHeading String?   @map("main_heading")
+  subHeading  String?   @map("sub_heading")
+  bullet1     String?   @map("bullet_1")
+  bullet2     String?   @map("bullet_2")
+  bullet3     String?   @map("bullet_3")
+  bullet4     String?   @map("bullet_4")
+  bullet5     String?   @map("bullet_5")
+  bullet6     String?   @map("bullet_6")
+  createdAt   DateTime? @map("created_at")
+  updatedAt   DateTime? @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_infos")
+}
+
+model ProjectArea {
+  id        Int    @id @default(autoincrement())
+  projectId Int    @map("project_id")
+  areaId    BigInt @map("area_id") @db.UnsignedBigInt
+
+  project Project @relation(fields: [projectId], references: [id])
+  area    Area    @relation(fields: [areaId], references: [id])
+
+  @@map("project_area")
+}
+
+model Unit {
+  id                 Int       @id @default(autoincrement())
+  projectId          Int       @map("project_id")
+  unitTypeId         Int?      @map("unit_type_id")
+  title              String?
+  rooms              String?
+  price              Decimal   @db.Decimal(16, 2)
+  downPayment        Decimal?  @map("down_payment") @db.Decimal(16, 2)
+  monthlyInstallment Decimal?  @map("monthly_installment") @db.Decimal(16, 2)
+  loanAmount         Decimal?  @map("loan_amount") @db.Decimal(16, 2)
+  totalUnitAmount    Decimal?  @map("total_unit_amount") @db.Decimal(16, 2)
+  measurementType    Int?      @map("measurement_type")
+  installment        Decimal?  @db.Decimal(16, 2)
+  installmentType    Int?      @map("installment_type")
+  description        String?   @db.Text
+  floorPlanImg       String?   @map("floor_plan_img")
+  paymentPlanImg     String?   @map("payment_plan_img")
+  grossArea          Decimal?  @map("gross_area") @db.Decimal(16, 2)
+  netArea            Decimal?  @map("net_area") @db.Decimal(16, 2)
+  size               Decimal?  @map("covered_area") @db.Decimal(16, 2)
+  isArchive          Boolean   @default(false) @map("is_archive")
+  createdAt          DateTime? @map("created_at")
+  updatedAt          DateTime? @map("updated_at")
+
+  project          Project           @relation(fields: [projectId], references: [id])
+  unitType         ProjectType?      @relation(fields: [unitTypeId], references: [id])
+  roomTypeUnits    RoomTypeUnit[]
+  unitsVouchers    UnitVoucher[]
+  paymentSchedules PaymentSchedule[]
+  inquiries        Inquiry[]
+  brokerLeads      BrokerLead[]
+
+  @@map("units")
+}
+
+// ─── User features ────────────────────────────────────────────────
+
+model Wishlist {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  projectId Int       @map("product_id")
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+  @@map("wishlists")
+}
+
+model UserCompare {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  projectId Int       @map("project_id")
+  unitId    Int?      @map("unit_id")
+  slot      Int       @default(0)
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+  @@unique([userId, slot])
+  @@map("user_compares")
+}
+
+model Review {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  projectId Int       @map("project_id")
+  rating    Int
+  comment   String    @map("review") @db.VarChar(255)
+  status    String    @default("pending") @db.VarChar(20)
+  createdAt DateTime? @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("reviews")
+}
+
+model RecentView {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  projectId Int       @map("project_id")
+  createdAt DateTime? @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@index([userId, createdAt])
+  @@map("recent_views")
+}
+
+model Inquiry {
+  id          Int       @id @default(autoincrement())
+  userId      Int?      @map("user_id")
+  projectId   Int?      @map("project_id")
+  unitId      Int?      @map("unit_id")
+  brokerId    Int?      @map("broker_id")
+  name        String?
+  email       String?
+  phoneNumber String?   @map("phone_number")
+  address     String?
+  message     String?   @db.Text
+  createdAt   DateTime? @map("created_at")
+  updatedAt   DateTime? @map("updated_at")
+
+  project Project? @relation(fields: [projectId], references: [id])
+  unit    Unit?    @relation(fields: [unitId], references: [id])
+  broker  Broker?  @relation(fields: [brokerId], references: [id])
+
+  @@map("inquiries")
+}
+
+model UserSearchHistory {
+  id                Int       @id @default(autoincrement())
+  userId            Int?      @map("user_id")
+  projectId         Int?      @map("project_id")
+  area              String?   @db.VarChar(255)
+  hash              String?
+  searchType        String?   @map("search_type")
+  json              String?   @db.Text
+  minDP             Decimal?  @map("minDP") @db.Decimal(65, 8)
+  maxDP             Decimal?  @map("maxDP") @db.Decimal(65, 8)
+  minMI             Decimal?  @map("minMI") @db.Decimal(65, 8)
+  maxMI             Decimal?  @map("maxMI") @db.Decimal(65, 8)
+  minPrice          Decimal?  @map("minPrice") @db.Decimal(65, 8)
+  maxPrice          Decimal?  @map("maxPrice") @db.Decimal(65, 8)
+  downPayment       Decimal?  @map("downPayment") @db.Decimal(65, 8)
+  maxBudget         Decimal?  @map("maxBudget") @db.Decimal(65, 8)
+  slabCasting       Decimal?  @map("slabCasting") @db.Decimal(65, 8)
+  plinth            Decimal?  @db.Decimal(65, 8)
+  colour            Decimal?  @db.Decimal(65, 8)
+  monthInstall      Decimal?  @map("monthInstall") @db.Decimal(65, 8)
+  yearlyInstall     Decimal?  @map("yearlyInstall") @db.Decimal(65, 8)
+  halfYearlyInstall Decimal?  @map("halfYearlyInstall") @db.Decimal(65, 8)
+  quarterlyInstall  Decimal?  @map("quarterlyInstall") @db.Decimal(65, 8)
+  possession        Decimal?  @db.Decimal(65, 8)
+  cookie            String?
+  createdAt         DateTime? @map("created_at")
+  updatedAt         DateTime? @map("updated_at")
+
+  user    User?    @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@map("user_search_history")
+}
+
+// ─── Blog ─────────────────────────────────────────────────────────
+
+model BlogCategory {
+  id          Int       @id @default(autoincrement())
+  title       String?
+  isArchive   Boolean   @default(false) @map("is_archive")
+  isArchiveBy Int?      @map("is_archive_by")
+  isArchiveAt DateTime? @map("is_archive_at")
+  createdAt   DateTime? @map("created_at")
+  updatedAt   DateTime? @map("updated_at")
+
+  blogs Blog[]
+
+  @@map("blog_category")
+}
+
+model Blog {
+  id              Int       @id @default(autoincrement())
+  title           String?
+  categoryId      Int?      @map("category_id")
+  description     String?   @db.Text
+  coverImg        String?   @map("cover_img")
+  metaTitle       String    @default("") @map("meta_title")
+  metaDescription String    @default("") @map("meta_description")
+  metaKeywords    String    @default("") @map("meta_keywords")
+  slug            String?
+  isActive        Int?      @map("is_active")
+  isArchive       Boolean   @default(false) @map("is_archive")
+  isArchiveBy     Int?      @map("is_archive_by")
+  isArchiveAt     DateTime? @map("is_archive_at")
+  createdAt       DateTime? @map("created_at")
+  updatedAt       DateTime? @map("updated_at")
+
+  category BlogCategory? @relation(fields: [categoryId], references: [id])
+
+  @@map("blog")
+}
+
+// ─── Broker tools ─────────────────────────────────────────────────
+
+model Broker {
+  id                Int       @id @default(autoincrement())
+  contactPersonName String?   @map("contact_person_name")
+  contactNumber     String?   @map("contact_number")
+  contactEmail      String?   @map("contact_email")
+  companyName       String?   @map("company_name")
+  companyAddress    String?   @map("company_address") @db.Text
+  agentSinceYears   Int?      @map("agent_since_years")
+  dealsIn           String?   @map("deals_in") @db.Text
+  commissionType    String    @default("percentage") @map("commission_type")
+  defaultCommission Decimal?  @map("default_commission") @db.Decimal(12, 2)
+  bankName          String?   @map("bank_name")
+  accountTitle      String?   @map("account_title")
+  accountNumber     String?   @map("account_number")
+  iban              String?
+  paymentNotes      String?   @map("payment_notes") @db.Text
+  agentTier         String    @default("bronze") @map("agent_tier")
+  agentCode         String?   @unique @map("agent_code")
+  userId            Int?      @unique @map("user_id")
+  isActive          Boolean   @default(true) @map("is_active")
+  isArchive         Boolean   @default(false) @map("is_archive")
+  createdAt         DateTime? @map("created_at")
+  updatedAt         DateTime? @map("updated_at")
+
+  user               User?                     @relation(fields: [userId], references: [id])
+  pitchDecks         BrokerPitchDeck[]
+  whatsappCards      BrokerWhatsAppCard[]
+  shortLinks         BrokerShortLink[]
+  projectAssignments BrokerProjectAssignment[]
+  commissions        BrokerCommission[]
+  leads              BrokerLead[]
+  inquiries          Inquiry[]
+  assignmentRequests BrokerAssignmentRequest[]
+  referralClicks     BrokerReferralClick[]
+
+  @@map("brokers")
+}
+
+model BrokerProjectAssignment {
+  id              Int       @id @default(autoincrement())
+  brokerId        Int       @map("broker_id")
+  projectId       Int       @map("project_id")
+  commissionType  String    @default("percentage") @map("commission_type")
+  commissionValue Decimal   @default(0) @map("commission_value") @db.Decimal(12, 2)
+  notes           String?   @db.Text
+  isActive        Boolean   @default(true) @map("is_active")
+  assignedAt      DateTime  @default(now()) @map("assigned_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime? @updatedAt @map("updated_at")
+
+  broker  Broker  @relation(fields: [brokerId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([brokerId, projectId])
+  @@map("broker_project_assignments")
+}
+
+model BrokerCommission {
+  id               Int       @id @default(autoincrement())
+  brokerId         Int       @map("broker_id")
+  projectId        Int       @map("project_id")
+  leadId           Int?      @map("lead_id")
+  dealValue        Decimal   @default(0) @map("deal_value") @db.Decimal(15, 2)
+  commissionAmount Decimal   @default(0) @map("commission_amount") @db.Decimal(15, 2)
+  status           String    @default("pending")
+  paymentReference String?   @map("payment_reference")
+  paidAt           DateTime? @map("paid_at")
+  paymentNotes     String?   @map("payment_notes") @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime? @updatedAt @map("updated_at")
+
+  broker  Broker      @relation(fields: [brokerId], references: [id])
+  project Project     @relation(fields: [projectId], references: [id])
+  lead    BrokerLead? @relation(fields: [leadId], references: [id])
+
+  @@map("broker_commissions")
+}
+
+model BrokerLead {
+  id              Int       @id @default(autoincrement())
+  brokerId        Int       @map("broker_id")
+  clientName      String    @map("client_name")
+  phone           String
+  email           String?
+  projectId       Int?      @map("project_id")
+  unitId          Int?      @map("unit_id")
+  source          String?
+  status          String    @default("new")
+  notes           String?   @db.Text
+  lastContactedAt DateTime? @map("last_contacted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime? @updatedAt @map("updated_at")
+
+  broker      Broker             @relation(fields: [brokerId], references: [id])
+  project     Project?           @relation(fields: [projectId], references: [id])
+  unit        Unit?              @relation(fields: [unitId], references: [id])
+  commissions BrokerCommission[]
+
+  @@map("broker_leads")
+}
+
+model BrokerAssignmentRequest {
+  id         Int       @id @default(autoincrement())
+  brokerId   Int       @map("broker_id")
+  projectId  Int       @map("project_id")
+  message    String?   @db.Text
+  status     String    @default("pending")
+  adminNotes String?   @map("admin_notes") @db.Text
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
+
+  broker  Broker  @relation(fields: [brokerId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("broker_assignment_requests")
+}
+
+model BrokerReferralClick {
+  id         Int      @id @default(autoincrement())
+  brokerId   Int      @map("broker_id")
+  sessionKey String?  @map("session_key")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  broker Broker @relation(fields: [brokerId], references: [id])
+
+  @@map("broker_referral_clicks")
+}
+
+model BrokerPitchDeck {
+  id        Int      @id @default(autoincrement())
+  brokerId  Int      @map("broker_id")
+  projectId Int      @map("project_id")
+  filePath  String?  @map("file_path")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  broker Broker @relation(fields: [brokerId], references: [id])
+
+  @@map("broker_pitch_decks")
+}
+
+model BrokerWhatsAppCard {
+  id        Int      @id @default(autoincrement())
+  brokerId  Int      @map("broker_id")
+  projectId Int      @map("project_id")
+  filePath  String?  @map("file_path")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  broker Broker @relation(fields: [brokerId], references: [id])
+
+  @@map("broker_whatsapp_cards")
+}
+
+model BrokerShortLink {
+  id        Int      @id @default(autoincrement())
+  brokerId  Int      @map("broker_id")
+  projectId Int      @map("project_id")
+  shortCode String   @unique @map("short_code")
+  clicks    Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  broker Broker @relation(fields: [brokerId], references: [id])
+
+  @@map("broker_short_links")
+}
+
+model ContactUs {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  email     String?
+  phone     String?
+  subject   String?
+  message   String?
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  @@map("contactus")
+}
+
+// ─── Advertising portal ────────────────────────────────────────────
+// Phase 1 (MVP) per docs/ADVERTISING_PORTAL_PRD.md: builders bid on interests
+// (existing Area + ProjectType rows, not a new taxonomy) to promote a project
+// via a simplified periodic auction. See ADR notes in the implementation plan.
+
+model AdCampaign {
+  id              Int       @id @default(autoincrement())
+  builderId       Int       @map("builder_id")
+  projectId       Int       @map("project_id")
+  placementType   String    @map("placement_type") @db.VarChar(30) // 'featured_listing' | 'banner' | 'sponsored_content'
+  title           String
+  creativeUrl     String?   @map("creative_url")
+  status          String    @default("draft") @db.VarChar(20) // draft|submitted|approved|rejected|live|paused|completed — "paused" is currently daily-budget-exhaustion only, see pausedReason
+  rejectionReason String?   @map("rejection_reason") @db.Text
+  // Set alongside status "paused" so the cron's auto-resume step only resumes pauses it caused
+  // itself (daily budget exhaustion), never some future unrelated pause reason. Both null once
+  // resumed to "live". See DAILY_BUDGET_PAUSE_REASON in ad-auction-core.mjs.
+  pausedReason    String?   @map("paused_reason") @db.VarChar(30)
+  pausedDate      DateTime? @map("paused_date") @db.Date
+  maxBidCpm       Decimal   @map("max_bid_cpm") @db.Decimal(12, 2)
+  budgetCap       Decimal   @map("budget_cap") @db.Decimal(15, 2)
+  // Optional — caps daily spend and feeds the rotation weight formula (see ad-auction-core.mjs's
+  // resolveDailyBudget/campaignWeight). When null, derived as budgetCap ÷ campaign duration in
+  // days. Exhausting it for the day pauses the campaign (status "paused", pausedReason set)
+  // until the next calendar day — see run-ad-auction.mjs's daily pause/resume step.
+  dailyBudget     Decimal?  @map("daily_budget") @db.Decimal(15, 2)
+  impressionCap   Int?      @map("impression_cap")
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime  @map("end_date")
+  ctrBand         Int       @default(3) @map("ctr_band") // legacy 5-band bucket, kept for backward compat — ranking now uses qualityScore below
+  // Phase 3 — continuous Quality Score multiplier derived from this campaign's own CTR (see
+  // ad-auction-core.mjs's computeQualityScore), replacing the old 5-bucket ctrBand for ranking
+  // purposes. Neutral default (1.000) until the campaign has enough impressions of its own to
+  // compute a real value from.
+  qualityScore    Decimal   @default(1.000) @map("quality_score") @db.Decimal(4, 3)
+  // Admin-triggered (never automatic) refund of undelivered impression/budget value back to the
+  // builder's wallet — set once a "completed" campaign has been reviewed and refunded, to block
+  // issuing it twice. Null until an admin acts on it; see advertising-campaign.service.ts.
+  refundedAt      DateTime? @map("refunded_at")
+  refundAmount    Decimal?  @map("refund_amount") @db.Decimal(12, 2)
+  // Admin-only soft-remove — excludes the campaign from the auction/serving path entirely
+  // regardless of status, without touching its spend/audit history. Reversible, unlike a delete.
+  isArchive       Boolean   @default(false) @map("is_archive")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  builder      Builder                 @relation(fields: [builderId], references: [id])
+  project      Project                 @relation(fields: [projectId], references: [id])
+  areas        AdCampaignArea[]
+  projectTypes AdCampaignProjectType[]
+  tiers        AdCampaignTier[]
+  dailyStats   AdDailyStat[]
+  slotWins     AdSlotWinner[]
+  slotAllocations AdSlotAllocation[]
+
+  @@index([status])
+  @@index([builderId])
+  @@index([status, isArchive])
+  @@map("ad_campaigns")
+}
+
+model AdCampaignArea {
+  id         Int    @id @default(autoincrement())
+  campaignId Int    @map("campaign_id")
+  areaId     BigInt @map("area_id") @db.UnsignedBigInt
+
+  campaign AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  area     Area       @relation(fields: [areaId], references: [id])
+
+  @@unique([campaignId, areaId])
+  @@map("ad_campaign_areas")
+}
+
+model AdCampaignProjectType {
+  id            Int @id @default(autoincrement())
+  campaignId    Int @map("campaign_id")
+  projectTypeId Int @map("project_type_id")
+
+  campaign    AdCampaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  projectType ProjectType @relation(fields: [projectTypeId], references: [id])
+
+  @@unique([campaignId, projectTypeId])
+  @@map("ad_campaign_project_types")
+}
+
+model AdCampaignTier {
+  id         Int    @id @default(autoincrement())
+  campaignId Int    @map("campaign_id")
+  tier       String @db.VarChar(20) // luxury | premium | mid_range | affordable
+
+  campaign AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, tier])
+  @@map("ad_campaign_tiers")
+}
+
+model AdWallet {
+  id        Int      @id @default(autoincrement())
+  builderId Int      @unique @map("builder_id")
+  balance   Decimal  @default(0) @db.Decimal(15, 2)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  builder      Builder               @relation(fields: [builderId], references: [id])
+  transactions AdWalletTransaction[]
+
+  @@map("ad_wallets")
+}
+
+model AdWalletTransaction {
+  id                     Int       @id @default(autoincrement())
+  walletId               Int       @map("wallet_id")
+  type                   String    @db.VarChar(30) // 'topup_bank_transfer' | 'topup_jazzcash' | 'spend' | 'whatsapp_package_purchase' | 'refund_undelivered' | 'adjustment'
+  amount                 Decimal   @db.Decimal(15, 2) // signed: positive for topup, negative for spend
+  balanceAfter           Decimal?  @map("balance_after") @db.Decimal(15, 2)
+  referenceNote          String?   @map("reference_note") @db.Text
+  status                 String    @default("pending") @db.VarChar(20) // pending|confirmed|rejected
+  // Polymorphic actor reference (like ActivityLog.causerType/causerId) — a "full staff" admin
+  // session's id may come from either the `admins` table or the `users` table (see
+  // src/lib/admin-rbac.ts getAdminPanelRole), so this intentionally has no FK constraint.
+  confirmedByActorSource String?   @map("confirmed_by_actor_source") @db.VarChar(10) // 'admin' | 'user'
+  confirmedByActorId     Int?      @map("confirmed_by_actor_id")
+  // JazzCash pp_TxnRefNo (or other gateway's transaction reference) for reconciliation — null for bank-transfer/manual entries.
+  gatewayReference       String?   @map("gateway_reference") @db.VarChar(40)
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime? @updatedAt @map("updated_at")
+
+  wallet AdWallet @relation(fields: [walletId], references: [id])
+
+  @@index([status])
+  @@index([walletId])
+  @@index([gatewayReference])
+  @@map("ad_wallet_transactions")
+}
+
+model AdWhatsappPackage {
+  id         Int      @id @default(autoincrement())
+  builderId  Int      @map("builder_id")
+  projectId  Int      @map("project_id")
+  totalCards Int      @map("total_cards")
+  usedCards  Int      @default(0) @map("used_cards")
+  pricePaid  Decimal  @map("price_paid") @db.Decimal(12, 2)
+  status     String   @default("active") @db.VarChar(20) // active|exhausted
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  builder Builder          @relation(fields: [builderId], references: [id])
+  project Project          @relation(fields: [projectId], references: [id])
+  cards   AdWhatsappCard[]
+
+  @@index([builderId])
+  @@map("ad_whatsapp_packages")
+}
+
+model AdWhatsappCard {
+  id        Int      @id @default(autoincrement())
+  packageId Int      @map("package_id")
+  filePath  String   @map("file_path")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  package AdWhatsappPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([packageId])
+  @@map("ad_whatsapp_cards")
+}
+
+model AdFloorPrice {
+  id            Int      @id @default(autoincrement())
+  areaId        BigInt?  @map("area_id") @db.UnsignedBigInt
+  projectTypeId Int?     @map("project_type_id")
+  placementType String   @map("placement_type") @db.VarChar(30)
+  floorCpm      Decimal  @map("floor_cpm") @db.Decimal(12, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  area        Area?        @relation(fields: [areaId], references: [id])
+  projectType ProjectType? @relation(fields: [projectTypeId], references: [id])
+
+  @@unique([areaId, projectTypeId, placementType])
+  @@map("ad_floor_prices")
+}
+
+model AdDailyStat {
+  id          Int      @id @default(autoincrement())
+  campaignId  Int      @map("campaign_id")
+  date        DateTime @db.Date
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  spend       Decimal  @default(0) @db.Decimal(15, 2)
+  inquiries   Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  campaign AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, date])
+  @@map("ad_daily_stats")
+}
+
+// Legacy winner-take-all model — retired by AdSlotAllocation (Milestone 18+, time-shared
+// rotation). No longer written to; kept only until the new path has run clean in production for
+// a few days, then this table and model are dropped in a follow-up cleanup migration.
+model AdSlotWinner {
+  id           Int      @id @default(autoincrement())
+  slotKey      String   @unique @map("slot_key") @db.VarChar(191)
+  campaignId   Int      @map("campaign_id")
+  effectiveCpm Decimal  @map("effective_cpm") @db.Decimal(12, 2)
+  computedAt   DateTime @default(now()) @map("computed_at")
+  validUntil   DateTime @map("valid_until")
+
+  campaign AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([validUntil])
+  @@map("ad_slot_winners")
+}
+
+// One row per (slot, campaign) currently sharing that slot's 60-second rotation cycle — replaces
+// AdSlotWinner's single-winner-per-slot model. shareSeconds is this campaign's allocated seconds
+// within the cycle, computed by ad-auction-core.mjs's allocateSlotSeconds. weight is the raw
+// maxBidCpm × qualityScore × dailyBudget value that produced it, kept for debugging/transparency
+// — not re-derived from it.
+model AdSlotAllocation {
+  id           Int      @id @default(autoincrement())
+  slotKey      String   @map("slot_key") @db.VarChar(191)
+  campaignId   Int      @map("campaign_id")
+  effectiveCpm Decimal  @map("effective_cpm") @db.Decimal(12, 2)
+  weight       Decimal  @map("weight") @db.Decimal(18, 4)
+  shareSeconds Int      @map("share_seconds")
+  computedAt   DateTime @default(now()) @map("computed_at")
+  validUntil   DateTime @map("valid_until")
+
+  campaign AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([slotKey, campaignId])
+  @@index([slotKey, validUntil])
+  @@index([validUntil])
+  @@map("ad_slot_allocations")
+}
+
+// ─── Migrated legacy fallback resources ───────────────────────────
+
+model Amenity {
+  id               Int              @id @default(autoincrement())
+  name             String           @map("amenity_name")
+  isActive         Boolean          @default(true) @map("is_active")
+  isArchive        Boolean          @default(false) @map("is_archive")
+  isArchiveBy      Int?             @map("is_archive_by")
+  isArchiveAt      DateTime?        @map("is_archive_at")
+  createdAt        DateTime?        @map("created_at")
+  updatedAt        DateTime?        @map("updated_at")
+  projectAmenities ProjectAmenity[]
+
+  @@map("amenities")
+}
+
+model ProjectAmenity {
+  id        Int     @id @default(autoincrement())
+  projectId Int     @map("project_id")
+  amenityId Int     @map("amenity_id")
+  isActive  Boolean @default(true) @map("is_active")
+
+  project Project @relation(fields: [projectId], references: [id])
+  amenity Amenity @relation(fields: [amenityId], references: [id])
+
+  @@map("project_amenities")
+}
+
+model Utility {
+  id               Int              @id @default(autoincrement())
+  name             String           @map("utility_name")
+  isActive         Boolean          @default(true) @map("is_active")
+  isArchive        Boolean          @default(false) @map("is_archive")
+  isArchiveBy      Int?             @map("is_archive_by")
+  isArchiveAt      DateTime?        @map("is_archive_at")
+  createdAt        DateTime?        @map("created_at")
+  updatedAt        DateTime?        @map("updated_at")
+  projectUtilities ProjectUtility[]
+
+  @@map("utilities")
+}
+
+model ProjectUtility {
+  id        Int @id @default(autoincrement())
+  projectId Int @map("project_id")
+  utilityId Int @map("utility_id")
+
+  project Project @relation(fields: [projectId], references: [id])
+  utility Utility @relation(fields: [utilityId], references: [id])
+
+  @@map("project_utilities")
+}
+
+model Tag {
+  id          Int          @id @default(autoincrement())
+  name        String
+  isArchive   Boolean      @default(false) @map("is_archive")
+  isArchiveBy Int?         @map("is_archive_by")
+  isArchiveAt DateTime?    @map("is_archive_at")
+  createdAt   DateTime?    @map("created_at")
+  updatedAt   DateTime?    @map("updated_at")
+  projectTags ProjectTag[]
+
+  @@map("tags")
+}
+
+model ProjectTag {
+  id        Int @id @default(autoincrement())
+  projectId Int @map("project_id")
+  tagId     Int @map("tag_id")
+
+  project Project @relation(fields: [projectId], references: [id])
+  tag     Tag     @relation(fields: [tagId], references: [id])
+
+  @@map("project_tag")
+}
+
+model RoomType {
+  id            Int            @id @default(autoincrement())
+  name          String
+  icon          String?
+  toShow        Int?           @map("to_show")
+  sortOrder     Int?           @map("sort_order")
+  isArchive     Boolean        @default(false) @map("is_archive")
+  isArchiveBy   Int?           @map("is_archive_by")
+  isArchiveAt   DateTime?      @map("is_archive_at")
+  createdAt     DateTime?      @map("created_at")
+  updatedAt     DateTime?      @map("updated_at")
+  roomTypeUnits RoomTypeUnit[]
+
+  @@map("room_types")
+}
+
+model RoomTypeUnit {
+  id                 Int       @id @default(autoincrement())
+  roomTypeId         Int       @map("room_type_id")
+  unitId             Int       @map("unit_id")
+  projectId          Int       @map("project_id")
+  width              Decimal?  @db.Decimal(12, 2)
+  widthFeet          Int?      @map("width_feet")
+  widthInches        Int?      @map("width_inches")
+  length             Decimal?  @db.Decimal(12, 2)
+  lengthFeet         Int?      @map("length_feet")
+  lengthInches       Int?      @map("length_inches")
+  coveredArea        Decimal?  @map("covered_area") @db.Decimal(12, 2)
+  extras             String?
+  isDisplayOnListing Boolean   @default(true) @map("is_display_on_listing")
+  isArchive          Boolean   @default(false) @map("is_archive")
+  isArchiveBy        Int?      @map("is_archive_by")
+  isArchiveAt        DateTime? @map("is_archive_at")
+  createdAt          DateTime? @map("created_at")
+  updatedAt          DateTime? @map("updated_at")
+
+  unit     Unit     @relation(fields: [unitId], references: [id])
+  roomType RoomType @relation(fields: [roomTypeId], references: [id])
+  project  Project  @relation(fields: [projectId], references: [id])
+
+  @@map("room_type_unit")
+}
+
+model Voucher {
+  id            Int           @id @default(autoincrement())
+  code          String        @unique
+  modelType     String?       @map("model_type")
+  modelId       Int?          @map("model_id")
+  data          String?       @db.Text
+  status        Int           @default(1)
+  expiresAt     DateTime?     @map("expires_at")
+  createdAt     DateTime?     @map("created_at")
+  updatedAt     DateTime?     @map("updated_at")
+  userVouchers  UserVoucher[]
+  unitsVouchers UnitVoucher[]
+
+  @@map("vouchers")
+}
+
+model UnitVoucher {
+  id        Int @id @default(autoincrement())
+  unitId    Int @map("unit_id")
+  voucherId Int @map("voucher_id")
+
+  unit    Unit    @relation(fields: [unitId], references: [id])
+  voucher Voucher @relation(fields: [voucherId], references: [id])
+
+  @@map("units_vouchers")
+}
+
+model UserVoucher {
+  id         Int       @id @default(autoincrement())
+  userId     Int       @map("user_id")
+  voucherId  Int       @map("voucher_id")
+  redeemedAt DateTime? @map("redeemed_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  voucher Voucher @relation(fields: [voucherId], references: [id])
+
+  @@map("user_voucher")
+}
+
+model Team {
+  id          Int           @id @default(autoincrement())
+  name        String
+  slug        String        @unique
+  teamLeadId  Int?          @map("team_lead_id")
+  description String?       @db.Text
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  members     TeamUser[]
+  builders    TeamBuilder[]
+  projects    TeamProject[]
+
+  @@map("teams")
+}
+
+model TeamUser {
+  id        Int      @id @default(autoincrement())
+  teamId    Int      @map("team_id")
+  userId    Int      @map("user_id")
+  status    Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  team Team @relation(fields: [teamId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("team_users")
+}
+
+model TeamBuilder {
+  id        Int      @id @default(autoincrement())
+  teamId    Int      @map("team_id")
+  builderId Int      @map("builder_id")
+  status    Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  team    Team    @relation(fields: [teamId], references: [id])
+  builder Builder @relation(fields: [builderId], references: [id])
+
+  @@map("team_builders")
+}
+
+model TeamProject {
+  id        Int @id @default(autoincrement())
+  teamId    Int @map("team_id")
+  projectId Int @map("project_id")
+
+  team    Team    @relation(fields: [teamId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("team_projects")
+}
+
+model PaymentSchedule {
+  id                    Int       @id @default(autoincrement())
+  userId                Int?      @map("user_id")
+  projectId             Int?      @map("project_id")
+  unitId                Int?      @map("unit_id")
+  json                  String    @default("") @db.Text
+  downPayment           Decimal?  @map("down_payment") @db.Decimal(65, 8)
+  monthlyInstallment    Decimal?  @map("monthly_installment") @db.Decimal(65, 8)
+  quarterlyInstallment  Decimal?  @map("quarterly_installment") @db.Decimal(65, 8)
+  halfYearlyInstallment Decimal?  @map("half_yearly_installment") @db.Decimal(65, 8)
+  yearlyInstallment     Decimal?  @map("yearly_installment") @db.Decimal(65, 8)
+  possession            Decimal?  @db.Decimal(65, 8)
+  loanAmount            Decimal?  @map("loan_amount") @db.Decimal(65, 8)
+  startOfWork           Decimal?  @map("start_of_work") @db.Decimal(65, 8)
+  slabCasting           Decimal?  @map("slab_casting") @db.Decimal(65, 8)
+  plinth                Decimal?  @db.Decimal(65, 8)
+  colour                Decimal?  @db.Decimal(65, 8)
+  isArchive             Boolean   @default(false) @map("is_archive")
+  isArchiveBy           Int?      @map("is_archive_by")
+  isArchiveAt           DateTime? @map("is_archive_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @default(now()) @map("updated_at")
+
+  user    User?    @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+  unit    Unit?    @relation(fields: [unitId], references: [id])
+
+  @@map("payment_schedule")
+}
+
+// Video rows live in `videos` when the table exists (optional per DB dump).
+// Not a Prisma model — use raw SQL via tableExists("videos") in services.
+
+// ─── Audit & analytics ────────────────────────────────────────────
+
+model ActivityLogConversion {
+  id           Int           @id @default(autoincrement())
+  conversion   String
+  description  String
+  activityLogs ActivityLog[]
+
+  @@map("activity_log_conversions")
+}
+
+model ActivityLog {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  logName          String?   @map("log_name")
+  logTable         String?   @map("log_table")
+  description      String    @db.Text
+  conversion       String?
+  conversionId     Int?      @map("conversion_id")
+  objective        String?
+  subjectType      String?   @map("subject_type")
+  subjectId        BigInt?   @map("subject_id") @db.UnsignedBigInt
+  causerType       String?   @map("causer_type")
+  causerId         Int?      @map("causer_id")
+  properties       String?   @db.LongText
+  pageUrl          String?   @map("page_url")
+  durationInSecond BigInt?   @map("duration_in_second")
+  ip               String?
+  createdDate      DateTime? @map("created_date") @db.Date
+  createdAt        DateTime? @map("created_at")
+  updatedAt        DateTime? @map("updated_at")
+
+  conversionRef ActivityLogConversion? @relation(fields: [conversionId], references: [id])
+  causer        User?                  @relation("ActivityCauser", fields: [causerId], references: [id])
+
+  @@index([logName])
+  @@index([causerId])
+  @@map("activity_log")
+}
+
+model Notification {
+  id            Int       @id @default(autoincrement())
+  recipientType String    @map("recipient_type") // 'admin' | 'broker' | 'builder' | 'user'
+  recipientId   Int       @map("recipient_id") // broker.id / builder.id / user.id; 0 = broadcast-to-admin
+  actorType     String?   @map("actor_type") // 'admin' | 'broker' | 'builder' | 'user'
+  actorId       Int?      @map("actor_id")
+  type          String // e.g. 'assignment_request', 'project_reviewed'
+  title         String
+  message       String    @db.Text
+  link          String?
+  isRead        Boolean   @default(false) @map("is_read")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
+
+  @@index([recipientType, recipientId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}

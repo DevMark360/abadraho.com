@@ -1,0 +1,121 @@
+{
+  "phase": 0,
+  "timestamp": "2026-06-01T07:53:28.170Z",
+  "useDatabase": true,
+  "databaseUrlSet": true,
+  "db": {
+    "connected": true,
+    "counts": {
+      "projects": 69,
+      "users": 86,
+      "units": 253,
+      "areas": 44,
+      "builders": 47,
+      "vouchers": 10,
+      "tags": 53,
+      "amenities": 51,
+      "utilities": 7,
+      "roomTypes": 37,
+      "roomTypeUnits": 1896,
+      "teams": 0,
+      "paymentSchedules": 7,
+      "activityLogs": 933,
+      "inquiries": 52,
+      "blogs": 3,
+      "customers": 22,
+      "userVouchers": 0
+    },
+    "errors": [],
+    "optional": {
+      "brokers": 0
+    }
+  },
+  "proxy": [
+    {
+      "name": "GET projects/all",
+      "ok": true,
+      "status": 200,
+      "preview": " [{\"id\":45,\"property_id\":\"57c6\",\"name\":\"Saima Arabian Ranches\",\"address\":\"North",
+      "url": "https://dev.abadraho.com/api/projects/all"
+    },
+    {
+      "name": "GET projects/all-areas",
+      "ok": true,
+      "status": 200,
+      "preview": " [{\"id\":8,\"name\":\"Gulshan-e-Iqbal\",\"slug\":\"\",\"created_at\":\"2021-06-19T20:32:02.",
+      "url": "https://dev.abadraho.com/api/projects/all-areas"
+    },
+    {
+      "name": "GET projects/all-types",
+      "ok": true,
+      "status": 200,
+      "preview": " [{\"id\":2,\"name\":\"House\"},{\"id\":3,\"name\":\"Plot\"},{\"id\":5,\"name\":\"Showroom\"},{\"i",
+      "url": "https://dev.abadraho.com/api/projects/all-types"
+    },
+    {
+      "name": "GET projects/all-units",
+      "ok": true,
+      "status": 200,
+      "preview": " [{\"id\":40,\"project_id\":22,\"title\":\"125 SQ Yards\",\"rooms\":null,\"covered_area\":\"",
+      "url": "https://dev.abadraho.com/api/projects/all-units"
+    },
+    {
+      "name": "GET all (search)",
+      "ok": true,
+      "status": 200,
+      "preview": " [{\"id\":18,\"property_id\":\"57c4\",\"name\":\"The Motor City\",\"address\":\"Scheme 45, N",
+      "url": "https://dev.abadraho.com/api/all"
+    },
+    {
+      "name": "POST projects/filter",
+      "ok": false,
+      "status": 200,
+      "preview": "[degraded]  { \"message\": \"Server Error\" }",
+      "url": "https://dev.abadraho.com/api/projects/filter"
+    },
+    {
+      "name": "POST filter (search)",
+      "ok": true,
+      "status": 200,
+      "preview": " [{\"id\":18,\"property_id\":\"57c4\",\"name\":\"The Motor City\",\"address\":\"Scheme 45, N",
+      "url": "https://dev.abadraho.com/api/filter"
+    },
+    {
+      "name": "POST projects/show",
+      "ok": true,
+      "status": 200,
+      "preview": " {\"owners\":[{\"id\":31,\"full_name\":\"Saima Group\",\"user_id\":61,\"username\":null,\"em",
+      "url": "https://dev.abadraho.com/api/projects/show"
+    },
+    {
+      "name": "POST login",
+      "ok": false,
+      "status": 200,
+      "preview": "[degraded]  { \"message\": \"Server Error\" }",
+      "url": "https://dev.abadraho.com/api/login"
+    },
+    {
+      "name": "POST register",
+      "ok": false,
+      "status": 200,
+      "preview": "[degraded]  {\"message\":\"The given data was invalid.\",\"errors\":{\"first_name\":[\"The first na",
+      "url": "https://dev.abadraho.com/api/register"
+    },
+    {
+      "name": "POST search history",
+      "ok": false,
+      "status": 200,
+      "preview": "[degraded]  { \"message\": \"Server Error\" }",
+      "url": "https://dev.abadraho.com/api/search"
+    },
+    {
+      "name": "GET site off-plan map-data",
+      "ok": true,
+      "status": 200,
+      "preview": " [{\"id\":45,\"name\":\"Saima Arabian Ranches\",\"slug\":\"saima-arabian-ranches\",\"addre",
+      "url": "https://dev.abadraho.com/off-plan/map-data"
+    }
+  ],
+  "passed": true,
+  "proxyReachable": true
+}
