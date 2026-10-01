@@ -65,8 +65,10 @@ scripts/*.log
 # Prisma client (rebuilt via `npm run postinstall` / `prisma generate`)
 /src/generated/
 
-# User-uploaded media (project images, PDFs — sync via FTP / legacy server, not Git)
-/public/uploads/
+# Static files & user uploads (images, videos, PDFs, fonts, cPanel's public/.htaccess) live
+# on the server only. .cpanel.yml deploys with cp -R, which never deletes them; copy new
+# files to the server manually (File Manager / FTP).
+/public/
 
 # Misc
 *.pem
