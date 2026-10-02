@@ -79,3 +79,26 @@ input[type="range"]::-moz-range-thumb {
     overflow: hidden;
   }
 }
+
+/* Body text for legal pages (privacy, terms) — readable 15px copy, tidy lists and links. */
+@layer components {
+  .legal-prose {
+    @apply space-y-3 text-[15px] leading-7 text-zinc-600;
+  }
+  .legal-prose ul {
+    @apply space-y-2;
+  }
+  .legal-prose li {
+    @apply relative pl-5;
+  }
+  .legal-prose li::before {
+    content: "";
+    @apply absolute left-1 top-[0.7rem] h-1.5 w-1.5 rounded-full bg-zinc-300;
+  }
+  .legal-prose strong {
+    @apply font-semibold text-zinc-900;
+  }
+  .legal-prose a {
+    @apply font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-2 hover:decoration-brand-accent;
+  }
+}

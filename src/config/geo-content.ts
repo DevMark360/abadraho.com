@@ -129,22 +129,66 @@ export const geoContent = {
   },
   terms: {
     summary:
-      "These terms govern use of AbadRaho, Mark Properties' off-plan property platform. By browsing listings, creating an account, or submitting inquiries you agree to our brokerage and data policies.",
+      "These terms explain the rules for using AbadRaho, the off-plan property platform operated by Mark Properties in Pakistan — for buyers browsing listings, account holders, and builders who advertise.",
     bullets: [
-      "Listings are provided for information — verify details with developers before purchase",
-      "Inquiries may be shared with project owners and Mark Properties advisors",
-      "Account data is handled per our privacy and security practices",
-      "Questions: contact form or enquiry@abadraho.com",
+      "Browsing listings and sending inquiries is free for buyers",
+      "Prices and payment plans come from developers — always confirm before you pay",
+      "AbadRaho connects buyers with developers; the sale contract is with the developer",
+      "Builder wallet top-ups are credited after our team verifies the payment",
+    ],
+    intents: [
+      {
+        question: "Is AbadRaho free to use for property buyers?",
+        answer:
+          "Yes. Browsing off-plan listings, comparing projects, saving favourites, and sending inquiries on AbadRaho is free for buyers.",
+      },
+      {
+        question: "Are the prices and payment plans on AbadRaho final?",
+        answer:
+          "No. Prices, payment plans, and availability are supplied by developers and can change. Always confirm the final price and terms in writing with the developer before making any payment.",
+      },
+      {
+        question: "Is AbadRaho the developer of the projects it lists?",
+        answer:
+          "No. AbadRaho is a listing and advisory platform operated by Mark Properties. Projects are built and sold by their developers, and your purchase agreement is with the developer.",
+      },
+      {
+        question: "How do builders add money to their AbadRaho advertising wallet?",
+        answer:
+          "Builders transfer the amount to the account shown on their Wallet page, then submit the amount, transaction ID, and a payment screenshot. The AbadRaho team verifies the payment before the wallet is credited.",
+      },
     ],
   },
   privacy: {
     summary:
-      "How AbadRaho, operated by Mark Properties, collects, uses, and protects your personal information when you browse listings, create an account, or contact developers.",
+      "How AbadRaho, operated by Mark Properties, collects, uses, shares, and protects your personal information — and how you can access, correct, or delete it.",
     bullets: [
       "We collect what you give us (name, email, phone) plus basic usage data",
-      "Inquiries are shared only with the relevant developer and Mark Properties advisors",
-      "We do not sell your personal information",
-      "Ask us to access, correct, or delete your data: enquiry@abadraho.com",
+      "Your inquiry goes only to that project's developer and Mark Properties advisors",
+      "We never sell your personal information",
+      "Request a copy or deletion of your data anytime at enquiry@abadraho.com",
+    ],
+    intents: [
+      {
+        question: "Does AbadRaho sell my personal information?",
+        answer:
+          "No. AbadRaho does not sell personal information. It is shared only with the developer and Mark Properties advisors handling your inquiry, and with service providers needed to run the site.",
+      },
+      {
+        question: "Who can see my inquiry on AbadRaho?",
+        answer:
+          "When you send an inquiry, your name, contact details, and message are shared with the developer of that project and the Mark Properties advisors responding to you.",
+      },
+      {
+        question: "Why does AbadRaho send a code to my WhatsApp?",
+        answer:
+          "AbadRaho verifies your mobile number by sending a one-time code to WhatsApp through Meta's WhatsApp Business Platform. The code is only used to confirm the number belongs to you.",
+      },
+      {
+        question: "How do I delete my AbadRaho account and data?",
+        answer:
+          "Email enquiry@abadraho.com from the address on your account and ask for deletion. You can also ask for a copy of your data or for corrections.",
+      },
     ],
   },
 } as const satisfies Record<string, GeoPageContent>;
