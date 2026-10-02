@@ -33,8 +33,8 @@ export function ShellLayout({
     <div className={designTw.shell}>
       <div
         className={cn(
-          "hidden shrink-0 transition-[width] duration-300 ease-in-out lg:block",
-          sidebarExpanded ? "w-[220px] xl:w-[240px]" : "w-14"
+          "hidden shrink-0 py-3 pl-3 transition-[width] duration-300 ease-in-out lg:block",
+          sidebarExpanded ? "w-[232px] xl:w-[252px]" : "w-[4.25rem]"
         )}
         suppressHydrationWarning
       >

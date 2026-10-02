@@ -10,7 +10,7 @@ export function UnitsTable({ units }: { units: ProjectUnit[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
+    <div className="overflow-x-auto rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
       <table className="w-full text-left text-sm">
         <thead>
           <tr>

@@ -1,9 +1,18 @@
 import "@/styles/font-awesome-local.css";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Building2, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  Banknote,
+  Building2,
+  CalendarClock,
+  MapPin,
+  Star,
+  type LucideIcon,
+} from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
-import { formatPrice } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
+import { designTw } from "@/config/design-tokens";
 import { getSession } from "@/lib/session";
 import { getProjectDetail } from "@/server/services/project-detail.service";
 import { canUserViewTeamScopedProject } from "@/server/services/admin-team.service";
@@ -33,6 +42,45 @@ import {
 import { JsonLd } from "@/components/seo/json-ld";
 import { buildProductSchema, buildRealEstateListingSchema } from "@/lib/schema-markup";
 import { buildPageMetadata } from "@/lib/seo";
+
+/** Status pill colours by construction stage. */
+function progressTone(progress: string): string {
+  const p = progress.toLowerCase();
+  if (/complete|ready|handed|possession/.test(p)) return "bg-emerald-50 text-emerald-700";
+  if (/launch|booking/.test(p)) return "bg-violet-50 text-violet-700";
+  if (/construction|progress/.test(p)) return "bg-amber-50 text-amber-800";
+  return "bg-clay-well text-zinc-700";
+}
+
+function KeyFact({
+  icon: Icon,
+  label,
+  value,
+  highlight = false,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        designTw.clayWell,
+        "flex items-start gap-3 p-3.5",
+        highlight && "col-span-2 sm:col-span-1"
+      )}
+    >
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" aria-hidden />
+      <div className="min-w-0">
+        <dt className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">{label}</dt>
+        <dd className={cn("mt-0.5 break-words font-bold leading-snug text-zinc-900", highlight ? "text-base" : "text-sm")}>
+          {value}
+        </dd>
+      </div>
+    </div>
+  );
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -132,43 +180,77 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
-              <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
-                <div className="p-4 pb-0">
+              <div className={cn(designTw.publicCard, "overflow-hidden")}>
+                <div className="p-3 pb-0 sm:p-4 sm:pb-0">
                   <TrackedSection section="gallery" projectId={project.id}>
                     <ProjectGallery images={galleryImages} />
                   </TrackedSection>
                 </div>
-                <div className="p-6">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <h1 className="text-2xl font-semibold text-zinc-900">
-                        {project.name}
-                      </h1>
-                      <p className="mt-1 text-sm text-zinc-500">
-                        {[
-                          project.areaNames ?? project.area,
-                          project.builderNames.length
-                            ? `by ${project.builderNames.join(", ")}`
-                            : project.builderName && `by ${project.builderName}`,
-                          project.projectTypeName,
-                          project.progressName,
-                        ]
-                          .filter(Boolean)
-                          .join(" • ")}
-                      </p>
-                      {project.tags.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {project.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                <div className="p-5 sm:p-7">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {project.progressName ? (
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold shadow-clay-sm",
+                          progressTone(project.progressName)
+                        )}
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
+                        {project.progressName}
+                      </span>
+                    ) : null}
+                    {project.projectTypeName ? (
+                      <span className="rounded-full bg-clay-well px-3 py-1 text-xs font-semibold text-zinc-700 shadow-clay-inset">
+                        {project.projectTypeName}
+                      </span>
+                    ) : null}
+                    <VerifiedListingBadge />
+                  </div>
+
+                  <h1 className="mt-4 text-2xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-3xl">
+                    {project.name}
+                  </h1>
+                  <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-500">
+                    {(project.areaNames ?? project.area) ? (
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="h-4 w-4 text-brand-accent" aria-hidden />
+                        {project.areaNames ?? project.area}
+                      </span>
+                    ) : null}
+                    {project.builderNames.length || project.builderName ? (
+                      <span>
+                        by{" "}
+                        <span className="font-medium text-zinc-700">
+                          {project.builderNames.length
+                            ? project.builderNames.join(", ")
+                            : project.builderName}
+                        </span>
+                      </span>
+                    ) : null}
+                    {project.ratingCount > 0 ? (
+                      <span className="inline-flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
+                        <span className="font-semibold text-zinc-800">
+                          {project.ratingAverage.toFixed(1)}
+                        </span>
+                        ({project.ratingCount})
+                      </span>
+                    ) : null}
+                  </p>
+                  {project.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {project.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-clay-well px-2.5 py-0.5 text-xs font-medium text-zinc-600 shadow-clay-inset"
+                        >
+                          {tag}
+                        </span>
+                      ))}
                     </div>
+                  )}
+
+                  <div className="mt-5">
                     <ProjectDetailActions
                       projectId={project.id}
                       slug={project.slug}
@@ -176,64 +258,37 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                     />
                   </div>
 
-                  <div className="mt-4 rounded-xl bg-zinc-50 p-4">
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                    <div>
-                      <p className="text-xs text-zinc-500">Price from</p>
-                      <p className="font-bold text-zinc-900">
-                        {project.minPrice
-                          ? formatPrice(project.minPrice)
-                          : "On request"}
-                      </p>
-                    </div>
+                  <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    <KeyFact
+                      icon={Banknote}
+                      label="Price from"
+                      value={project.minPrice ? formatPrice(project.minPrice) : "On request"}
+                      highlight
+                    />
                     {(project.handoverQuarter ?? project.handoverLabel) ? (
-                      <div>
-                        <p className="text-xs text-zinc-500">Handover</p>
-                        <p className="font-semibold text-zinc-900">
-                          {project.handoverQuarter ?? project.handoverLabel}
-                        </p>
-                      </div>
+                      <KeyFact
+                        icon={CalendarClock}
+                        label="Handover"
+                        value={(project.handoverQuarter ?? project.handoverLabel) as string}
+                      />
                     ) : null}
                     {(project.areaNames ?? project.area) ? (
-                      <div>
-                        <p className="text-xs text-zinc-500">Area</p>
-                        <p className="font-semibold text-zinc-900">
-                          {project.areaNames ?? project.area}
-                        </p>
-                      </div>
+                      <KeyFact
+                        icon={MapPin}
+                        label="Area"
+                        value={(project.areaNames ?? project.area) as string}
+                      />
                     ) : null}
-                    {project.progressName ? (
-                      <div>
-                        <p className="text-xs text-zinc-500">Progress</p>
-                        <p className="font-semibold text-zinc-900">
-                          {project.progressName}
-                        </p>
-                      </div>
+                    {project.projectTypeName ? (
+                      <KeyFact icon={Building2} label="Type" value={project.projectTypeName} />
                     ) : null}
-                  </div>
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200/80 pt-4">
-                    {project.ratingCount > 0 ? (
-                      <div className="min-w-0">
-                        <p className="text-xs text-zinc-500">Rating</p>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span className="font-semibold text-zinc-900">
-                            {project.ratingAverage.toFixed(1)}
-                          </span>
-                          <span className="text-xs text-zinc-500">
-                            ({project.ratingCount})
-                          </span>
-                        </div>
-                      </div>
-                    ) : null}
-                    <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
-                      <VerifiedListingBadge />
-                      {project.marketedBy ? (
-                        <MarketedByBadge label={project.marketedBy} size="sm" />
-                      ) : null}
+                  </dl>
+
+                  {project.marketedBy ? (
+                    <div className="mt-4 flex justify-end">
+                      <MarketedByBadge label={project.marketedBy} size="sm" />
                     </div>
-                  </div>
-                  </div>
+                  ) : null}
 
                   <ProjectGeoSummary
                     name={project.name}
@@ -253,7 +308,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               {project.details?.trim() ? (
                 <SanitizedHtml
                   html={project.details}
-                  className="prose prose-sm max-w-none rounded-2xl border border-zinc-200 bg-white p-6 text-zinc-600"
+                  className={cn(designTw.publicCard, "prose prose-sm max-w-none p-6 text-zinc-600 sm:p-7")}
                 />
               ) : null}
 

@@ -60,7 +60,7 @@ export function AdminIconPicker({
           type="button"
           onClick={() => setOpen((o) => !o)}
           className={cn(
-            "flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-left text-sm hover:border-zinc-300 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-200",
+            "flex w-full items-center justify-between gap-2 rounded-xl border border-transparent bg-clay-well px-3.5 py-2 text-left shadow-clay-inset text-sm hover:border-zinc-300 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-200",
             !value ? "text-zinc-400" : "text-zinc-800"
           )}
           aria-expanded={open}
@@ -84,7 +84,7 @@ export function AdminIconPicker({
         {open && (
           <div
             id={listId}
-            className="absolute z-50 mt-1 w-full rounded-lg border border-zinc-200 bg-white shadow-lg"
+            className="absolute z-50 mt-1 w-full rounded-2xl border border-white/80 bg-clay-surface shadow-clay"
           >
             <div className="border-b border-zinc-100 p-2">
               <input

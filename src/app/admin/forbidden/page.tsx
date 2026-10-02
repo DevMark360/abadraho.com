@@ -7,7 +7,7 @@ export default function AdminForbiddenPage() {
     <div
       className={`flex min-h-screen flex-col items-center justify-center px-4 ${designTw.pageCanvas}`}
     >
-      <div className="max-w-md rounded-xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
+      <div className="max-w-md rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay p-8 text-center shadow-sm">
         <h1 className="text-xl font-semibold text-zinc-900">Access not allowed</h1>
         <p className="mt-3 text-sm text-zinc-600">
           Your account does not have permission to use this part of the admin panel.

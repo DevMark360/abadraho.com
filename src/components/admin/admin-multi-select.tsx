@@ -100,7 +100,7 @@ export function AdminMultiSelect({
       <div
         id={listId}
         role="listbox"
-        className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl"
+        className="overflow-hidden rounded-2xl border border-white/80 bg-clay-surface shadow-clay"
         style={{
           position: "fixed",
           top: panelPos.top,
@@ -131,7 +131,7 @@ export function AdminMultiSelect({
             filtered.map((o) => (
               <label
                 key={o.value}
-                className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50"
+                className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-clay-well"
               >
                 <input
                   type="checkbox"
@@ -156,7 +156,7 @@ export function AdminMultiSelect({
         type="button"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-left text-sm hover:border-zinc-300 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-200",
+          "flex w-full items-center justify-between gap-2 rounded-xl border border-transparent bg-clay-well px-3.5 py-2 text-left shadow-clay-inset text-sm hover:border-zinc-300 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-200",
           selectedLabels.length === 0 ? "text-zinc-400" : "text-zinc-800"
         )}
         aria-expanded={open}

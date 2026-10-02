@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 import { designTokens } from "./src/config/design-tokens";
 
-const { brand, surface, sponsor } = designTokens;
+const { brand, surface, sponsor, clay } = designTokens;
 
 const config: Config = {
   darkMode: ["class"],
@@ -23,6 +23,12 @@ const config: Config = {
           secondary: surface.secondary,
           border: surface.border,
         },
+        clay: {
+          canvas: clay.canvas,
+          surface: clay.surface,
+          well: clay.well,
+          line: clay.line,
+        },
         sponsor: {
           DEFAULT: sponsor.DEFAULT,
           ink: sponsor.ink,
@@ -33,6 +39,13 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
+      /* Claymorphism — soft, puffy surfaces: big radii, a warm tinted canvas, and paired
+         outer (lift) + inner (highlight/shade) shadows. Values live in design-tokens.ts. */
+      borderRadius: {
+        clay: clay.radius,
+        "clay-lg": clay.radiusLg,
+      },
+      boxShadow: { ...clay.shadow },
     },
   },
   plugins: [require("@tailwindcss/typography")],

@@ -108,7 +108,7 @@ export function AdminSelect({
       <div
         id={listId}
         role="listbox"
-        className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-xl"
+        className="overflow-hidden rounded-2xl border border-white/80 bg-clay-surface shadow-clay"
         style={{
           position: "fixed",
           top: panelPos.top,
@@ -142,7 +142,7 @@ export function AdminSelect({
                 aria-selected={o.value === value}
                 onClick={() => pick(o.value)}
                 className={cn(
-                  "flex w-full px-3 py-2 text-left text-sm hover:bg-zinc-50",
+                  "flex w-full px-3 py-2 text-left text-sm hover:bg-clay-well",
                   o.value === value ? "bg-zinc-100 font-medium text-zinc-900" : "text-zinc-800"
                 )}
               >

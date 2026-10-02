@@ -81,7 +81,7 @@ export function ProjectFeatures({
 
   return (
     <section
-      className="rounded-2xl border border-zinc-200 bg-white p-6"
+      className="rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay p-6"
       aria-labelledby="project-features-heading"
     >
       <div className="mb-5">

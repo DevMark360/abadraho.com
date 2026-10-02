@@ -44,7 +44,7 @@ export function AdminAttentionPanel() {
 
   if (items === null) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4">
         <p className="text-sm text-zinc-400">Checking pending items…</p>
       </div>
     );
@@ -53,7 +53,7 @@ export function AdminAttentionPanel() {
   const total = items.reduce((s, i) => s + i.count, 0);
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white">
+    <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm">
       <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-4 py-2.5">
         <div>
           <h2 className="text-xs font-semibold text-zinc-900">Needs your attention</h2>

@@ -129,7 +129,7 @@ export function AdminChangePasswordClient({ embedded = false }: { embedded?: boo
       {!embedded ? <AdminBackLink href="/admin/admin-profile">Edit profile</AdminBackLink> : null}
 
       {!embedded ? (
-        <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+        <div className="relative overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
           <div className="h-20 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-700" aria-hidden />
           <div className="flex items-end gap-4 px-5 pb-5 sm:px-6">
             <div className="-mt-8 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-zinc-900 text-white shadow-md">

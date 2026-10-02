@@ -165,13 +165,13 @@ export function AdminSidebar({ collapsible = false }: { collapsible?: boolean })
   return (
     <aside
       className={cn(
-        "flex h-full w-full shrink-0 flex-col overflow-hidden border-r border-zinc-200 bg-white",
+        designTw.sidebarPanel,
         collapsed ? "items-center" : ""
       )}
     >
       <div
         className={cn(
-          "flex w-full shrink-0 items-center border-b border-zinc-100",
+          "flex w-full shrink-0 items-center border-b border-clay-line",
           collapsed ? "justify-center px-2 py-3" : "gap-2 px-3 py-3"
         )}
       >
@@ -186,7 +186,7 @@ export function AdminSidebar({ collapsible = false }: { collapsible?: boolean })
       </div>
 
       {!collapsed ? (
-        <div className="border-b border-zinc-100 px-4 py-3">
+        <div className="border-b border-clay-line px-4 py-3">
           <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">
             {adminPortalLabel(portalRole)}
           </p>
@@ -295,7 +295,7 @@ export function AdminSidebar({ collapsible = false }: { collapsible?: boolean })
 
       <div
         className={cn(
-          "w-full shrink-0 border-t border-zinc-100",
+          "w-full shrink-0 border-t border-clay-line",
           collapsed ? "space-y-2 px-2 py-3" : "space-y-3 p-3"
         )}
       >

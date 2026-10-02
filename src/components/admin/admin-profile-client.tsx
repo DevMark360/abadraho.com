@@ -104,7 +104,7 @@ function ProfileHero({
   const displaySrc = preview ?? imageUrl ?? PLACEHOLDER_AVATAR;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+    <div className="relative overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
       <div className="h-24 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-700" aria-hidden />
       <div className="px-5 pb-5 sm:px-6">
         <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

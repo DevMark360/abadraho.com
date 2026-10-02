@@ -111,7 +111,7 @@ export function PaymentScheduleSection({
   return (
     <form
       onSubmit={calculate}
-      className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+      className="overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay"
     >
       <div className="border-b border-zinc-100 bg-gradient-to-r from-zinc-900 to-zinc-700 px-5 py-4 text-white">
         <div className="flex items-center gap-2">

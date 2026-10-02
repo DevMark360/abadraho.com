@@ -304,7 +304,7 @@ export function ProjectUnitsSection({
   return (
     <section
       ref={sectionRef}
-      className="overflow-hidden rounded-2xl border border-zinc-200 bg-white"
+      className="overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay"
     >
       {/* Unit type tabs — legacy style */}
       <div className="border-b border-zinc-200 bg-zinc-50/50">

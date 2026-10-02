@@ -33,7 +33,7 @@ export function AdminUserMenu() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+        className="inline-flex items-center gap-2 rounded-2xl border border-white/80 bg-clay-surface px-3 py-2 text-sm font-medium shadow-clay-sm text-zinc-700 hover:bg-zinc-50"
         aria-expanded={open}
         aria-haspopup="menu"
       >
@@ -47,7 +47,7 @@ export function AdminUserMenu() {
       {open && (
         <ul
           role="menu"
-          className="absolute right-0 z-50 mt-2 min-w-[11rem] rounded-lg border border-zinc-200 bg-white py-1 text-sm shadow-lg"
+          className="absolute right-0 z-50 mt-2 min-w-[11rem] rounded-2xl border border-white/80 bg-clay-surface py-1 text-sm shadow-clay"
         >
           <li>
             <Link

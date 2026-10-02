@@ -4,7 +4,7 @@
 
 :root {
   /* Sync with src/config/design-tokens.ts */
-  --background: #fafafa;
+  --background: #e9edf2;
   --foreground: #18181b;
   --brand-primary: #18181b;
   --brand-primary-foreground: #ffffff;

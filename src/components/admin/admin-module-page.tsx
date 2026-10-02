@@ -11,7 +11,7 @@ interface AdminModulePageProps {
 export function AdminModulePage({ title, description }: AdminModulePageProps) {
   return (
     <AdminShell title={title}>
-      <div className="max-w-2xl rounded-2xl border border-zinc-200 bg-white p-6">
+      <div className="max-w-2xl rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay p-6">
         <p className="text-zinc-600">{description}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Button asChild>

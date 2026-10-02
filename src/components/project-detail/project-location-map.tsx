@@ -119,7 +119,7 @@ export function ProjectLocationMap({
   if (!hasCoords && !address && !area) return null;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+    <section className="overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
       <div className="border-b border-zinc-100 bg-zinc-50/80 px-5 py-4">
         <h2 className="text-lg font-semibold text-zinc-900">Location</h2>
       </div>

@@ -132,7 +132,7 @@ export function AdminResourceClient({
 
       {error && !items.length && <AdminDbAlert message={error} />}
 
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+      <div className="overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>

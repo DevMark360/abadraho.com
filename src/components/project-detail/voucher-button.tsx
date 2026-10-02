@@ -59,7 +59,7 @@ export function VoucherButton({
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+    <div className="rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay p-4">
       <Button
         type="button"
         variant="outline"

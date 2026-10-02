@@ -29,7 +29,7 @@ export function ProjectDetailActions({
   );
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
       <Button
         type="button"
         variant="outline"
@@ -37,7 +37,7 @@ export function ProjectDetailActions({
         onClick={() => void toggleWishlist(projectId, slug)}
       >
         <Heart className={`h-4 w-4 ${wished ? "fill-rose-500 text-rose-500" : ""}`} />
-        Wishlist
+        {wished ? "Saved" : "Wishlist"}
       </Button>
       <Button
         type="button"
@@ -52,15 +52,18 @@ export function ProjectDetailActions({
           }
         }}
       >
-        <GitCompare className="h-4 w-4" />
+        <GitCompare className={`h-4 w-4 ${compared ? "text-brand-accent" : ""}`} />
         {compared ? "In compare" : "Compare"}
       </Button>
-      <Link href="/compare">
-        <Button variant="secondary" size="sm">
-          View compare
-        </Button>
-      </Link>
       <SocialShareButtons projectName={projectName} slug={slug} />
+      {compared ? (
+        <Link
+          href="/compare"
+          className="col-span-3 inline-flex min-h-[44px] items-center justify-center px-1 text-sm font-semibold text-brand-accent hover:underline sm:col-span-1"
+        >
+          Open compare →
+        </Link>
+      ) : null}
     </div>
   );
 }

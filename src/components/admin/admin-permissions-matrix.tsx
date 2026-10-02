@@ -48,7 +48,7 @@ export function AdminPermissionsMatrix({ value, onChange, disabled }: Props) {
   return (
     <div className="space-y-6">
       {ADMIN_PERMISSION_GROUPS.map((group) => (
-        <div key={group.key} className="rounded-xl border border-zinc-200 bg-white">
+        <div key={group.key} className="rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
           <div className="border-b border-zinc-100 bg-zinc-50 px-4 py-2.5">
             <h3 className="text-sm font-semibold text-zinc-800">{group.label}</h3>
           </div>

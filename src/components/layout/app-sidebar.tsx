@@ -66,13 +66,13 @@ export function AppSidebar({ collapsible = false }: { collapsible?: boolean }) {
   return (
     <aside
       className={cn(
-        "flex h-full w-full shrink-0 flex-col border-r border-zinc-200 bg-white",
+        designTw.sidebarPanel,
         collapsed ? "items-center" : ""
       )}
     >
       <div
         className={cn(
-          "flex w-full shrink-0 items-center border-b border-zinc-100",
+          "flex w-full shrink-0 items-center border-b border-clay-line",
           collapsed ? "justify-center px-2 py-3" : "gap-2 px-3 py-3"
         )}
       >
@@ -129,7 +129,7 @@ export function AppSidebar({ collapsible = false }: { collapsible?: boolean }) {
 
       <div
         className={cn(
-          "w-full shrink-0 space-y-2 border-t border-zinc-100",
+          "w-full shrink-0 space-y-2 border-t border-clay-line",
           collapsed ? "px-2 py-3" : "space-y-3 p-3"
         )}
       >

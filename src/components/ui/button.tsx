@@ -4,22 +4,25 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 disabled:pointer-events-none disabled:opacity-50",
+  // Clay: raised buttons press "into" the surface on click (inset shadow + no lift).
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl [&_svg]:shrink-0 text-sm font-semibold transition-[background-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-clay-canvas active:translate-y-px disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-brand text-brand-foreground hover:bg-brand-dark",
-        accent: "bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent-hover",
+        default:
+          "bg-gradient-to-b from-zinc-700 to-zinc-900 text-brand-foreground shadow-clay-btn hover:-translate-y-px hover:from-zinc-600 hover:to-zinc-900 active:shadow-clay-pressed",
+        accent:
+          "bg-gradient-to-b from-[#f5464d] to-brand-accent text-brand-accent-foreground shadow-clay-btn-accent hover:-translate-y-px hover:from-[#f75a60] hover:to-brand-accent-hover active:shadow-clay-pressed",
         secondary:
-          "bg-zinc-100 text-zinc-900 hover:bg-zinc-200",
-        ghost: "hover:bg-zinc-100 text-zinc-700",
+          "bg-clay-well text-zinc-900 shadow-clay-sm hover:bg-clay-surface active:shadow-clay-inset",
+        ghost: "text-zinc-700 hover:bg-clay-well",
         outline:
-          "border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800",
+          "border border-white/80 bg-clay-surface text-zinc-800 shadow-clay-sm hover:-translate-y-px hover:shadow-clay active:shadow-clay-inset",
       },
       size: {
-        default: "h-11 min-h-[44px] px-4 py-2",
-        sm: "h-9 min-h-[44px] rounded-md px-3 text-sm md:text-xs",
-        lg: "h-11 min-h-[44px] rounded-lg px-6",
+        default: "h-11 min-h-[44px] px-5 py-2",
+        sm: "h-9 min-h-[44px] rounded-xl px-3.5 text-sm md:text-xs",
+        lg: "h-12 min-h-[44px] px-7 text-base",
         icon: "h-11 w-11 min-h-[44px] min-w-[44px]",
       },
     },

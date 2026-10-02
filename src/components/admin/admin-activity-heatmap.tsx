@@ -29,7 +29,7 @@ export function AdminActivityHeatmap() {
 
   if (days === null) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4">
         <p className="text-sm text-zinc-400">Loading activity…</p>
       </div>
     );
@@ -37,7 +37,7 @@ export function AdminActivityHeatmap() {
 
   if (days.length === 0) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4">
         <h2 className="text-sm font-semibold text-zinc-900">Yearly activity</h2>
         <p className="mt-2 text-sm text-zinc-400">No activity data yet.</p>
       </div>
@@ -70,7 +70,7 @@ export function AdminActivityHeatmap() {
   });
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4">
+    <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4">
       <div className="flex items-baseline justify-between">
         <div>
           <h2 className="text-sm font-semibold text-zinc-900">Yearly activity</h2>

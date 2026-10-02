@@ -45,7 +45,7 @@ export function AdminRecentActivityFeed() {
   }, []);
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white">
+    <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm">
       <div className="border-b border-zinc-100 px-4 py-2.5">
         <h2 className="text-xs font-semibold text-zinc-900">Recent activity</h2>
         <p className="mt-0.5 text-[11px] text-zinc-400">Live across the platform</p>

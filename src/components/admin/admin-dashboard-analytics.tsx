@@ -49,7 +49,7 @@ export function AdminDashboardAnalytics({ isBuilder }: { isBuilder: boolean }) {
 
   if (isBuilder) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4">
         <h2 className="text-sm font-semibold text-zinc-900">New projects</h2>
         <p className="mt-0.5 text-xs text-zinc-500">Projects added over time</p>
         {loading || !data ? (
@@ -89,7 +89,7 @@ export function AdminDashboardAnalytics({ isBuilder }: { isBuilder: boolean }) {
   }
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4">
+    <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-zinc-900">Analytics</h2>

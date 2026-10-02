@@ -11,7 +11,7 @@ export function AdminLegacyFallback({
 }) {
   return (
     <AdminShell title={title}>
-      <div className="max-w-2xl rounded-2xl border border-zinc-200 bg-white p-6">
+      <div className="max-w-2xl rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay p-6">
         <p className="text-zinc-600">{description}</p>
         <p className="mt-3 text-sm text-zinc-500">
           This section is not available in the workspace yet. Contact support if you need help

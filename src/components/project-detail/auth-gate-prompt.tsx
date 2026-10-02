@@ -23,12 +23,11 @@ export function AuthGatePrompt({
       className={cn(
         "px-6 py-8 text-center",
         variant === "card"
-          ? "rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/80"
-          : "bg-zinc-50/80"
+          ? "rounded-clay-lg bg-clay-well shadow-clay-inset"
+          : "bg-clay-well"
       )}
-    >      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
-        <Lock className="h-5 w-5 text-zinc-400" />
-      </div>
+    >
+      <Lock className="mx-auto h-6 w-6 text-brand-accent" aria-hidden />
       <p className="mt-4 text-sm font-medium text-zinc-900">{title}</p>
       {description ? (
         <p className="mx-auto mt-1 max-w-md text-sm text-zinc-500">{description}</p>

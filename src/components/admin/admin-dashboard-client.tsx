@@ -62,7 +62,7 @@ function StatCardLink({
   return (
     <Link
       href={card.href as Route}
-      className="group flex flex-col justify-between rounded-lg border border-zinc-200 bg-white p-3.5 transition hover:border-zinc-300 hover:shadow-sm"
+      className="group flex flex-col justify-between rounded-clay border border-white/80 bg-clay-surface p-3.5 shadow-clay-sm transition-shadow hover:shadow-clay"
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
@@ -182,7 +182,7 @@ export function AdminDashboardClient() {
       </div>
 
       {isBuilder && (
-        <p className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
+        <p className="rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay px-4 py-3 text-sm text-zinc-600">
           Yeh wahi projects hain jo abadraho.com par dikhenge.
         </p>
       )}

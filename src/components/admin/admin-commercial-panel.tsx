@@ -45,7 +45,7 @@ export function AdminCommercialPanel() {
       <div className="grid gap-3 lg:grid-cols-3">
         <Link
           href="/admin/ad-wallet-transactions"
-          className="rounded-lg border border-zinc-200 bg-white p-3.5 transition hover:border-zinc-300 hover:shadow-sm"
+          className="rounded-clay border border-white/80 bg-clay-surface p-3.5 shadow-clay-sm transition-shadow hover:shadow-clay"
         >
           <p className="text-[11px] text-zinc-400">Builder wallet balance</p>
           {snapshot == null ? (
@@ -67,7 +67,7 @@ export function AdminCommercialPanel() {
 
         <Link
           href="/admin/ad-campaigns"
-          className="rounded-lg border border-zinc-200 bg-white p-3.5 transition hover:border-zinc-300 hover:shadow-sm"
+          className="rounded-clay border border-white/80 bg-clay-surface p-3.5 shadow-clay-sm transition-shadow hover:shadow-clay"
         >
           <p className="text-[11px] text-zinc-400">Campaign distribution</p>
           <div className="mt-1.5 flex items-center gap-3">
@@ -108,7 +108,7 @@ export function AdminCommercialPanel() {
 
         <Link
           href="/admin/commissions"
-          className="rounded-lg border border-zinc-200 bg-white p-3.5 transition hover:border-zinc-300 hover:shadow-sm"
+          className="rounded-clay border border-white/80 bg-clay-surface p-3.5 shadow-clay-sm transition-shadow hover:shadow-clay"
         >
           <div className="flex items-center justify-between">
             <p className="text-[11px] text-zinc-400">Broker commissions this month</p>
@@ -126,7 +126,7 @@ export function AdminCommercialPanel() {
         </Link>
       </div>
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4">
         <h3 className="text-xs font-semibold text-zinc-900">Ad spend, last 30 days</h3>
         <p className="mt-0.5 text-[11px] text-zinc-400">Daily spend across all campaigns — hover for a day&apos;s value</p>
         <div className="mt-2">

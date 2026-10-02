@@ -14,7 +14,7 @@ export function ProjectMediaSection({
   if (!hasVideo) return null;
 
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-6">
+    <section className="rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay p-6">
       <h2 className="mb-4 text-lg font-semibold text-zinc-900">Property video</h2>
 
       {projectVideoEmbed && (

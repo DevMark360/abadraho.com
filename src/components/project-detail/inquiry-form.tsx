@@ -2,12 +2,35 @@
 
 import { useMemo, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/client/api-fetch";
 import { trackActivity } from "@/lib/client/activity-log";
 import { HONEYPOT_FIELD, rateLimitUserMessage } from "@/lib/form-spam";
 import { authFormDefaults } from "@/lib/form-user-defaults";
 import type { ProjectUnit } from "@/types/project-detail";
+
+function Field({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-semibold text-zinc-700">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
 
 interface InquiryFormProps {
   projectId: number;
@@ -95,7 +118,7 @@ export function InquiryForm({ projectId, units }: InquiryFormProps) {
     <form
       key={`inquiry-${user?.id ?? "guest"}-${formKey}`}
       onSubmit={onSubmit}
-      className="relative space-y-3 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm lg:shadow-md"
+      className="relative space-y-3.5 rounded-clay-lg border border-white/80 bg-clay-surface p-5 shadow-clay sm:p-6"
     >
       <input type="hidden" name="project_id" value={projectId} />
       {/* Honeypot — hidden from users, bots often fill it */}
@@ -109,70 +132,89 @@ export function InquiryForm({ projectId, units }: InquiryFormProps) {
         className="pointer-events-none absolute -left-[9999px] h-0 w-0 opacity-0"
       />
       <div>
-        <h3 className="font-semibold text-zinc-900">Submit Your Inquiry</h3>
-        {user && !authLoading ? (
-          <p className="mt-1 text-xs text-zinc-500">Contact details pre-filled from your account</p>
-        ) : null}
+        <h2 className="text-lg font-bold tracking-tight text-zinc-900">Interested in this project?</h2>
+        <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+          {user && !authLoading
+            ? "Your contact details are pre-filled from your account."
+            : "Send your details and a Mark Properties advisor will get back to you."}
+        </p>
       </div>
       {units.length > 0 && (
-        <div>
-          <label className="text-xs font-medium text-zinc-600">Unit</label>
-          <select
-            name="unit_id"
-            required
-            className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
-            defaultValue={units[0]?.id}
-          >
-            {units.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.title ?? u.name ?? `Unit #${u.id}`}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Field label="Unit" htmlFor={`inq-unit-${projectId}`}>
+          <div className="relative">
+            <Select
+              id={`inq-unit-${projectId}`}
+              name="unit_id"
+              required
+              defaultValue={units[0]?.id}
+              className="appearance-none pr-10"
+            >
+              {units.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.title ?? u.name ?? `Unit #${u.id}`}
+                </option>
+              ))}
+            </Select>
+            <ChevronDown
+              className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+              aria-hidden
+            />
+          </div>
+        </Field>
       )}
-      <input
-        name="name"
-        required
-        placeholder="Name"
-        defaultValue={defaults.name}
-        autoComplete="name"
-        className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
-      />
-      <input
-        name="email"
-        type="email"
-        required
-        placeholder="Email"
-        defaultValue={defaults.email}
-        autoComplete="email"
-        className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
-      />
-      <input
-        name="phone_number"
-        required
-        placeholder="Phone (11+ digits)"
-        defaultValue={defaults.phone}
-        autoComplete="tel"
-        className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
-      />
-      <input
-        name="address"
-        required
-        placeholder="Address"
-        defaultValue={defaults.address}
-        autoComplete="street-address"
-        className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
-      />
-      <textarea
-        name="message"
-        required
-        rows={3}
-        placeholder="Message"
-        className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm"
-      />
-      <Button type="submit" className="w-full" disabled={status === "loading"}>
-        {status === "loading" ? "Sending…" : "Submit inquiry"}
+      <Field label="Full name" htmlFor={`inq-name-${projectId}`}>
+        <Input
+          id={`inq-name-${projectId}`}
+          name="name"
+          required
+          defaultValue={defaults.name}
+          autoComplete="name"
+        />
+      </Field>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <Field label="Phone" htmlFor={`inq-phone-${projectId}`}>
+          <Input
+            id={`inq-phone-${projectId}`}
+            name="phone_number"
+            type="tel"
+            inputMode="tel"
+            required
+            placeholder="03XX XXXXXXX"
+            defaultValue={defaults.phone}
+            autoComplete="tel"
+          />
+        </Field>
+        <Field label="Email" htmlFor={`inq-email-${projectId}`}>
+          <Input
+            id={`inq-email-${projectId}`}
+            name="email"
+            type="email"
+            required
+            defaultValue={defaults.email}
+            autoComplete="email"
+          />
+        </Field>
+      </div>
+      <Field label="City / address" htmlFor={`inq-address-${projectId}`}>
+        <Input
+          id={`inq-address-${projectId}`}
+          name="address"
+          required
+          defaultValue={defaults.address}
+          autoComplete="street-address"
+        />
+      </Field>
+      <Field label="Message" htmlFor={`inq-message-${projectId}`}>
+        <Textarea
+          id={`inq-message-${projectId}`}
+          name="message"
+          required
+          rows={3}
+          placeholder="e.g. Please share the payment plan for a 2-bed unit"
+        />
+      </Field>
+      <Button type="submit" variant="accent" size="lg" className="w-full" disabled={status === "loading"}>
+        {status === "loading" ? "Sending…" : "Send inquiry"}
       </Button>
       {message ? (
         <p

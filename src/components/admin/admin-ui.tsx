@@ -16,15 +16,16 @@ export const adminSearchInput = inputInlineClass;
  * @deprecated Prefer `<Button>` from `@/components/ui/button`.
  */
 export const adminBtnPrimary =
-  "inline-flex items-center justify-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-b from-zinc-700 to-zinc-900 px-4 py-2 text-sm font-semibold text-brand-foreground shadow-clay-btn hover:from-zinc-600 disabled:opacity-50";
 
 /** @deprecated Prefer `<Button variant="outline">`. */
 export const adminBtnSecondary =
-  "inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5 rounded-2xl border border-white/80 bg-clay-surface px-4 py-2 text-sm font-semibold text-zinc-700 shadow-clay-sm hover:shadow-clay disabled:opacity-50";
 
-export const adminCard = "overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm";
+export const adminCard =
+  "overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay";
 
-export const adminPanel = "rounded-xl border border-zinc-200 bg-white shadow-sm";
+export const adminPanel = "rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay";
 
 /** Same `<th>` styling as public project units tables (`designTw.tableHead`). */
 export const adminTableHead = designTw.tableHead;

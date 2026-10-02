@@ -118,7 +118,7 @@ export function AdminFinanceClient() {
       </div>
 
       <div className="grid gap-3 lg:grid-cols-4">
-        <div className="rounded-lg border border-zinc-200 bg-white p-3.5">
+        <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-3.5">
           <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
             <Wallet className="h-3.5 w-3.5" /> Net available (collected − refunded)
           </div>
@@ -142,7 +142,7 @@ export function AdminFinanceClient() {
           </ul>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-3.5">
+        <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-3.5">
           <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
             <ArrowDownToLine className="h-3.5 w-3.5" /> Collected (confirmed top-ups)
           </div>
@@ -178,7 +178,7 @@ export function AdminFinanceClient() {
           )}
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-3.5">
+        <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-3.5">
           <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
             <ArrowUpFromLine className="h-3.5 w-3.5" /> Refunded to builders
           </div>
@@ -214,7 +214,7 @@ export function AdminFinanceClient() {
           )}
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-3.5">
+        <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-3.5">
           <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
             <CircleDollarSign className="h-3.5 w-3.5" /> Earned (spend recognized)
           </div>

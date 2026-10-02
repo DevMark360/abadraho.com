@@ -63,7 +63,7 @@ export function UnitRoomsSection({
   }
 
   return (
-    <section className="rounded-2xl border border-zinc-200 bg-white p-6">
+    <section className="rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-zinc-900">Unit room allocation</h2>
         {units.length > 1 && (
