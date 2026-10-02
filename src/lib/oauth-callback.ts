@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { attachSessionCookie } from "@/lib/auth";
 import { getPostLoginRedirect } from "@/lib/post-login-redirect";
 import { roleFromUserTypeId } from "@/lib/roles";
-import { OAUTH_STATE_COOKIE } from "@/lib/oauth";
+import { OAUTH_STATE_COOKIE, oauthPublicOrigin } from "@/lib/oauth";
 import { findOrCreateOAuthUser } from "@/server/services/auth.service";
 
 function oauthAppBase(request: NextRequest): string {
-  return request.nextUrl.origin.replace(/\/$/, "");
+  return oauthPublicOrigin(request.nextUrl.origin);
 }
 
 export async function handleOAuthCallback(

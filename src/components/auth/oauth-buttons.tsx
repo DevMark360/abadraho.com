@@ -17,9 +17,7 @@ export function OAuthButtons({ refPath }: { refPath?: string }) {
       <Button asChild variant="outline" className="w-full">
         <a href={`/auth/google${oauthRef}`}>Continue with Google</a>
       </Button>
-      <Button asChild variant="outline" className="w-full">
-        <a href={`/auth/facebook${oauthRef}`}>Continue with Facebook</a>
-      </Button>
+      {/* Facebook login hidden for now — /auth/facebook routes still exist; add the button back to re-enable. */}
     </div>
   );
 }

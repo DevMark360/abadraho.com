@@ -36,12 +36,23 @@ export function oauthRedirectUri(
   return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/** Use the browser origin so redirect_uri matches the site the user is on. */
+/**
+ * Public origin for OAuth redirect_uri and post-login redirects. In production this is
+ * AUTH_URL: behind cPanel's Apache/Passenger the request reaches Node as http:// (or an
+ * internal host), so the request origin didn't match the https URI registered with Google
+ * (redirect_uri_mismatch). Locally the browser origin is used so dev logins stay on localhost.
+ */
+export function oauthPublicOrigin(requestOrigin: string): string {
+  const configured = process.env.AUTH_URL?.trim();
+  const origin = process.env.NODE_ENV === "production" && configured ? configured : requestOrigin;
+  return origin.replace(/\/$/, "");
+}
+
 export function oauthRedirectUriFromRequest(
   provider: "google" | "facebook",
   requestOrigin: string
 ): string {
-  return oauthRedirectUri(provider, requestOrigin);
+  return oauthRedirectUri(provider, oauthPublicOrigin(requestOrigin));
 }
 
 export function googleAuthUrl(state: string, redirectUri: string): string | null {
