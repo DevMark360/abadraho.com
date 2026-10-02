@@ -93,7 +93,7 @@ export const designTw = {
     "bg-gradient-to-b from-zinc-700 to-zinc-900 text-brand-foreground shadow-clay-btn hover:from-zinc-600",
   /** Public marketing / content pages */
   publicContainer: "mx-auto w-full max-w-7xl px-4 sm:px-6",
-  publicSection: "py-10",
+  publicSection: "py-6 sm:py-8",
   /** Floating clay sidebar panel (public + staff shells) */
   sidebarPanel:
     "flex h-full w-full shrink-0 flex-col overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay",

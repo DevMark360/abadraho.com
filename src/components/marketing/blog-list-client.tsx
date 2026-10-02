@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { BlogPostCard } from "@/components/marketing/blog-post-card";
 import { BlogFeaturedPostCard } from "@/components/marketing/blog-featured-post-card";
 import type { BlogPostSummary } from "@/server/services/blog.service";
+import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
 
 export function BlogListClient({ posts }: { posts: BlogPostSummary[] }) {
@@ -35,15 +36,15 @@ export function BlogListClient({ posts }: { posts: BlogPostSummary[] }) {
   return (
     <>
       {categories.length > 1 ? (
-        <div className="mt-8 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-2.5">
           <button
             type="button"
             onClick={() => setActive(null)}
             className={cn(
-              "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+              "min-h-9 rounded-full px-4 py-1.5 text-xs font-semibold transition",
               active === null
-                ? "border-brand bg-brand text-brand-foreground"
-                : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300"
+                ? designTw.navActive
+                : "border border-white/80 bg-clay-surface text-zinc-700 shadow-clay-sm hover:shadow-clay"
             )}
           >
             All
@@ -54,10 +55,10 @@ export function BlogListClient({ posts }: { posts: BlogPostSummary[] }) {
               type="button"
               onClick={() => setActive(category)}
               className={cn(
-                "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+                "min-h-9 rounded-full px-4 py-1.5 text-xs font-semibold transition",
                 active === category
-                  ? "border-brand bg-brand text-brand-foreground"
-                  : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300"
+                  ? designTw.navActive
+                  : "border border-white/80 bg-clay-surface text-zinc-700 shadow-clay-sm hover:shadow-clay"
               )}
             >
               {category}

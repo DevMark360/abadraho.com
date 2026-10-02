@@ -4,7 +4,7 @@ import { Marquee } from "@/components/ui/marquee";
 
 function PartnerLogo({ src }: { src: string }) {
   return (
-    <div className="flex h-24 w-44 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md sm:h-28 sm:w-52">
+    <div className="flex h-24 w-44 shrink-0 items-center justify-center rounded-clay border border-white/80 bg-clay-surface p-5 shadow-clay-sm transition-shadow hover:shadow-clay sm:h-28 sm:w-52">
       <div className="relative h-full w-full opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0">
         <Image src={src} alt="" fill className="object-contain" unoptimized />
       </div>
@@ -20,7 +20,7 @@ export function PartnersRow({
   subtitle?: string;
 }) {
   return (
-    <section className="border-t border-zinc-200 bg-zinc-50 py-10 md:py-12">
+    <section className="py-8 md:py-10">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeadline
           before="Our"

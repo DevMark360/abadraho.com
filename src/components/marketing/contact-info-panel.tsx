@@ -1,70 +1,88 @@
-import { Clock, Mail, MessageCircle, Phone } from "lucide-react";
+import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { businessConfig } from "@/config/business";
 import { designTw } from "@/config/design-tokens";
+import { cn } from "@/lib/utils";
 
 const HOURS = "Mon–Sat, 10:00 AM – 7:00 PM PKT";
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.trim();
 
-export function ContactInfoPanel() {
+function InfoRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof Mail;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className={designTw.publicCard + " space-y-5 p-6"}>
-      <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Get in touch</h2>
-        <p className="mt-1 text-sm leading-relaxed text-zinc-600">
-          Mark Properties advisors respond to buyer inquiries, site visit requests, and
-          partnership questions.
-        </p>
+    <li className="flex gap-3">
+      <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand-accent" aria-hidden />
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">{label}</p>
+        <div className="mt-0.5 break-words text-sm font-medium text-zinc-800">{children}</div>
       </div>
-      <ul className="space-y-4 text-sm">
-        <li className="flex gap-3">
-          <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
-          <div>
-            <p className="font-medium text-zinc-900">Email</p>
-            <a
-              href={`mailto:${businessConfig.email}`}
-              className="text-zinc-600 hover:text-brand hover:underline"
-            >
-              {businessConfig.email}
-            </a>
-          </div>
-        </li>
+    </li>
+  );
+}
+
+export function ContactInfoPanel() {
+  const city = businessConfig.address.addressLocality;
+  return (
+    <div className={cn(designTw.publicCard, "flex h-full flex-col p-6 sm:p-7")}>
+      <h2 className="text-lg font-bold tracking-tight text-zinc-900">Talk to an advisor</h2>
+      <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
+        Mark Properties advisors help with project questions, site visits, payment plans, and
+        partnerships.
+      </p>
+
+      <div className="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
         {businessConfig.phone ? (
-          <li className="flex gap-3">
-            <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
-            <div>
-              <p className="font-medium text-zinc-900">Phone</p>
-              <a
-                href={`tel:${businessConfig.phone}`}
-                className="text-zinc-600 hover:text-brand hover:underline"
-              >
-                {businessConfig.phone}
-              </a>
-            </div>
-          </li>
+          <Button asChild>
+            <a href={`tel:${businessConfig.phone}`}>
+              <Phone className="h-4 w-4" aria-hidden />
+              Call us
+            </a>
+          </Button>
         ) : null}
         {WHATSAPP ? (
-          <li className="flex gap-3">
-            <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
-            <div>
-              <p className="font-medium text-zinc-900">WhatsApp</p>
-              <a
-                href={`https://wa.me/${WHATSAPP.replace(/\D/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-zinc-600 hover:text-brand hover:underline"
-              >
-                Chat on WhatsApp
-              </a>
-            </div>
-          </li>
+          <Button asChild variant="outline">
+            <a href={`https://wa.me/${WHATSAPP.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="h-4 w-4" aria-hidden />
+              WhatsApp
+            </a>
+          </Button>
         ) : null}
-        <li className="flex gap-3">
-          <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
-          <div>
-            <p className="font-medium text-zinc-900">Office hours</p>
-            <p className="text-zinc-600">{HOURS}</p>
-          </div>
-        </li>
+        <Button asChild variant="outline">
+          <a href={`mailto:${businessConfig.email}`}>
+            <Mail className="h-4 w-4" aria-hidden />
+            Email us
+          </a>
+        </Button>
+      </div>
+
+      <ul className={cn(designTw.clayWell, "mt-6 space-y-4 p-5")}>
+        <InfoRow icon={Mail} label="Email">
+          <a href={`mailto:${businessConfig.email}`} className="hover:text-brand-accent hover:underline">
+            {businessConfig.email}
+          </a>
+        </InfoRow>
+        {businessConfig.phone ? (
+          <InfoRow icon={Phone} label="Phone">
+            <a href={`tel:${businessConfig.phone}`} className="hover:text-brand-accent hover:underline">
+              {businessConfig.phone}
+            </a>
+          </InfoRow>
+        ) : null}
+        <InfoRow icon={Clock} label="Office hours">
+          {HOURS}
+        </InfoRow>
+        {city ? (
+          <InfoRow icon={MapPin} label="Based in">
+            {city}, Pakistan
+          </InfoRow>
+        ) : null}
       </ul>
     </div>
   );

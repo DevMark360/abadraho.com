@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import { Building2, MapPin, ShieldCheck } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { markPropertiesLabel, trustStats } from "@/config/trust-signals";
+import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
 
 export function MarkPropertiesBadge({
@@ -76,7 +77,7 @@ export function TrustStatsRow({
   return (
     <div
       className={cn(
-        "grid grid-cols-3 divide-x divide-zinc-200",
+        "grid grid-cols-3 divide-x divide-clay-line",
         compact ? "text-sm" : "text-base",
         className
       )}
@@ -101,10 +102,11 @@ export function TrustStatsRow({
 
 export function SiteTrustFooter() {
   return (
-    <footer className="border-t border-zinc-200 bg-zinc-50">
-      <div className="mx-auto max-w-6xl px-4 py-10">
+    <footer className={cn(designTw.publicContainer, "pb-24 pt-2")}>
+      {/* pb-24 keeps the floating Support button from covering footer links */}
+      <div className={cn(designTw.publicCard, "px-5 py-8 sm:px-8")}>
         <TrustStatsRow compact className="mb-8" />
-        <div className="flex flex-col gap-6 border-t border-zinc-200 pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-6 border-t border-clay-line pt-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <MarkPropertiesBadge size="md" />
             <p className="flex items-center gap-1.5 text-xs text-zinc-500">

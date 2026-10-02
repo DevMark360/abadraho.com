@@ -1,7 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, ChevronRight, MapPin, PartyPopper } from "lucide-react";
-import { PublicPage, PublicPageBody } from "@/components/layout/public-page-layout";
+import { CalendarDays, MapPin, PartyPopper } from "lucide-react";
+import {
+  PublicPage,
+  PublicPageBody,
+  PublicPageHeader,
+} from "@/components/layout/public-page-layout";
+import { Button } from "@/components/ui/button";
 import { listPublicEvents } from "@/server/services/event.service";
 import { eventTypeLabel, isEventType } from "@/lib/event-status";
 import { buildPageMetadata } from "@/lib/seo";
@@ -28,35 +33,39 @@ export default async function EventsPage() {
 
   return (
     <PublicPage>
-      <div className="border-b border-zinc-200 bg-white">
-        <div className={cn(designTw.publicContainer, "py-4")}>
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-zinc-500">
-            <Link href="/" className="hover:text-zinc-900">
-              Home
-            </Link>
-            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-zinc-300" aria-hidden />
-            <span className="font-medium text-zinc-900">Events</span>
-          </nav>
-        </div>
-      </div>
+      <PublicPageHeader
+        title="Events"
+        subtitle="Project launches, open houses, and site visits from builders on AbadRaho."
+        crumbs={[
+          { label: "Home", href: "/" },
+          { label: "Events" },
+        ]}
+      />
 
       <PublicPageBody>
         {events.length === 0 ? (
-          <div className="flex flex-col items-center rounded-2xl border border-zinc-200 bg-white px-6 py-16 text-center shadow-sm">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100">
-              <PartyPopper className="h-7 w-7 text-zinc-400" aria-hidden />
-            </div>
-            <h2 className="mt-4 text-base font-semibold text-zinc-900">No events yet</h2>
-            <p className="mt-2 max-w-sm text-sm text-zinc-500">
-              Check back soon — builders regularly announce launches and open houses here.
+          <div className={cn(designTw.publicCard, "flex flex-col items-center px-6 py-14 text-center")}>
+            <PartyPopper className="h-8 w-8 text-brand-accent" aria-hidden />
+            <h2 className="mt-4 text-lg font-semibold text-zinc-900">No upcoming events right now</h2>
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
+              Builders announce launches and open houses here. Meanwhile, browse live projects or
+              ask our advisors about upcoming launches.
             </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Button asChild>
+                <Link href="/projects">Browse projects</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/contact">Ask an advisor</Link>
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6">
             {events.map((event) => (
               <article
                 key={event.id}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 ease-in-out hover:border-zinc-300 hover:shadow-md"
+                className="group relative flex flex-col overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-clay-hover"
               >
                 <Link href={`/events/${event.slug}`} className="flex flex-1 flex-col">
                   <div className="relative aspect-video overflow-hidden bg-zinc-100">

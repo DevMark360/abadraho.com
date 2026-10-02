@@ -8,6 +8,7 @@ import {
   PublicPageHeader,
 } from "@/components/layout/public-page-layout";
 import { designTw } from "@/config/design-tokens";
+import { cn } from "@/lib/utils";
 import { aboutContent, partnerLogos } from "@/config/marketing";
 import { geoContent } from "@/config/geo-content";
 import { Handshake, Eye, ArrowRight } from "lucide-react";
@@ -42,17 +43,19 @@ export default function AboutUsPage() {
       <FaqSchema items={geoContent.about.intents} />
       <PublicPageHeader
         title="About AbadRaho & Mark Properties"
+        subtitle="Pakistan's off-plan property platform, run by the Mark Properties advisory team in Karachi."
         crumbs={[
           { label: "Home", href: "/" },
           { label: "About us" },
         ]}
-      />
+      >
+        <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <MarkPropertiesBadge size="md" />
+          <TrustStatsRow compact className="w-full sm:w-auto" />
+        </div>
+      </PublicPageHeader>
 
       <PublicPageBody>
-        <div className="mb-10 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <MarkPropertiesBadge size="md" />
-          <TrustStatsRow compact className="sm:justify-end" />
-        </div>
         <SectionHeadline
           align="left"
           before="Leadership message from"
@@ -60,7 +63,7 @@ export default function AboutUsPage() {
           subtitle="Experience-led guidance for off-plan buyers across Pakistan."
           className="mb-10"
         />
-        <div className="grid gap-10 lg:grid-cols-5">
+        <div className={cn(designTw.publicCard, "grid gap-8 p-5 sm:p-8 lg:grid-cols-5 lg:gap-10 lg:p-10")}>
           <div className="lg:col-span-3">
             <blockquote className="mb-6 border-l-4 border-brand-accent pl-4 text-lg font-medium italic leading-relaxed text-zinc-800 md:text-xl">
               &ldquo;{aboutContent.pullQuote}&rdquo;
@@ -72,7 +75,7 @@ export default function AboutUsPage() {
               ))}
             </div>
           </div>
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-zinc-200 lg:col-span-2">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-clay-lg shadow-clay-sm lg:col-span-2">
             <Image
               src={aboutContent.bannerImage}
               alt="Mark Properties — AbadRaho real estate advisory team"
@@ -91,8 +94,8 @@ export default function AboutUsPage() {
         />
       </PublicPageBody>
 
-      <section className="border-t border-zinc-200 bg-white">
-        <PublicPageBody>
+      <section>
+        <PublicPageBody className="pt-2 sm:pt-4">
           <SectionHeadline
             align="left"
             before="Why buyers"
@@ -108,14 +111,12 @@ export default function AboutUsPage() {
             ].map(({ title, text, icon: Icon }) => (
               <div
                 key={title}
-                className={
-                  designTw.publicCard +
-                  " w-[min(85vw,320px)] shrink-0 snap-start border-t-4 border-brand-accent p-6 md:w-auto"
-                }
+                className={cn(
+                  designTw.publicCard,
+                  "w-[min(85vw,320px)] shrink-0 snap-start p-6 sm:p-7 md:w-auto"
+                )}
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-accent/10 text-brand-accent">
-                  <Icon className="h-6 w-6" />
-                </div>
+                <Icon className="h-6 w-6 text-brand-accent" aria-hidden />
                 <h3 className="mt-4 text-lg font-semibold text-zinc-900">{title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-zinc-700 md:text-base">{text}</p>
               </div>

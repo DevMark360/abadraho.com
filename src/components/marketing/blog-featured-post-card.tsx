@@ -20,7 +20,7 @@ export function BlogFeaturedPostCard({ post }: { post: BlogPostSummary }) {
     : "";
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:border-zinc-300 hover:shadow-md">
+    <article className="overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-clay-hover">
       <Link href={href} className="block">
         <div className="relative aspect-[16/7] bg-zinc-100 sm:aspect-[16/6]">
           {imageUrl ? (

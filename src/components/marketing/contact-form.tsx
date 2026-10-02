@@ -13,6 +13,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+function Field({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-semibold text-zinc-700">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
 export function ContactForm() {
   const { user, loading: authLoading } = useAuth();
   const defaults = useMemo(() => contactFormDefaults(user), [user]);
@@ -32,7 +51,7 @@ export function ContactForm() {
     <form
       key={`contact-${user?.id ?? "guest"}-${formKey}`}
       action={formAction}
-      className={designTw.publicCard + " relative space-y-4 p-6 lg:col-span-3"}
+      className={designTw.publicCard + " relative space-y-4 p-6 sm:p-7 lg:col-span-3"}
     >
       <input
         type="text"
@@ -44,60 +63,75 @@ export function ContactForm() {
         className="pointer-events-none absolute -left-[9999px] h-0 w-0 opacity-0"
       />
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900">Send a message</h2>
-        {user && !authLoading ? (
-          <p className="mt-1 text-xs text-zinc-500">
-            Contact details pre-filled from your account
-          </p>
-        ) : null}
+        <h2 className="text-lg font-bold tracking-tight text-zinc-900">Send a message</h2>
+        <p className="mt-1 text-xs text-zinc-500">
+          {user && !authLoading
+            ? "Contact details pre-filled from your account."
+            : "We usually reply by email or phone during office hours."}
+        </p>
       </div>
-      <Input
-        name="name"
-        required
-        maxLength={CONTACT_LIMITS.name}
-        placeholder="Name"
-        defaultValue={defaults.name}
-        autoComplete="name"
-      />
-      <Input
-        name="email"
-        type="email"
-        required
-        maxLength={CONTACT_LIMITS.email}
-        placeholder="Email"
-        defaultValue={defaults.email}
-        autoComplete="email"
-      />
-      <Input
-        name="phone"
-        type="tel"
-        required
-        maxLength={CONTACT_LIMITS.phone}
-        inputMode="tel"
-        placeholder="Phone (10–12 digits)"
-        defaultValue={defaults.phone}
-        autoComplete="tel"
-      />
-      <Input
-        name="subject"
-        required
-        maxLength={CONTACT_LIMITS.subject}
-        placeholder="Subject"
-      />
-      <Textarea
-        name="message"
-        required
-        rows={5}
-        maxLength={CONTACT_LIMITS.message}
-        placeholder="Message"
-      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Full name" htmlFor="contact-name">
+          <Input
+            id="contact-name"
+            name="name"
+            required
+            maxLength={CONTACT_LIMITS.name}
+            defaultValue={defaults.name}
+            autoComplete="name"
+          />
+        </Field>
+        <Field label="Email" htmlFor="contact-email">
+          <Input
+            id="contact-email"
+            name="email"
+            type="email"
+            required
+            maxLength={CONTACT_LIMITS.email}
+            defaultValue={defaults.email}
+            autoComplete="email"
+          />
+        </Field>
+        <Field label="Phone" htmlFor="contact-phone">
+          <Input
+            id="contact-phone"
+            name="phone"
+            type="tel"
+            required
+            maxLength={CONTACT_LIMITS.phone}
+            inputMode="tel"
+            placeholder="03XX XXXXXXX"
+            defaultValue={defaults.phone}
+            autoComplete="tel"
+          />
+        </Field>
+        <Field label="Subject" htmlFor="contact-subject">
+          <Input
+            id="contact-subject"
+            name="subject"
+            required
+            maxLength={CONTACT_LIMITS.subject}
+            placeholder="e.g. Site visit request"
+          />
+        </Field>
+      </div>
+      <Field label="Message" htmlFor="contact-message">
+        <Textarea
+          id="contact-message"
+          name="message"
+          required
+          rows={5}
+          maxLength={CONTACT_LIMITS.message}
+          placeholder="How can we help?"
+        />
+      </Field>
       {state.status === "ok" && state.message ? (
         <AuthFormMessage variant="success">{state.message}</AuthFormMessage>
       ) : null}
       {state.status === "error" && state.message ? (
         <AuthFormMessage variant="error">{state.message}</AuthFormMessage>
       ) : null}
-      <Button type="submit" className="w-full" disabled={pending}>
+      <Button type="submit" variant="accent" size="lg" className="w-full" disabled={pending}>
         {pending ? "Sending…" : "Send message"}
       </Button>
     </form>

@@ -11,7 +11,7 @@ import {
   MessageSquare,
   ShieldCheck,
 } from "lucide-react";
-import { PublicPage } from "@/components/layout/public-page-layout";
+import { PublicPage, PublicPageHeader } from "@/components/layout/public-page-layout";
 import { FaqSchema } from "@/components/seo/faq-schema";
 import { JsonLd } from "@/components/seo/json-ld";
 import type { GeoIntentAnswer } from "@/config/geo-content";
@@ -85,51 +85,38 @@ export function LegalPage({
       />
       <FaqSchema items={[...faqs]} />
 
-      {/* Header */}
-      <header className="border-b border-zinc-200 bg-white">
-        <div className={cn(designTw.publicContainer, "py-8 sm:py-10")}>
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-zinc-500">
-            <Link href="/" className="hover:text-zinc-900">
-              Home
-            </Link>
-            <ChevronRight className="h-3.5 w-3.5 text-zinc-300" aria-hidden />
-            <span className="font-medium text-zinc-900" aria-current="page">
-              {title}
-            </span>
-          </nav>
-
-          <div className="mt-5 flex items-start gap-4">
-            <span className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-accent/10 text-brand-accent sm:flex">
-              <DocIcon className="h-6 w-6" aria-hidden />
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-brand-accent">Legal</p>
-              <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">{title}</h1>
-              <p className="mt-3 max-w-3xl text-base leading-relaxed text-zinc-600 sm:text-lg">{summary}</p>
-              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-zinc-500">
-                <span className="inline-flex items-center gap-1.5">
-                  <CalendarDays className="h-4 w-4" aria-hidden />
-                  Last updated <time dateTime={updated}>{updatedLabel}</time>
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Clock className="h-4 w-4" aria-hidden />
-                  {readingMinutes} min read
-                </span>
-                <Link
-                  href={other.href}
-                  className="inline-flex items-center gap-1.5 font-medium text-zinc-700 hover:text-zinc-900"
-                >
-                  <other.icon className="h-4 w-4" aria-hidden />
-                  {other.label}
-                  <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-                </Link>
-              </div>
-            </div>
-          </div>
+      <PublicPageHeader
+        title={title}
+        subtitle={summary}
+        crumbs={[{ label: "Home", href: "/" }, { label: title }]}
+        eyebrow={
+          <span className="inline-flex items-center gap-1.5">
+            <DocIcon className="h-4 w-4" aria-hidden />
+            Legal
+          </span>
+        }
+      >
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-zinc-500">
+          <span className="inline-flex items-center gap-1.5">
+            <CalendarDays className="h-4 w-4" aria-hidden />
+            Last updated <time dateTime={updated}>{updatedLabel}</time>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="h-4 w-4" aria-hidden />
+            {readingMinutes} min read
+          </span>
+          <Link
+            href={other.href}
+            className="inline-flex items-center gap-1.5 font-medium text-zinc-700 hover:text-zinc-900"
+          >
+            <other.icon className="h-4 w-4" aria-hidden />
+            {other.label}
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+          </Link>
         </div>
-      </header>
+      </PublicPageHeader>
 
-      <div className={cn(designTw.publicContainer, "py-8 sm:py-10")}>
+      <div className={cn(designTw.publicContainer, "py-6 sm:py-8")}>
         <div className="grid gap-8 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-12">
           {/* Table of contents */}
           <aside className="hidden lg:block">
