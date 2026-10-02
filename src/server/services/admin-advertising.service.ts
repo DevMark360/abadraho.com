@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { isDatabaseEnabled } from "@/lib/db";
 import { computeUndeliveredValue } from "@/server/services/advertising-campaign.service";
+import { payerTransactionId } from "@/server/services/advertising-wallet.service";
+import { hasWalletProof } from "@/server/services/wallet-proof.service";
 
 export type AdminAdCampaignRow = {
   id: number;
@@ -198,6 +200,8 @@ export type AdminAdWalletTransactionRow = {
   amount: number;
   status: string;
   referenceNote: string | null;
+  transactionId: string | null;
+  hasProof: boolean;
   createdAt: string;
 };
 
@@ -225,8 +229,8 @@ export async function listAdminAdWalletTransactions(options?: {
     prisma.adWalletTransaction.count({ where }),
   ]);
 
-  return {
-    items: rows.map((r) => ({
+  const items = await Promise.all(
+    rows.map(async (r) => ({
       id: r.id,
       walletId: r.walletId,
       builderId: r.wallet.builderId,
@@ -235,8 +239,10 @@ export async function listAdminAdWalletTransactions(options?: {
       amount: Number(r.amount),
       status: r.status,
       referenceNote: r.referenceNote,
+      transactionId: payerTransactionId(r),
+      hasProof: r.type === "topup_bank_transfer" ? await hasWalletProof(r.id) : false,
       createdAt: r.createdAt.toISOString(),
-    })),
-    total,
-  };
+    }))
+  );
+  return { items, total };
 }

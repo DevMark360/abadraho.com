@@ -24,6 +24,8 @@ type Row = {
   amount: number;
   status: string;
   referenceNote: string | null;
+  transactionId: string | null;
+  hasProof: boolean;
   createdAt: string;
 };
 
@@ -77,12 +79,24 @@ export function AdminAdWalletTransactionsClient() {
     load();
   }, [load]);
 
-  async function decide(id: number, action: "confirm" | "reject") {
-    if (action === "reject" && !confirm("Reject this top-up request?")) return;
-    const res = await fetch(`/api/admin/ad-wallet-transactions/${id}/approval`, {
+  async function decide(row: Row, action: "confirm" | "reject") {
+    let reason: string | undefined;
+    if (action === "confirm") {
+      const ok = confirm(
+        `Credit Rs. ${row.amount.toLocaleString()} to ${row.builderName}?\n\n` +
+          `Only confirm after checking the payment${row.transactionId ? ` (TID ${row.transactionId})` : ""} ` +
+          "has actually arrived in the account."
+      );
+      if (!ok) return;
+    } else {
+      const input = prompt("Reject this top-up? Optional reason (shown to the builder):", "");
+      if (input === null) return;
+      reason = input.trim() || undefined;
+    }
+    const res = await fetch(`/api/admin/ad-wallet-transactions/${row.id}/approval`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action }),
+      body: JSON.stringify({ action, reason }),
     });
     const json = await res.json();
     if (!json.success) alert(json.message ?? "Update failed");
@@ -118,7 +132,7 @@ export function AdminAdWalletTransactionsClient() {
               <th className={adminTableHead}>Builder</th>
               <th className={adminTableHead}>Type</th>
               <th className={adminTableHead}>Amount</th>
-              <th className={adminTableHead}>Reference</th>
+              <th className={adminTableHead}>Payment proof</th>
               <th className={adminTableHead}>Status</th>
               <th className={adminTableHead}>Submitted</th>
               <th className={adminTableHead}>Action</th>
@@ -146,8 +160,25 @@ export function AdminAdWalletTransactionsClient() {
                     {TYPE_LABELS[r.type] ?? r.type}
                   </td>
                   <td className="px-3 py-2">Rs. {r.amount.toLocaleString()}</td>
-                  <td className="max-w-xs truncate px-3 py-2 text-left" title={r.referenceNote ?? ""}>
-                    {r.referenceNote ?? "—"}
+                  <td className="max-w-xs px-3 py-2 text-left">
+                    {r.transactionId ? (
+                      <p className="font-mono text-xs font-semibold text-zinc-900">
+                        TID: {r.transactionId}
+                      </p>
+                    ) : null}
+                    {r.hasProof ? (
+                      <a
+                        href={`/api/admin/ad-wallet-transactions/${r.id}/proof`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-medium text-blue-600 hover:underline"
+                      >
+                        View screenshot
+                      </a>
+                    ) : null}
+                    <p className="truncate text-xs text-zinc-500" title={r.referenceNote ?? ""}>
+                      {r.referenceNote ?? (r.transactionId ? "" : "—")}
+                    </p>
                   </td>
                   <td className="px-3 py-2">
                     <span
@@ -166,7 +197,7 @@ export function AdminAdWalletTransactionsClient() {
                         <AdminCan module="ad_wallet_transactions" action="approve">
                           <button
                             type="button"
-                            onClick={() => decide(r.id, "confirm")}
+                            onClick={() => decide(r, "confirm")}
                             className="rounded p-1.5 text-emerald-600 hover:bg-emerald-50"
                             title="Confirm"
                           >
@@ -176,7 +207,7 @@ export function AdminAdWalletTransactionsClient() {
                         <AdminCan module="ad_wallet_transactions" action="reject">
                           <button
                             type="button"
-                            onClick={() => decide(r.id, "reject")}
+                            onClick={() => decide(r, "reject")}
                             className="rounded p-1.5 text-red-600 hover:bg-red-50"
                             title="Reject"
                           >

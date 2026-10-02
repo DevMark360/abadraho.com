@@ -77,3 +77,6 @@ scripts/*.log
 # Build artifacts & logs
 build.zip
 stderr.log
+
+# Private uploads (wallet payment screenshots) — server only, served via auth-checked routes
+/storage/

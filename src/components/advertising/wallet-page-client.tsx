@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -17,9 +17,32 @@ type WalletTransaction = {
   amount: number;
   balanceAfter: number | null;
   referenceNote: string | null;
+  transactionId: string | null;
+  hasProof: boolean;
   status: string;
   createdAt: string;
 };
+type PaymentAccount = { label: string; fields: Array<{ name: string; value: string }> };
+
+function CopyValue({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        void navigator.clipboard?.writeText(value).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        });
+      }}
+      className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-900"
+      title="Copy"
+    >
+      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? "Copied" : "Copy"}
+    </button>
+  );
+}
 
 const TX_STATUS_BADGE: Record<string, string> = {
   pending: "bg-amber-50 text-amber-800 ring-amber-600/20",
@@ -42,7 +65,11 @@ function WalletPageContent() {
   const [transactions, setTransactions] = useState<WalletTransaction[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [paymentAccounts, setPaymentAccounts] = useState<PaymentAccount[]>([]);
+  const [jazzcashOnline, setJazzcashOnline] = useState(false);
+
   const [amount, setAmount] = useState("");
+  const [transactionId, setTransactionId] = useState("");
   const [referenceNote, setReferenceNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -61,6 +88,8 @@ function WalletPageContent() {
     if (j.success) {
       setWallet(j.wallet);
       setTransactions(j.transactions.items);
+      setPaymentAccounts(j.paymentAccounts ?? []);
+      setJazzcashOnline(Boolean(j.jazzcashOnline));
     } else {
       setError(j.message ?? "Could not load wallet");
     }
@@ -74,22 +103,27 @@ function WalletPageContent() {
     e.preventDefault();
     setFormError(null);
     setFormSuccess(null);
+    const form = e.currentTarget as HTMLFormElement;
     setSubmitting(true);
     try {
+      // Multipart (no Content-Type header — the browser sets the boundary).
       const res = await fetch("/api/v1/advertising/wallet/topups", {
         method: "POST",
         credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: Number(amount), referenceNote }),
+        body: new FormData(form),
       });
       const j = await res.json().catch(() => ({}));
       if (!j.success) {
         setFormError(j.message ?? "Could not submit top-up");
         return;
       }
-      setFormSuccess("Top-up submitted — an admin will confirm it once the transfer is verified.");
+      setFormSuccess(
+        "Payment submitted — an admin will check it and credit your wallet. You'll get a notification."
+      );
       setAmount("");
+      setTransactionId("");
       setReferenceNote("");
+      form.reset();
       await load();
     } finally {
       setSubmitting(false);
@@ -177,6 +211,7 @@ function WalletPageContent() {
         </div>
       ) : null}
 
+      {jazzcashOnline ? (
       <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
         <h2 className="text-sm font-semibold text-zinc-900">Pay online (JazzCash)</h2>
         <p className="text-xs text-zinc-500">
@@ -201,22 +236,63 @@ function WalletPageContent() {
           </Button>
         </form>
       </section>
+      ) : null}
 
       <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
-        <h2 className="text-sm font-semibold text-zinc-900">Submit a bank transfer top-up</h2>
-        <p className="text-xs text-zinc-500">
-          Transfer via IBFT to the company account, then submit the reference below. An admin
-          will confirm it and credit your wallet.
-        </p>
+        <div>
+          <h2 className="text-sm font-semibold text-zinc-900">1. Send the payment</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Transfer the amount you want to add to one of these accounts (bank transfer / IBFT,
+            JazzCash or Easypaisa). Keep the receipt — you&apos;ll need its transaction ID and a
+            screenshot.
+          </p>
+        </div>
+        {paymentAccounts.length === 0 ? (
+          <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Payment account details aren&apos;t available right now — please contact support
+            before sending money.
+          </p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {paymentAccounts.map((acc, i) => (
+              <div key={`${acc.label}-${i}`} className="rounded-xl border border-zinc-200 p-4">
+                <p className="text-sm font-semibold text-zinc-900">{acc.label}</p>
+                <dl className="mt-2 space-y-2">
+                  {acc.fields.map((f) => (
+                    <div key={f.name}>
+                      <dt className="text-[11px] uppercase tracking-wide text-zinc-400">{f.name}</dt>
+                      <dd className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="break-all font-mono text-sm text-zinc-900">{f.value}</span>
+                        <CopyValue value={f.value} />
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
+        <div>
+          <h2 className="text-sm font-semibold text-zinc-900">2. Submit your payment details</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            An admin checks the payment arrived, then credits your wallet. You&apos;ll get a
+            notification when it&apos;s confirmed or rejected.
+          </p>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError ? <p className="text-sm text-red-700">{formError}</p> : null}
           {formSuccess ? <p className="text-sm text-emerald-700">{formSuccess}</p> : null}
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Amount (Rs.)</label>
+            <label className="block text-sm font-medium text-zinc-700">Amount sent (Rs.)</label>
             <Input
               layout="field"
+              name="amount"
               type="number"
               min={1}
+              step="any"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
@@ -224,18 +300,47 @@ function WalletPageContent() {
           </div>
           <div>
             <label className="block text-sm font-medium text-zinc-700">
-              Bank transfer reference
+              Transaction ID / reference number
             </label>
             <Input
               layout="field"
-              value={referenceNote}
-              onChange={(e) => setReferenceNote(e.target.value)}
-              placeholder="e.g. IBFT ref #, bank name, date"
+              name="transactionId"
+              value={transactionId}
+              onChange={(e) => setTransactionId(e.target.value)}
+              placeholder="As shown on your receipt"
+              minLength={4}
+              maxLength={40}
               required
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-700">
+              Payment screenshot
+            </label>
+            <input
+              name="proof"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              required
+              className="mt-1.5 block w-full text-sm text-zinc-700 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-zinc-200"
+            />
+            <p className="mt-1 text-xs text-zinc-400">JPG, PNG, WebP or PDF — max 5MB.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-700">
+              Note <span className="font-normal text-zinc-400">(optional)</span>
+            </label>
+            <Input
+              layout="field"
+              name="referenceNote"
+              value={referenceNote}
+              onChange={(e) => setReferenceNote(e.target.value)}
+              placeholder="e.g. paid from Meezan Bank, account title"
+              maxLength={500}
+            />
+          </div>
           <Button type="submit" className={designTw.btnPrimary} disabled={submitting}>
-            {submitting ? "Submitting…" : "Submit top-up"}
+            {submitting ? "Submitting…" : "Submit payment"}
           </Button>
         </form>
       </section>
@@ -257,6 +362,24 @@ function WalletPageContent() {
                   <p className="font-medium text-zinc-900">
                     {TX_TYPE_LABELS[t.type] ?? t.type}
                   </p>
+                  {t.transactionId ? (
+                    <p className="mt-0.5 text-xs text-zinc-700">
+                      TID: <span className="font-mono">{t.transactionId}</span>
+                      {t.hasProof ? (
+                        <>
+                          {" · "}
+                          <a
+                            href={`/api/v1/advertising/wallet/topups/${t.id}/proof`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-brand-accent hover:underline"
+                          >
+                            View screenshot
+                          </a>
+                        </>
+                      ) : null}
+                    </p>
+                  ) : null}
                   <p className="mt-0.5 text-xs text-zinc-500">
                     {t.referenceNote ?? "—"} ·{" "}
                     {new Date(t.createdAt).toLocaleDateString(undefined, {

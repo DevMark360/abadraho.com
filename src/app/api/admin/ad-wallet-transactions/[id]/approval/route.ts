@@ -17,7 +17,7 @@ export async function PATCH(
     return NextResponse.json({ success: false, message: "Invalid transaction id" }, { status: 400 });
   }
 
-  const body = (await request.json()) as { action?: string };
+  const body = (await request.json().catch(() => ({}))) as { action?: string; reason?: string };
   const action = body.action;
   if (!action || !ACTIONS.has(action)) {
     return NextResponse.json(
@@ -29,7 +29,8 @@ export async function PATCH(
   const result = await decideAdWalletTransaction(
     transactionId,
     action as "confirm" | "reject",
-    { source: auth.session.source ?? "admin", id: auth.session.id }
+    { source: auth.session.source ?? "admin", id: auth.session.id },
+    body.reason
   );
   if (!result.success) {
     return NextResponse.json(

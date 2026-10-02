@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdvertisingApi } from "@/lib/advertising-api-guard";
+import { getWalletPaymentAccounts } from "@/lib/wallet-payment-accounts";
 import {
   getAdWalletBalance,
   listAdWalletTransactions,
 } from "@/server/services/advertising-wallet.service";
+import { isJazzCashConfigured } from "@/server/services/advertising-payment-jazzcash.service";
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdvertisingApi();
@@ -22,5 +24,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, message: "Wallet not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ success: true, wallet, transactions });
+  return NextResponse.json({
+    success: true,
+    wallet,
+    transactions,
+    paymentAccounts: getWalletPaymentAccounts(),
+    // Online checkout is only offered once JazzCash merchant credentials are set.
+    jazzcashOnline: isJazzCashConfigured(),
+  });
 }
