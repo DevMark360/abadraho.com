@@ -95,26 +95,29 @@ export function LegalPage({
             Legal
           </span>
         }
-      >
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-zinc-500">
-          <span className="inline-flex items-center gap-1.5">
-            <CalendarDays className="h-4 w-4" aria-hidden />
-            Last updated <time dateTime={updated}>{updatedLabel}</time>
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Clock className="h-4 w-4" aria-hidden />
-            {readingMinutes} min read
-          </span>
-          <Link
-            href={other.href}
-            className="inline-flex items-center gap-1.5 font-medium text-zinc-700 hover:text-zinc-900"
-          >
-            <other.icon className="h-4 w-4" aria-hidden />
-            {other.label}
-            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-          </Link>
-        </div>
-      </PublicPageHeader>
+        aside={
+          <ul className="space-y-3 text-sm text-zinc-600">
+            <li className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-brand-accent" aria-hidden />
+              Last updated <time dateTime={updated} className="font-medium text-zinc-900">{updatedLabel}</time>
+            </li>
+            <li className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-brand-accent" aria-hidden />
+              {readingMinutes} min read
+            </li>
+            <li>
+              <Link
+                href={other.href}
+                className="flex items-center gap-2 font-semibold text-zinc-900 hover:text-brand-accent"
+              >
+                <other.icon className="h-4 w-4 text-brand-accent" aria-hidden />
+                Read our {other.label.toLowerCase()}
+                <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              </Link>
+            </li>
+          </ul>
+        }
+      />
 
       <div className={cn(designTw.publicContainer, "py-6 sm:py-8")}>
         <div className="grid gap-8 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-12">

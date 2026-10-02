@@ -40,6 +40,17 @@ export default async function EventsPage() {
           { label: "Home", href: "/" },
           { label: "Events" },
         ]}
+        aside={
+          <div>
+            <p className="text-3xl font-bold tabular-nums text-zinc-900">{events.length}</p>
+            <p className="text-sm text-zinc-500">
+              {events.length === 1 ? "event listed" : "events listed"}
+            </p>
+            <Button asChild variant="outline" className="mt-4 w-full">
+              <Link href="/projects">Browse projects</Link>
+            </Button>
+          </div>
+        }
       />
 
       <PublicPageBody>

@@ -33,14 +33,15 @@ export function AdminUserMenu() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 rounded-2xl border border-white/80 bg-clay-surface px-3 py-2 text-sm font-medium shadow-clay-sm text-zinc-700 hover:bg-zinc-50"
+        className="inline-flex items-center gap-2 rounded-2xl border border-white/80 bg-clay-surface px-3 py-2 text-sm font-medium shadow-clay-sm text-zinc-700 hover:shadow-clay"
         aria-expanded={open}
         aria-haspopup="menu"
       >
         <User className="h-4 w-4 shrink-0 text-zinc-500" aria-hidden />
-        <span className="max-w-[10rem] truncate">{label}</span>
+        <span className="hidden max-w-[10rem] truncate sm:inline">{label}</span>
+        <span className="sr-only sm:hidden">{label}</span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`hidden h-4 w-4 shrink-0 text-zinc-400 transition-transform sm:block ${open ? "rotate-180" : ""}`}
           aria-hidden
         />
       </button>

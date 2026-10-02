@@ -48,12 +48,13 @@ export default function AboutUsPage() {
           { label: "Home", href: "/" },
           { label: "About us" },
         ]}
-      >
-        <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <MarkPropertiesBadge size="md" />
-          <TrustStatsRow compact className="w-full sm:w-auto" />
-        </div>
-      </PublicPageHeader>
+        aside={
+          <div className="space-y-4">
+            <MarkPropertiesBadge size="md" />
+            <TrustStatsRow compact />
+          </div>
+        }
+      />
 
       <PublicPageBody>
         <SectionHeadline

@@ -4,7 +4,7 @@ import {
   PublicPageHeader,
 } from "@/components/layout/public-page-layout";
 import { ContactForm } from "@/components/marketing/contact-form";
-import { ContactInfoPanel } from "@/components/marketing/contact-info-panel";
+import { ContactInfoPanel, ContactQuickActions } from "@/components/marketing/contact-info-panel";
 import { geoContent } from "@/config/geo-content";
 
 export default function ContactPage() {
@@ -13,6 +13,7 @@ export default function ContactPage() {
       <PublicPageHeader
         title="Contact AbadRaho"
         subtitle={geoContent.contact.summary}
+        aside={<ContactQuickActions />}
         crumbs={[
           { label: "Home", href: "/" },
           { label: "Contact" },

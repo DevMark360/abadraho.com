@@ -42,7 +42,7 @@ export function AdminCommercialPanel() {
 
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <Link
           href="/admin/ad-wallet-transactions"
           className="rounded-clay border border-white/80 bg-clay-surface p-3.5 shadow-clay-sm transition-shadow hover:shadow-clay"

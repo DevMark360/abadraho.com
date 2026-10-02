@@ -42,16 +42,20 @@ export default async function BlogPage() {
           { label: "Home", href: "/" },
           { label: "Blog" },
         ]}
-      >
-        <ul className="grid gap-x-6 gap-y-2 text-sm text-zinc-600 sm:grid-cols-2">
-          {geoContent.blog.bullets.map((point) => (
-            <li key={point} className="flex gap-2">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" aria-hidden />
-              {point}
-            </li>
-          ))}
-        </ul>
-      </PublicPageHeader>
+        aside={
+          <div>
+            <p className="text-sm font-semibold text-zinc-900">What you&apos;ll find here</p>
+            <ul className="mt-3 space-y-2.5 text-sm text-zinc-600">
+              {geoContent.blog.bullets.map((point) => (
+                <li key={point} className="flex gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" aria-hidden />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+        }
+      />
 
       <PublicPageBody className="pt-2 sm:pt-2">
         <BlogListClient posts={posts} />

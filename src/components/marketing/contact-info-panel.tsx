@@ -27,17 +27,12 @@ function InfoRow({
   );
 }
 
-export function ContactInfoPanel() {
-  const city = businessConfig.address.addressLocality;
+/** Call / WhatsApp / Email buttons — shown in the Contact page header panel. */
+export function ContactQuickActions() {
   return (
-    <div className={cn(designTw.publicCard, "flex h-full flex-col p-6 sm:p-7")}>
-      <h2 className="text-lg font-bold tracking-tight text-zinc-900">Talk to an advisor</h2>
-      <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
-        Mark Properties advisors help with project questions, site visits, payment plans, and
-        partnerships.
-      </p>
-
-      <div className="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+    <div>
+      <p className="text-sm font-semibold text-zinc-900">Reach us directly</p>
+      <div className="mt-3 grid gap-2.5">
         {businessConfig.phone ? (
           <Button asChild>
             <a href={`tel:${businessConfig.phone}`}>
@@ -61,6 +56,23 @@ export function ContactInfoPanel() {
           </a>
         </Button>
       </div>
+      <p className="mt-3 flex items-center gap-1.5 text-xs text-zinc-500">
+        <Clock className="h-3.5 w-3.5" aria-hidden />
+        {HOURS}
+      </p>
+    </div>
+  );
+}
+
+export function ContactInfoPanel() {
+  const city = businessConfig.address.addressLocality;
+  return (
+    <div className={cn(designTw.publicCard, "flex h-full flex-col p-6 sm:p-7")}>
+      <h2 className="text-lg font-bold tracking-tight text-zinc-900">Talk to an advisor</h2>
+      <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
+        Mark Properties advisors help with project questions, site visits, payment plans, and
+        partnerships.
+      </p>
 
       <ul className={cn(designTw.clayWell, "mt-6 space-y-4 p-5")}>
         <InfoRow icon={Mail} label="Email">

@@ -198,7 +198,7 @@ export function AdminDashboardClient() {
         <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
           Overview
         </h2>
-        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
           {cards.map((c) => (
             <StatCardLink key={c.key} card={c} value={stats[c.key]} trend={trends[c.key]} />
           ))}
@@ -218,7 +218,7 @@ export function AdminDashboardClient() {
             <h2 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
               Operations
             </h2>
-            <div className="grid gap-3 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               <AdminAttentionPanel />
               <AdminRecentActivityFeed />
             </div>
