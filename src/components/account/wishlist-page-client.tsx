@@ -146,6 +146,7 @@ export function WishlistPageClient() {
           <div className="mt-8 space-y-6">
             <HomeEmptyState
               title="No saved projects yet"
+              illustration="bookmark"
               description="When you find a development you like, tap the heart on a listing card or project page. Your shortlist will appear here so you can compare options at your own pace."
               icon={Heart}
               action={

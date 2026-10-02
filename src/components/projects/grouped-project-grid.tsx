@@ -15,6 +15,7 @@ import {
 } from "@/lib/filter-match-tiers";
 import { uniqueById } from "@/lib/unique-by-id";
 import { LISTINGS_PAGE_SIZE } from "@/lib/pagination";
+import { Illustration3D } from "@/components/ui/illustration-3d";
 import type { ProjectListItem } from "@/types/project";
 
 function FilterSummaryBanner({ summary }: { summary: FilterSummary }) {
@@ -185,9 +186,12 @@ export function GroupedProjectGrid({
 
   if (displayProjects.length === 0) {
     return (
-      <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white p-10 text-center">
-        <p className="font-medium text-zinc-700">{emptyMessage}</p>
-        <p className="mt-1 text-sm text-zinc-400">Use Search & filters above.</p>
+      <div className="flex min-h-[320px] flex-col items-center justify-center rounded-clay-lg bg-clay-well p-10 text-center shadow-clay-inset">
+        <Illustration3D name="search" size={104} />
+        <p className="mt-4 text-lg font-semibold text-zinc-900">{emptyMessage}</p>
+        <p className="mt-1 max-w-sm text-sm text-zinc-500">
+          Try a wider budget, another area, or clear a few filters above.
+        </p>
       </div>
     );
   }

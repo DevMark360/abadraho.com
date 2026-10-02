@@ -260,6 +260,7 @@ export function FeaturedPropertiesSection({
         ) : (
           <HomeEmptyState
             title="No featured projects yet"
+            illustration="home"
             description="Listings will appear here once projects are published. Browse all off-plan inventory in the meantime."
             icon={Building2}
             action={

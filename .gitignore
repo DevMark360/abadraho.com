@@ -68,7 +68,11 @@ scripts/*.log
 # Static files & user uploads (images, videos, PDFs, fonts, cPanel's public/.htaccess) live
 # on the server only. .cpanel.yml deploys with cp -R, which never deletes them; copy new
 # files to the server manually (File Manager / FTP).
-/public/
+/public/*
+# 3D illustration icons ship with the code (small, free IconScout assets)
+!/public/icons/
+/public/icons/*
+!/public/icons/3d/
 
 # Misc
 *.pem

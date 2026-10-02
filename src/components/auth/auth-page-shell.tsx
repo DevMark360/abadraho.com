@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BadgeCheck, GitCompare, Headphones, Heart } from "lucide-react";
 import { AbadrahoLogo } from "@/components/brand/abadraho-logo";
+import { Illustration3D } from "@/components/ui/illustration-3d";
 import { AuthPortalFooter } from "@/components/auth/auth-portal-footer";
 import { MarkPropertiesBadge } from "@/components/marketing/trust-signals";
 import { siteConfig } from "@/config/site";
@@ -38,6 +39,7 @@ export function AuthPageShell({
         <AbadrahoLogo href="/" height={52} />
 
         <div className="relative max-w-sm">
+          <Illustration3D name="home" size={120} priority className="-ml-2 mb-4" />
           <h2 className="text-2xl font-bold leading-tight tracking-tight text-zinc-900 xl:text-3xl">
             {panelTitle}
           </h2>

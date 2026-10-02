@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import { Illustration3D, type Illustration3DName } from "@/components/ui/illustration-3d";
 import { cn } from "@/lib/utils";
 
 export const homeCardClass =
@@ -52,18 +53,23 @@ export function HomeEmptyState({
   title,
   description,
   icon: Icon,
+  illustration,
   action,
 }: {
   title: string;
   description: string;
   icon: LucideIcon;
+  /** 3D illustration shown instead of the plain icon. */
+  illustration?: Illustration3DName;
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200">
-        <Icon className="h-7 w-7 text-zinc-400" aria-hidden />
-      </div>
+    <div className="flex flex-col items-center rounded-clay-lg bg-clay-well px-6 py-12 text-center shadow-clay-inset">
+      {illustration ? (
+        <Illustration3D name={illustration} size={104} />
+      ) : (
+        <Icon className="h-8 w-8 text-brand-accent" aria-hidden />
+      )}
       <h3 className="mt-4 text-lg font-semibold text-zinc-900">{title}</h3>
       <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-600">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}

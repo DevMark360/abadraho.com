@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, MapPin, PartyPopper } from "lucide-react";
+import { Illustration3D } from "@/components/ui/illustration-3d";
 import {
   PublicPage,
   PublicPageBody,
@@ -56,7 +57,7 @@ export default async function EventsPage() {
       <PublicPageBody>
         {events.length === 0 ? (
           <div className={cn(designTw.publicCard, "flex flex-col items-center px-6 py-14 text-center")}>
-            <PartyPopper className="h-8 w-8 text-brand-accent" aria-hidden />
+            <Illustration3D name="calendar" size={112} />
             <h2 className="mt-4 text-lg font-semibold text-zinc-900">No upcoming events right now</h2>
             <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
               Builders announce launches and open houses here. Meanwhile, browse live projects or

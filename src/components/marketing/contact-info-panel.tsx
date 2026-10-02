@@ -1,5 +1,6 @@
 import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Illustration3D } from "@/components/ui/illustration-3d";
 import { businessConfig } from "@/config/business";
 import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
@@ -31,7 +32,10 @@ function InfoRow({
 export function ContactQuickActions() {
   return (
     <div>
-      <p className="text-sm font-semibold text-zinc-900">Reach us directly</p>
+      <div className="flex items-center gap-3">
+        <Illustration3D name="chat" size={56} />
+        <p className="text-sm font-semibold text-zinc-900">Reach us directly</p>
+      </div>
       <div className="mt-3 grid gap-2.5">
         {businessConfig.phone ? (
           <Button asChild>
