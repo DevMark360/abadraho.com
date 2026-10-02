@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: "Sign in required" }, { status: 401 });
   }
 
-  const body = await request.json();
+  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const action = body.action as string;
 
   if (action === "submit-phone") {

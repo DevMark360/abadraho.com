@@ -85,6 +85,22 @@ function storeOtpHash(otp: string): string {
   return hashStoredSecret(otp);
 }
 
+/**
+ * Update fields for a phone edit outside the OTP flow (profile form, legacy phone route).
+ * A different number drops the "verified" flag and any pending code — otherwise verifying
+ * one number and then editing the field would show an unverified number as verified.
+ */
+async function phoneChangeData(userId: number, phoneNumber: string) {
+  const digits = phoneNumber.replace(/\D/g, "");
+  const current = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { phoneNumber: true },
+  });
+  if ((current?.phoneNumber ?? "").replace(/\D/g, "") === digits) return {};
+  otpStates.delete(userId);
+  return { phoneNumber: digits || null, isPhoneNoVerified: false, phoneNoOtp: null };
+}
+
 async function findPasswordResetByToken(plainToken: string) {
   const hashed = hashStoredSecret(plainToken);
   const byHash = await prisma.passwordReset.findFirst({ where: { token: hashed } });
@@ -199,10 +215,11 @@ export async function registerUser(
       lastName: input.lastName.trim(),
       email,
       password: hash,
-      phoneNumber: input.phoneNumber?.trim() || null,
+      phoneNumber: input.phoneNumber?.replace(/\D/g, "") || null,
       userTypeId,
       provider: "WEBSITE",
-      phoneNoOtp: input.phoneNumber ? storeOtpHash(generateOtp()) : null,
+      // No code until the phone step actually sends one (submit-phone / resend).
+      phoneNoOtp: null,
       createdAt: now,
       updatedAt: now,
     },
@@ -388,12 +405,14 @@ export async function updateProfile(
     aboutMe?: string;
   }
 ): Promise<SafeUser | null> {
+  const phoneData =
+    data.phoneNumber != null ? await phoneChangeData(userId, data.phoneNumber) : {};
   const user = await prisma.user.update({
     where: { id: userId },
     data: {
       ...(data.firstName != null ? { firstName: data.firstName.trim() } : {}),
       ...(data.lastName != null ? { lastName: data.lastName.trim() } : {}),
-      ...(data.phoneNumber != null ? { phoneNumber: data.phoneNumber.trim() } : {}),
+      ...phoneData,
       ...(data.address != null ? { address: data.address } : {}),
       ...(data.city != null ? { city: data.city } : {}),
       ...(data.aboutMe != null ? { aboutMe: data.aboutMe } : {}),
@@ -620,9 +639,16 @@ export async function findOrCreateOAuthUser(profile: {
     return toSafeUser(user);
   }
 
+  // Linking by email to an account whose email was never verified: whoever set that
+  // password never proved they own the inbox (someone could pre-register a victim's email
+  // and wait for them to sign in with Google). The provider just proved ownership, so the
+  // old password is replaced; the real owner can set one via "forgot password".
+  const takeOverUnverified = !user.emailVerifiedAt && !placeholderEmail && user.recordId !== profile.recordId;
+
   const updated = await prisma.user.update({
     where: { id: user.id },
     data: {
+      ...(takeOverUnverified ? { password: await hashPassword(randomToken(16)) } : {}),
       recordId: profile.recordId,
       provider: profile.provider,
       avatar: profile.picture ?? user.avatar ?? undefined,
@@ -640,7 +666,7 @@ export async function updatePhoneForUser(
 ): Promise<SafeUser | null> {
   const user = await prisma.user.update({
     where: { id: userId },
-    data: { phoneNumber },
+    data: await phoneChangeData(userId, phoneNumber ?? ""),
   });
   return toSafeUser(user);
 }

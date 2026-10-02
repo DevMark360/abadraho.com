@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes, timingSafeEqual } from "crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { getAuthSecret } from "@/lib/auth-secret";
 
 export { getAuthSecret };
@@ -18,11 +18,6 @@ export function emailVerificationHash(userId: number, email: string): string {
     .digest("hex");
 }
 
-/** Laravel MustVerifyEmail uses sha1(email) in the URL hash segment */
-function laravelEmailHash(email: string): string {
-  return createHash("sha1").update(email).digest("hex");
-}
-
 function safeEqualHex(a: string, b: string): boolean {
   try {
     return timingSafeEqual(Buffer.from(a), Buffer.from(b));
@@ -35,9 +30,10 @@ export function verifyEmailHash(userId: number, email: string, hash: string): bo
   const normalized = email.trim().toLowerCase();
   const candidates = normalized === email.trim() ? [normalized] : [normalized, email.trim()];
 
+  // Old Laravel links (sha1(email)) are no longer accepted: Laravel also checked a signed
+  // URL, but here sha1(email) alone let anyone who knew an address mark it verified.
   for (const em of candidates) {
     if (safeEqualHex(emailVerificationHash(userId, em), hash)) return true;
-    if (hash.length === 40 && safeEqualHex(laravelEmailHash(em), hash)) return true;
   }
   return false;
 }

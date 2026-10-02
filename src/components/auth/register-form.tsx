@@ -9,6 +9,7 @@ import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { oauthErrorMessage } from "@/lib/oauth-errors";
+import { isSafeRelativePath } from "@/lib/post-login-redirect";
 
 export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
@@ -18,8 +19,15 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
     null
   );
   const [loading, setLoading] = useState(false);
+  const [signupPhone, setSignupPhone] = useState("");
 
   const ref = searchParams.get("ref") ?? undefined;
+  const nextPath = ref && isSafeRelativePath(ref) && ref !== "/" ? ref : "/account/profile";
+
+  function finish() {
+    router.push(nextPath);
+    router.refresh();
+  }
 
   useEffect(() => {
     const oauthErr = oauthErrorMessage(searchParams.get("error"));
@@ -48,6 +56,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
     const json = await res.json();
     setLoading(false);
     if (res.ok && json.success) {
+      setSignupPhone(String(fd.get("phone_number") ?? "").trim());
       setStep("phone");
       setMsg({ variant: "success", text: "Account created. Verify your WhatsApp number." });
     } else {
@@ -93,8 +102,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
     const json = await res.json();
     setLoading(false);
     if (json.success) {
-      router.push("/account/profile");
-      router.refresh();
+      finish();
     } else {
       setMsg({ variant: "error", text: json.message ?? "Incorrect OTP. Check WhatsApp or request a new code." });
     }
@@ -154,6 +162,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
             <Input
               name="phone_number"
               required
+              defaultValue={signupPhone}
               placeholder="WhatsApp number (e.g. 03201234567)"
               autoComplete="tel"
             />
@@ -175,6 +184,13 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
           </form>
           <button type="button" onClick={resendOtp} className="text-sm text-zinc-600 hover:underline">
             Resend WhatsApp OTP
+          </button>
+          <button
+            type="button"
+            onClick={finish}
+            className="block text-sm text-zinc-500 hover:underline"
+          >
+            Skip for now — verify later from your profile
           </button>
         </div>
       )}

@@ -113,7 +113,10 @@ export async function exchangeGoogleCode(
     email: string;
     name: string;
     picture?: string;
+    verified_email?: boolean;
   };
+  // Accounts are matched by email, so an unverified Google email must not log anyone in.
+  if (p.verified_email === false) return null;
   return { id: p.id, email: p.email, name: p.name, picture: p.picture };
 }
 

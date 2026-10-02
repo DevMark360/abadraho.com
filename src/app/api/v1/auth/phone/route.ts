@@ -4,21 +4,25 @@ import { updatePhoneForUser } from "@/server/services/auth.service";
 import { attachSessionCookie } from "@/lib/auth";
 import { z } from "zod";
 
-/** Legacy: POST /user/phone_number — update phone for logged-in user */
+/**
+ * Legacy: POST /user/phone_number — update phone for the signed-in user.
+ * Always the session's own account: the legacy `user_id` body field used to let anonymous
+ * callers rewrite any user's phone (and read back their email), so it is ignored.
+ */
 export async function POST(request: NextRequest) {
   const session = await getSession();
-  const body = await request.json();
-
-  const userId = body.user_id != null ? Number(body.user_id) : session?.id;
-  if (!userId) {
+  if (!session) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }
-  if (session && session.id !== userId) {
-    return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+
+  let body: Record<string, unknown>;
+  try {
+    body = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ success: false, message: "Invalid JSON body" }, { status: 400 });
   }
 
-  const phone =
-    body.get_phone_number ?? body.phone ?? body.phone_number ?? null;
+  const phone = body.get_phone_number ?? body.phone ?? body.phone_number ?? null;
   const parsed = z
     .object({ phone: z.string().nullable() })
     .safeParse({ phone: phone != null ? String(phone) : null });
@@ -26,7 +30,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: "Invalid phone" }, { status: 422 });
   }
 
-  const user = await updatePhoneForUser(userId, parsed.data.phone);
+  const user = await updatePhoneForUser(session.id, parsed.data.phone);
   if (!user) {
     return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
   }
@@ -37,6 +41,5 @@ export async function POST(request: NextRequest) {
     message: "Success",
     response: "200",
   });
-  if (session) return attachSessionCookie(res, user);
-  return res;
+  return attachSessionCookie(res, user);
 }
