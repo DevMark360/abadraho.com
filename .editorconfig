@@ -1,0 +1,13 @@
+# Keeps editors saving files as UTF-8: a few files had been saved as GB18030/CP1252 and broke
+# the build. Line endings are left alone on purpose — the repo has both LF and CRLF files.
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false

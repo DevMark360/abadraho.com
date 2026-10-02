@@ -135,7 +135,7 @@ export function AdminAreasClient() {
       <div className={`${adminCard} p-5`}>
         <h2 className="text-sm font-semibold text-zinc-800">Cities</h2>
         <p className="mt-1 text-xs text-zinc-500">
-          Areas belong to a city — used by the "City" filter on the public projects page.
+          Areas belong to a city — used by the &ldquo;City&rdquo; filter on the public projects page.
         </p>
 
         <div className="mt-4 divide-y divide-zinc-100 rounded-lg border border-zinc-200">

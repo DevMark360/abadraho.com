@@ -258,7 +258,7 @@ function CampaignNewContent() {
           <p className="mt-1 text-xs text-zinc-500">
             Caps how much this campaign spends per day and sets its weight in the ad rotation
             alongside your max bid. Leave blank to derive it automatically from the budget cap
-            divided across the campaign's days.
+            divided across the campaign&apos;s days.
           </p>
         </div>
 
@@ -308,7 +308,7 @@ function CampaignNewContent() {
           <span>
             <span className="block text-sm font-medium text-zinc-800">Show on home page</span>
             <span className="block text-xs text-zinc-500">
-              Skip targeting below — an untargeted campaign is eligible for the homepage's
+              Skip targeting below — an untargeted campaign is eligible for the homepage&apos;s
               broad placements. Target specific areas, property types, or tiers instead if you
               want this campaign focused on matching listing pages only.
             </span>

@@ -24,5 +24,5 @@ await prisma.admin.upsert({
   update: { password: hash, name },
 });
 
-console.log(`Admin ready: ${email} / ${password}`);
+console.log(`Admin ready: ${email}`);
 await prisma.$disconnect();

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:zip": "node scripts/build-zip.mjs",
     "start": "node server.js",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",

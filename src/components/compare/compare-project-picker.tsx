@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Building2, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { requestToggleCompare } from "@/lib/client/compare-actions";
@@ -174,9 +175,9 @@ export function CompareProjectPicker({
 
       <p className="mt-auto pt-6 text-center text-xs text-zinc-400">
         Or browse{" "}
-        <a href="/projects" className="font-medium text-brand-accent hover:underline">
+        <Link href="/projects" className="font-medium text-brand-accent hover:underline">
           all listings
-        </a>{" "}
+        </Link>{" "}
         and tick Compare on any card.
       </p>
     </div>

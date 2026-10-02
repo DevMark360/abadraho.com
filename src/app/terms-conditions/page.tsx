@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { GeoPageSummary } from "@/components/marketing/geo-page-summary";
 import {
   PublicPage,
@@ -59,7 +60,7 @@ export default function TermsPage() {
           <h2>Contact</h2>
           <p>
             For questions about these terms, use the{" "}
-            <a href="/contact">contact form</a> or email{" "}
+            <Link href="/contact">contact form</Link> or email{" "}
             <a href="mailto:enquiry@abadraho.com">enquiry@abadraho.com</a>.
           </p>
         </div>

@@ -14,7 +14,7 @@
 |-------|--------|
 | URL | http://localhost:3000/admin/login |
 | Email | `devmarkprop@gmail.com` |
-| Password | `Admin@123` (local seed only) |
+| Password | whatever you set in `SEED_ADMIN_PASSWORD` (required) |
 
 To use your own password:
 

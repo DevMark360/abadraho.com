@@ -5,7 +5,9 @@ const prisma = new PrismaClient();
 
 async function main() {
   const email = process.env.SEED_ADMIN_EMAIL ?? "devmarkprop@gmail.com";
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "Admin@123";
+  // No default: a fallback password would silently reset the admin login if this ran against prod.
+  const password = process.env.SEED_ADMIN_PASSWORD;
+  if (!password) throw new Error("Set SEED_ADMIN_PASSWORD before seeding.");
   const hash = await bcrypt.hash(password, 10);
 
   await prisma.admin.upsert({
@@ -14,7 +16,7 @@ async function main() {
     update: { password: hash, name: "Dev Admin" },
   });
 
-  console.log(`Admin ready: ${email} / ${password}`);
+  console.log(`Admin ready: ${email}`);
 }
 
 main()
