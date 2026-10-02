@@ -126,16 +126,40 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
       {!embedded && step === "form" && <AuthTabs active="register" />}
       {step === "form" ? (
         <>
-          <p className="mb-4 text-sm text-zinc-500">
-            Create a buyer account. Agents and builders are assigned by admin after signup.
+          <p className="mb-4 text-xs leading-relaxed text-zinc-500">
+            Buyer account. Agent and builder access is set up by our team after signup.
           </p>
           <form onSubmit={register} className="space-y-3">
-            <Input name="first_name" required placeholder="First name" autoComplete="given-name" />
-            <Input name="last_name" required placeholder="Last name" autoComplete="family-name" />
-            <Input name="email" type="email" required placeholder="Email" autoComplete="email" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input
+                name="first_name"
+                required
+                placeholder="First name"
+                aria-label="First name"
+                autoComplete="given-name"
+              />
+              <Input
+                name="last_name"
+                required
+                placeholder="Last name"
+                aria-label="Last name"
+                autoComplete="family-name"
+              />
+            </div>
+            <Input
+              name="email"
+              type="email"
+              required
+              placeholder="Email"
+              aria-label="Email"
+              autoComplete="email"
+            />
             <Input
               name="phone_number"
+              type="tel"
+              inputMode="tel"
               placeholder="WhatsApp number (optional)"
+              aria-label="WhatsApp number (optional)"
               autoComplete="tel"
             />
             <Input
@@ -144,6 +168,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
               required
               minLength={8}
               placeholder="Password (min 8 characters)"
+              aria-label="Password, minimum 8 characters"
               autoComplete="new-password"
             />
             {msg ? <AuthFormMessage variant={msg.variant}>{msg.text}</AuthFormMessage> : null}

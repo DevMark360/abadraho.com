@@ -20,7 +20,7 @@ function UnifiedAuthInner() {
           ? "Save wishlists, compare projects, and contact developers"
           : "One sign-in for buyers, agents, builders, and staff"
       }
-      logoHref="/"
+      logoHref={null}
     >
       {tab === "register" ? (
         <>

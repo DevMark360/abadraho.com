@@ -28,7 +28,7 @@ export function AuthTabs({ active }: { active: AuthTab }) {
     );
 
   return (
-    <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-zinc-100 p-1">
+    <div className="mb-6 mt-6 grid grid-cols-2 gap-1 rounded-xl bg-zinc-100 p-1">
       <Link href={authHref("signin", ref) as Route} className={tabClass("signin")}>
         Sign in
       </Link>
