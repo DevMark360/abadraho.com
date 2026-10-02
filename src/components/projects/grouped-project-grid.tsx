@@ -98,7 +98,7 @@ function ScoreSection({
           />
         )}
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 min-[1920px]:grid-cols-5">
         {projects.map((project) => (
           <ProjectCardWrap
             key={project.id}
@@ -216,7 +216,7 @@ export function GroupedProjectGrid({
       ? "listings-map-strip flex gap-3 overflow-x-auto px-1 pb-1 scrollbar-none snap-x snap-mandatory"
       : compact
         ? "grid grid-cols-1 gap-3 sm:grid-cols-2"
-        : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
+        : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 min-[1920px]:grid-cols-5";
 
     return (
       <>

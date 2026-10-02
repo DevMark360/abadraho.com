@@ -20,10 +20,10 @@ import { cn } from "@/lib/utils";
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <tr className="border-t border-zinc-100">
-      <th className="w-1/3 bg-zinc-50 px-4 py-3 text-left text-sm font-medium text-zinc-700">
+      <th className="w-1/3 bg-zinc-50 px-3 py-3 text-left align-top text-sm font-medium text-zinc-700 sm:px-4">
         {label}
       </th>
-      <td className="px-4 py-3 text-sm">{value}</td>
+      <td className="px-3 py-3 text-sm [overflow-wrap:anywhere] sm:px-4">{value}</td>
     </tr>
   );
 }
@@ -135,45 +135,47 @@ export function AdminReviewDetailClient({ id }: { id: number }) {
             Moderate user-submitted ratings and publish or hide reviews.
           </p>
         </div>
-        <table className="min-w-full">
-          <tbody>
-            <Row label="Date / time" value={fmtDate(data.createdAt)} />
-            <Row label="Name" value={data.userName ?? "—"} />
-            <Row label="Email" value={data.email} />
-            <Row label="Phone" value={data.phoneNumber ?? "—"} />
-            <Row
-              label="Project"
-              value={
-                <Link
-                  href={`/admin/projects/${data.projectId}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  {data.projectName}
-                </Link>
-              }
-            />
-            <Row
-              label="Status"
-              value={
-                <span
-                  className={cn(
-                    "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                    data.status === "approved" && "bg-emerald-50 text-emerald-700",
-                    data.status === "pending" && "bg-amber-50 text-amber-700",
-                    data.status === "rejected" && "bg-red-50 text-red-700"
-                  )}
-                >
-                  {reviewStatusLabel(data.status ?? "pending")}
-                </span>
-              }
-            />
-            <Row label="Rating" value={<AdminStarRating rating={data.rating} />} />
-            <Row
-              label="Review"
-              value={<span className="whitespace-pre-wrap">{data.comment}</span>}
-            />
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <tbody>
+              <Row label="Date / time" value={fmtDate(data.createdAt)} />
+              <Row label="Name" value={data.userName ?? "—"} />
+              <Row label="Email" value={data.email} />
+              <Row label="Phone" value={data.phoneNumber ?? "—"} />
+              <Row
+                label="Project"
+                value={
+                  <Link
+                    href={`/admin/projects/${data.projectId}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {data.projectName}
+                  </Link>
+                }
+              />
+              <Row
+                label="Status"
+                value={
+                  <span
+                    className={cn(
+                      "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                      data.status === "approved" && "bg-emerald-50 text-emerald-700",
+                      data.status === "pending" && "bg-amber-50 text-amber-700",
+                      data.status === "rejected" && "bg-red-50 text-red-700"
+                    )}
+                  >
+                    {reviewStatusLabel(data.status ?? "pending")}
+                  </span>
+                }
+              />
+              <Row label="Rating" value={<AdminStarRating rating={data.rating} />} />
+              <Row
+                label="Review"
+                value={<span className="whitespace-pre-wrap">{data.comment}</span>}
+              />
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className={adminCard}>

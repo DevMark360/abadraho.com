@@ -278,7 +278,7 @@ export function AdminFinanceClient() {
             View all →
           </Link>
         </div>
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+        <div className="mt-3 grid grid-cols-1 gap-2 text-center sm:grid-cols-3">
           <div className="rounded-md border border-zinc-100 bg-zinc-50 p-2">
             <p className="text-[10px] uppercase tracking-wider text-zinc-400">Pending</p>
             <p className="mt-0.5 text-sm font-semibold tabular-nums text-zinc-900">

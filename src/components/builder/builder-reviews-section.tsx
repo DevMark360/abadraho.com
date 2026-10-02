@@ -176,7 +176,7 @@ export function BuilderReviewsSection({
       <div className="mt-6 grid gap-8 lg:grid-cols-2">
         <div>
           <div className="flex items-end gap-3">
-            <span className="text-5xl font-bold leading-none text-zinc-900">
+            <span className="text-4xl font-bold leading-none text-zinc-900 sm:text-5xl">
               {count > 0 ? avg.toFixed(1) : "—"}
             </span>
             {count > 0 ? <BuilderStarRow value={avg} size="lg" className="mb-1" /> : null}

@@ -524,7 +524,7 @@ export function AdminAdCampaignsClient() {
 
                   <div className="py-3">
                     <SectionLabel icon={Wallet}>Bidding & budget</SectionLabel>
-                    <div className="mt-1.5 grid grid-cols-3 gap-2">
+                    <div className="mt-1.5 grid grid-cols-1 gap-2 sm:grid-cols-3">
                       <StatBox label="Max bid CPM" value={`Rs. ${viewDetail.maxBidCpm.toLocaleString()}`} />
                       <StatBox label="Budget cap" value={`Rs. ${viewDetail.budgetCap.toLocaleString()}`} />
                       <StatBox

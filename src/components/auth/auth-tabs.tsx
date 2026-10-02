@@ -21,7 +21,7 @@ export function AuthTabs({ active }: { active: AuthTab }) {
 
   const tabClass = (tab: AuthTab) =>
     cn(
-      "flex-1 rounded-lg py-2 text-center text-sm font-medium transition-colors",
+      "flex min-h-10 flex-1 items-center justify-center rounded-lg px-2 py-2 text-center text-sm font-medium leading-tight transition-colors",
       active === tab
         ? "bg-brand text-brand-foreground"
         : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"

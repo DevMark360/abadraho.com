@@ -43,7 +43,7 @@ export function AuthPageShell({
         </div>
       </aside>
 
-      <main className="flex min-h-0 flex-1 flex-col items-center justify-center p-6">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center p-4 sm:p-6">
         <div className="mb-6 lg:hidden">
           <AbadrahoLogo href="/" height={44} />
         </div>

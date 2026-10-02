@@ -8,8 +8,8 @@ import { fmtDate } from "@/components/admin/admin-search-history-format";
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <tr className="border-t border-zinc-100">
-      <th className="w-1/3 bg-zinc-50 px-4 py-3 text-left text-sm font-medium text-zinc-700">{label}</th>
-      <td className="px-4 py-3 text-sm">{value}</td>
+      <th className="w-1/3 bg-zinc-50 px-3 py-3 text-left align-top text-sm font-medium text-zinc-700 sm:px-4">{label}</th>
+      <td className="px-3 py-3 text-sm [overflow-wrap:anywhere] sm:px-4">{value}</td>
     </tr>
   );
 }
@@ -37,16 +37,18 @@ export function AdminContactDetailClient({ id }: { id: number }) {
         <div className="border-b px-4 py-3">
           <h2 className="font-semibold text-zinc-900">Contact inquiry</h2>
         </div>
-        <table className="min-w-full">
-          <tbody>
-            <Row label="Date" value={fmtDate(data.createdAt as string)} />
-            <Row label="Name" value={String(data.name ?? "—")} />
-            <Row label="Email" value={String(data.email ?? "—")} />
-            <Row label="Phone" value={String(data.phone ?? "—")} />
-            <Row label="Subject" value={String(data.subject ?? "—")} />
-            <Row label="Message" value={<span className="whitespace-pre-wrap">{String(data.message ?? "—")}</span>} />
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <tbody>
+              <Row label="Date" value={fmtDate(data.createdAt as string)} />
+              <Row label="Name" value={String(data.name ?? "—")} />
+              <Row label="Email" value={String(data.email ?? "—")} />
+              <Row label="Phone" value={String(data.phone ?? "—")} />
+              <Row label="Subject" value={String(data.subject ?? "—")} />
+              <Row label="Message" value={<span className="whitespace-pre-wrap">{String(data.message ?? "—")}</span>} />
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

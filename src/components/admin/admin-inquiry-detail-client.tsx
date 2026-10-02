@@ -8,8 +8,8 @@ import { fmtDate } from "@/components/admin/admin-search-history-format";
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <tr className="border-t border-zinc-100">
-      <th className="w-1/3 bg-zinc-50 px-4 py-3 text-left text-sm font-medium text-zinc-700">{label}</th>
-      <td className="px-4 py-3 text-sm">{value}</td>
+      <th className="w-1/3 bg-zinc-50 px-3 py-3 text-left align-top text-sm font-medium text-zinc-700 sm:px-4">{label}</th>
+      <td className="px-3 py-3 text-sm [overflow-wrap:anywhere] sm:px-4">{value}</td>
     </tr>
   );
 }
@@ -42,39 +42,41 @@ export function AdminInquiryDetailClient({ id }: { id: number }) {
             <p className="mt-1 text-xs text-zinc-500">Contact details are managed by Abad Raho.</p>
           ) : null}
         </div>
-        <table className="min-w-full">
-          <tbody>
-            <Row label="Name" value={String(data.name ?? "—")} />
-            {isFullStaff ? (
-              <>
-                <Row label="Email" value={String(data.email ?? "—")} />
-                <Row label="Address" value={String(data.address ?? "—")} />
-                <Row label="Phone" value={String(data.phoneNumber ?? "—")} />
-              </>
-            ) : null}
-            <Row label="Project" value={String(data.projectName ?? "—")} />
-            <Row label="Unit" value={String(data.unitTitle ?? "—")} />
-            <Row label="Inquiry date" value={fmtDate(data.createdAt as string)} />
-            {isFullStaff ? (
-              <>
-                {data.agentName || data.agentCode ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <tbody>
+              <Row label="Name" value={String(data.name ?? "—")} />
+              {isFullStaff ? (
+                <>
+                  <Row label="Email" value={String(data.email ?? "—")} />
+                  <Row label="Address" value={String(data.address ?? "—")} />
+                  <Row label="Phone" value={String(data.phoneNumber ?? "—")} />
+                </>
+              ) : null}
+              <Row label="Project" value={String(data.projectName ?? "—")} />
+              <Row label="Unit" value={String(data.unitTitle ?? "—")} />
+              <Row label="Inquiry date" value={fmtDate(data.createdAt as string)} />
+              {isFullStaff ? (
+                <>
+                  {data.agentName || data.agentCode ? (
+                    <Row
+                      label="Referred by agent"
+                      value={
+                        [data.agentName, data.agentCode].filter(Boolean).join(" · ") || "—"
+                      }
+                    />
+                  ) : null}
                   <Row
-                    label="Referred by agent"
+                    label="Message"
                     value={
-                      [data.agentName, data.agentCode].filter(Boolean).join(" · ") || "—"
+                      <span className="whitespace-pre-wrap">{String(data.message ?? "—")}</span>
                     }
                   />
-                ) : null}
-                <Row
-                  label="Message"
-                  value={
-                    <span className="whitespace-pre-wrap">{String(data.message ?? "—")}</span>
-                  }
-                />
-              </>
-            ) : null}
-          </tbody>
-        </table>
+                </>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
