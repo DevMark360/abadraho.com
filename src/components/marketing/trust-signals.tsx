@@ -121,6 +121,7 @@ export function SiteTrustFooter() {
               { href: "/contact" as const, label: "Contact" },
               { href: "/blog" as const, label: "Blog" },
               { href: "/terms-conditions" as const, label: "Terms" },
+              { href: "/privacy-policy" as const, label: "Privacy" },
             ].map(({ href, label }, i) => (
               <Fragment key={href}>
                 {i > 0 ? (

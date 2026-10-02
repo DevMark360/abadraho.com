@@ -34,6 +34,7 @@ export const PUBLIC_SITEMAP_STATIC_PATHS = [
   { path: "/blog", priority: 0.8, changeFrequency: "weekly" as const },
   { path: "/compare", priority: 0.8, changeFrequency: "weekly" as const },
   { path: "/terms-conditions", priority: 0.4, changeFrequency: "yearly" as const },
+  { path: "/privacy-policy", priority: 0.4, changeFrequency: "yearly" as const },
 ];
 
 export function sitemapXmlUrl(): string {

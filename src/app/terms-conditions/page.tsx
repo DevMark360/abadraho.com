@@ -40,7 +40,8 @@ export default function TermsPage() {
           <p>
             Use of AbadRaho is subject to these terms. By browsing listings, submitting
             inquiries, or creating an account you agree to our data handling and brokerage
-            policies operated by Mark Properties.
+            policies operated by Mark Properties. See our{" "}
+            <Link href="/privacy-policy">privacy policy</Link> for how we handle your data.
           </p>
 
           <h2>Listing accuracy</h2>

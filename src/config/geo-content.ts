@@ -137,4 +137,14 @@ export const geoContent = {
       "Questions: contact form or enquiry@abadraho.com",
     ],
   },
+  privacy: {
+    summary:
+      "How AbadRaho, operated by Mark Properties, collects, uses, and protects your personal information when you browse listings, create an account, or contact developers.",
+    bullets: [
+      "We collect what you give us (name, email, phone) plus basic usage data",
+      "Inquiries are shared only with the relevant developer and Mark Properties advisors",
+      "We do not sell your personal information",
+      "Ask us to access, correct, or delete your data: enquiry@abadraho.com",
+    ],
+  },
 } as const satisfies Record<string, GeoPageContent>;
