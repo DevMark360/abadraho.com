@@ -179,7 +179,7 @@ export const builderPartnerBenefits = [
 ] as const;
 
 export const aboutContent = {
-  pullQuote: "A leading real estate company in Pakistan — trusted by off-plan buyers since 2020.",
+  pullQuote: "A leading real estate company in Pakistan — trusted by off-plan buyers.",
   ceoParagraphs: [
     "Mark Properties has grown into one of Pakistan's trusted real estate advisory firms. Since our founding, we have helped buyers locate off-plan residential and commercial projects, evaluate payment plans, and complete purchases with clear documentation and ethical guidance.",
     "Our clients return to us because we combine market expertise with responsive service. Every AbadRaho listing is supported by trained property advisors who explain pricing, handover timelines, and developer credentials in plain language.",

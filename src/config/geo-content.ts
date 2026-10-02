@@ -14,9 +14,9 @@ export interface GeoPageContent {
 export const geoContent = {
   home: {
     summary:
-      "AbadRaho is Pakistan's off-plan property platform, operated by Mark Properties since 2020. Search pre-launch and under-construction projects in Karachi and across Pakistan, compare payment plans, and connect with verified builders.",
+      "AbadRaho is Pakistan's off-plan property platform, operated by Mark Properties. Search pre-launch and under-construction projects in Karachi and across Pakistan, compare payment plans, and connect with verified builders.",
     bullets: [
-      "Founded in 2020 by Mark Properties — a Karachi-based real estate advisory team",
+      "Operated by Mark Properties — a Karachi-based real estate advisory team",
       "Lists apartments, plots, houses, and commercial off-plan projects",
       "Compare prices, handover dates, installments, and unit plans side by side",
       "Map search for popular areas including North Karachi, Scheme 33, and Gulshan-e-Maymar",
