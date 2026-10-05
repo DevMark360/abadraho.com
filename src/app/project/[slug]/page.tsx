@@ -307,10 +307,19 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                 </div>
               </div>
 
+              {/* Long words in text may wrap anywhere (filenames, URLs), but tables keep normal
+                  wrapping and a minimum column width, then scroll sideways inside the card on
+                  phones. With "anywhere" inherited, table columns shrank to one-letter width. */}
               {project.details?.trim() ? (
                 <SanitizedHtml
                   html={project.details}
-                  className={cn(designTw.publicCard, "prose prose-sm max-w-none overflow-hidden p-6 text-zinc-600 [overflow-wrap:anywhere] sm:p-7 prose-img:rounded-xl prose-table:block prose-table:overflow-x-auto [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full")}
+                  className={cn(
+                    designTw.publicCard,
+                    "prose prose-sm max-w-none overflow-hidden p-6 text-zinc-600 [overflow-wrap:anywhere] sm:p-7",
+                    "prose-headings:leading-snug prose-h2:text-xl prose-h3:text-lg sm:prose-h2:text-2xl",
+                    "prose-img:rounded-xl prose-table:my-4 prose-table:block prose-table:max-w-full prose-table:overflow-x-auto",
+                    "[&_table]:[overflow-wrap:normal] [&_td]:min-w-[6.5rem] [&_td]:align-top [&_th]:min-w-[6.5rem] [&_th]:align-bottom",
+                    "[&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full")}
                 />
               ) : null}
 
