@@ -10,8 +10,18 @@ import { getSecurityHeaders } from "./src/lib/security-headers";
 /** Must exceed largest admin media upload (middleware default is only 10MB). */
 const adminMediaBodyLimit = ADMIN_MAX_MEDIA_REQUEST_BYTES;
 
+/**
+ * Crawlers that get fully-rendered metadata in <head> (no metadata streaming). Besides better
+ * crawling, this lets notFound() in generateMetadata send a real 404 status to them — with the
+ * root loading.tsx, a streamed page always answers 200. Next.js default list + Google + AI
+ * crawlers + generic bot / fetch-library user agents.
+ */
+const CRAWLER_UA =
+  /Mediapartners-Google|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Googlebot|Google-Extended|GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-User|Claude-SearchBot|anthropic-ai|PerplexityBot|Perplexity-User|CCBot|Amazonbot|Bytespider|meta-externalagent|cohere-ai|bot[\/;)]|crawler|spider|curl\/|wget|python-requests|axios|node-fetch|Go-http-client/i;
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  htmlLimitedBots: CRAWLER_UA,
   eslint: {
     // Run `npm run lint` separately — saves RAM during `next build` on low-memory machines
     ignoreDuringBuilds: true,

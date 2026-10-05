@@ -13,7 +13,7 @@ import { buildPageMetadata } from "@/lib/seo";
 import { getSlotRotation } from "@/server/services/ad-serving.service";
 
 export const metadata = buildPageMetadata({
-  title: "Off-plan properties",
+  title: "Off-plan Projects in Karachi & Pakistan",
   description:
     "Browse off-plan apartments, villas, and plots in Karachi and Pakistan. Filter by area, budget, payment plan, and handover date.",
   path: "/projects",

@@ -44,6 +44,11 @@ export function absoluteUrl(path = ""): string {
 
 export interface PageSeoInput {
   title?: string;
+  /**
+   * Full <title> that skips the "%s | AbadRaho" template. Needed on the home page: a layout's
+   * title template only applies to child segments, so the root page would otherwise get a bare title.
+   */
+  absoluteTitle?: string;
   description?: string;
   keywords?: string | string[];
   path?: string;
@@ -65,6 +70,7 @@ function parseKeywords(keywords?: string | string[]): string[] | undefined {
 export function buildPageMetadata(input: PageSeoInput = {}): Metadata {
   const siteName = siteConfig.name;
   const defaultDescription = siteConfig.seoDescription;
+  const absoluteTitle = input.absoluteTitle?.trim();
   const pageTitle = input.title?.trim();
   const description = input.description?.trim() || defaultDescription;
   const canonicalPath = input.path ?? "";
@@ -74,10 +80,15 @@ export function buildPageMetadata(input: PageSeoInput = {}): Metadata {
   const imagePath = input.image?.trim() || siteConfig.defaultOgImage;
   const imageUrl = imagePath ? absoluteUrl(imagePath) : undefined;
   const imageAlt = input.imageAlt?.trim() || `${siteName} — off-plan properties`;
-  const socialTitle = pageTitle ? `${pageTitle} | ${siteName}` : siteConfig.defaultTitle;
+  const socialTitle =
+    absoluteTitle || (pageTitle ? `${pageTitle} | ${siteName}` : siteConfig.defaultTitle);
 
   return {
-    ...(pageTitle ? { title: pageTitle } : {}),
+    ...(absoluteTitle
+      ? { title: { absolute: absoluteTitle } }
+      : pageTitle
+        ? { title: pageTitle }
+        : {}),
     description,
     ...(keywords ? { keywords } : {}),
     alternates: {

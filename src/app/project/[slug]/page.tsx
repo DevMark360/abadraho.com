@@ -185,7 +185,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               <div className={cn(designTw.publicCard, "overflow-hidden")}>
                 <div className="p-3 pb-0 sm:p-4 sm:pb-0">
                   <TrackedSection section="gallery" projectId={project.id}>
-                    <ProjectGallery images={galleryImages} />
+                    <ProjectGallery images={galleryImages} projectName={project.name} />
                   </TrackedSection>
                 </div>
                 <div className="p-5 sm:p-7">

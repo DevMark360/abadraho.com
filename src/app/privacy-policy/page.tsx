@@ -4,7 +4,7 @@ import { geoContent } from "@/config/geo-content";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata = buildPageMetadata({
-  title: "Privacy policy",
+  title: "Privacy Policy: How We Handle Your Data",
   description:
     "AbadRaho privacy policy: what personal data we collect, how it is used and shared, cookies, WhatsApp verification, and how to access or delete your data.",
   keywords: [

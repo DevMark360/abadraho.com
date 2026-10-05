@@ -531,6 +531,29 @@ export function buildFaqSchema(
   };
 }
 
+export function buildHowToSchema(input: {
+  name: string;
+  description: string;
+  path: string;
+  steps: Array<{ name: string; text: string; path?: string }>;
+}): JsonLdNode {
+  const pageUrl = absoluteUrl(input.path);
+  return pruneEmpty({
+    "@type": "HowTo",
+    "@id": `${pageUrl}#howto`,
+    name: input.name,
+    description: input.description,
+    inLanguage: "en-PK",
+    step: input.steps.map((step, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: step.name,
+      text: step.text,
+      url: step.path ? absoluteUrl(step.path) : undefined,
+    })),
+  });
+}
+
 function toIsoDate(value?: string | Date | null): string | undefined {
   if (!value) return undefined;
   const date = value instanceof Date ? value : new Date(value);

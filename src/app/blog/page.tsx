@@ -14,7 +14,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const dynamic = "force-dynamic";
 
 export const metadata = buildPageMetadata({
-  title: "Blog",
+  title: "Off-plan Property Guides & Market Updates",
   description:
     "Read the latest guides, market updates, and investment tips for off-plan property buyers in Pakistan.",
   path: "/blog",

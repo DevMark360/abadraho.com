@@ -455,8 +455,13 @@ video {
 
 @media (max-width: 768px) {
   .floating-support-link {
-    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     padding: 0.75rem 1rem;
+  }
+
+  /* Lift the button above the compare bar only while that bar is showing. */
+  body:has(.compare-bar-root) .floating-support-link {
+    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
   }
 
   .floating-support-link .floating-support-label {

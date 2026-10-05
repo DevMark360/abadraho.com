@@ -4,7 +4,7 @@ import { geoContent } from "@/config/geo-content";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata = buildPageMetadata({
-  title: "Terms & conditions",
+  title: "Terms & Conditions for Buyers and Builders",
   description:
     "AbadRaho terms and conditions: using the off-plan property platform, accounts, listing accuracy, inquiries, builder advertising and wallet top-ups, and acceptable use.",
   keywords: [

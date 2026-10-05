@@ -178,12 +178,14 @@ export async function getHomePageData(viewerUserId?: number | null): Promise<{
   featured: ProjectListItem[];
   areaCounts: Record<string, number>;
   mapProjects: ProjectListItem[];
+  /** Total projects visible to this viewer (used for factual home copy). */
+  projectCount: number;
 }> {
   const scope = await resolveHomeScope(viewerUserId);
   const listFilters = filtersFromScope(scope);
 
   if (scope != null && !scope.length) {
-    return { featured: [], areaCounts: {}, mapProjects: [] };
+    return { featured: [], areaCounts: {}, mapProjects: [], projectCount: 0 };
   }
 
   const mapProjectsResult = await listProjects({
@@ -198,5 +200,6 @@ export async function getHomePageData(viewerUserId?: number | null): Promise<{
     featured,
     areaCounts,
     mapProjects: mapProjectsResult.items,
+    projectCount: mapProjectsResult.total,
   };
 }

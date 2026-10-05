@@ -9,6 +9,9 @@ import {
   HomeEventsSection,
   BuilderPartnerSection,
   WhatIsAbadRahoSection,
+  HomeFaqSection,
+  HomeBuyerGuideSection,
+  HomeMarketDataSection,
   HomePartnersSection,
   HomeAdvisorCtaSection,
 } from "@/components/marketing/home-sections";
@@ -17,8 +20,9 @@ import { getHomePageData } from "@/server/services/home-page.service";
 import { listPublicEvents } from "@/server/services/event.service";
 import { getSession } from "@/lib/session";
 import { JsonLd } from "@/components/seo/json-ld";
-import { buildWebPageSchema } from "@/lib/schema-markup";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildFaqSchema, buildHowToSchema, buildWebPageSchema } from "@/lib/schema-markup";
+import { homeFaqs, homeGuide, homeHowTo, homeInsights, homeLead } from "@/config/home-aeo";
+import { absoluteUrl, buildPageMetadata } from "@/lib/seo";
 import { getSlotRotation } from "@/server/services/ad-serving.service";
 import {
   RotatingFeaturedSection,
@@ -27,7 +31,7 @@ import {
 } from "@/components/advertising/ad-rotation";
 
 export const metadata = buildPageMetadata({
-  title: "Home",
+  absoluteTitle: "AbadRaho: Off-plan Property in Karachi & Pakistan",
   description:
     "AbadRaho helps you search, compare, and invest in off-plan properties across Pakistan with expert guidance and flexible payment plans.",
   path: "/",
@@ -37,7 +41,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const session = await getSession();
-  const [{ featured, areaCounts, mapProjects }, featuredRotation, bannerRotation, contentRotation, upcomingEvents] =
+  const [{ featured, areaCounts, mapProjects, projectCount }, featuredRotation, bannerRotation, contentRotation, upcomingEvents] =
     await Promise.all([
       getHomePageData(session?.id),
       getSlotRotation("featured_listing", null, null),
@@ -46,17 +50,26 @@ export default async function HomePage() {
       listPublicEvents(12),
     ]);
 
+  const facts = { projectCount, areaCounts };
+  const faqs = homeFaqs(facts);
+  const [whatIs, ...moreFaqs] = faqs;
+
   return (
     <MarketingShell>
       <JsonLd
-        data={buildWebPageSchema({
-          name: "AbadRaho Home",
-          description:
-            "AbadRaho helps you search, compare, and invest in off-plan properties across Pakistan with expert guidance and flexible payment plans.",
-          path: "/",
-        })}
+        data={[
+          buildWebPageSchema({
+            name: "AbadRaho Home",
+            description:
+              "AbadRaho helps you search, compare, and invest in off-plan properties across Pakistan with expert guidance and flexible payment plans.",
+            path: "/",
+          }),
+          // Built from the same data as the visible FAQ / "What is AbadRaho?" / How it works.
+          { ...buildFaqSchema(faqs), "@id": `${absoluteUrl("/")}#faq` },
+          buildHowToSchema({ ...homeHowTo, path: "/" }),
+        ]}
       />
-      <HomeHero />
+      <HomeHero lead={homeLead(facts)} />
       <FeaturedPropertiesSection projects={featured} />
       <RotatingFeaturedSection rotation={featuredRotation} />
       <HomeInsightsSection mapProjects={mapProjects} />
@@ -67,7 +80,10 @@ export default async function HomePage() {
       <PopularPlacesSection areaCounts={areaCounts} />
       <HomeEventsSection events={upcomingEvents} />
       <BuilderPartnerSection />
-      <WhatIsAbadRahoSection />
+      <WhatIsAbadRahoSection answer={whatIs.answer} />
+      <HomeMarketDataSection insights={homeInsights(mapProjects, projectCount)} projectCount={projectCount} />
+      <HomeBuyerGuideSection guide={homeGuide(facts)} />
+      <HomeFaqSection faqs={moreFaqs} />
       <HomePartnersSection />
       <HomeAdvisorCtaSection />
       <SiteTrustFooter />

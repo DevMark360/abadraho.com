@@ -102,8 +102,7 @@ export function TrustStatsRow({
 
 export function SiteTrustFooter() {
   return (
-    <footer className={cn(designTw.publicContainer, "pb-24 pt-2 xl:pb-4")}>
-      {/* pb-24 keeps the floating Support button from covering footer links; on wide screens it sits beside the card */}
+    <footer className={cn(designTw.publicContainer, "pb-4 pt-2")}>
       <div className={cn(designTw.publicCard, "px-5 py-8 sm:px-8")}>
         <TrustStatsRow compact className="mb-8" />
         <div className="flex flex-col gap-6 border-t border-clay-line pt-8 sm:flex-row sm:items-center sm:justify-between">
@@ -127,7 +126,8 @@ export function SiteTrustFooter() {
             ].map(({ href, label }, i) => (
               <Fragment key={href}>
                 {i > 0 ? (
-                  <span className="select-none text-zinc-300" aria-hidden>
+                  // Dots only on one-line layouts; on phones the links wrap and a dot would dangle.
+                  <span className="hidden select-none text-zinc-300 sm:inline" aria-hidden>
                     ·
                   </span>
                 ) : null}
@@ -141,7 +141,8 @@ export function SiteTrustFooter() {
             ))}
           </nav>
         </div>
-        <p className="mt-6 text-center text-xs text-zinc-400">
+        {/* pr-14 on phones keeps the line clear of the floating Support button (bottom-right). */}
+        <p className="mt-6 pr-14 text-xs text-zinc-400 sm:pr-0 sm:text-center">
           © {new Date().getFullYear()} {siteConfig.name} · Operated by {markPropertiesLabel}
         </p>
       </div>

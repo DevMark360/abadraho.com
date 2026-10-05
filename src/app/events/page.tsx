@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export const metadata = buildPageMetadata({
-  title: "Events",
+  title: "Property Launches & Builder Events in Karachi",
   description:
     "Upcoming project launches, open houses, and marketing events from builders across abadraho.com.",
   path: "/events",

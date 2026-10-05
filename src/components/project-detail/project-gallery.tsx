@@ -4,7 +4,14 @@ import Image from "next/image";
 import { Building2 } from "lucide-react";
 import { useState } from "react";
 
-export function ProjectGallery({ images }: { images: string[] }) {
+export function ProjectGallery({
+  images,
+  projectName,
+}: {
+  images: string[];
+  /** Used for image alt text, e.g. "Roomi Towers — photo 2 of 9". */
+  projectName: string;
+}) {
   const [active, setActive] = useState(0);
   const safe = images.filter(Boolean);
 
@@ -21,7 +28,7 @@ export function ProjectGallery({ images }: { images: string[] }) {
       <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-zinc-100">
         <Image
           src={safe[active] ?? safe[0]}
-          alt=""
+          alt={`${projectName} — photo ${active + 1} of ${safe.length}`}
           fill
           className="object-cover"
           unoptimized
@@ -35,11 +42,18 @@ export function ProjectGallery({ images }: { images: string[] }) {
               key={src + i}
               type="button"
               onClick={() => setActive(i)}
+              aria-label={`Show photo ${i + 1}`}
               className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 ${
                 i === active ? "border-zinc-900" : "border-transparent opacity-70"
               }`}
             >
-              <Image src={src} alt="" fill className="object-cover" unoptimized />
+              <Image
+                src={src}
+                alt={`${projectName} — thumbnail ${i + 1}`}
+                fill
+                className="object-cover"
+                unoptimized
+              />
             </button>
           ))}
         </div>

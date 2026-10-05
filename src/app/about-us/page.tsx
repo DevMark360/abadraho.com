@@ -22,7 +22,7 @@ import { buildWebPageSchema } from "@/lib/schema-markup";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata = buildPageMetadata({
-  title: "About us",
+  title: "About Us: Off-plan Property Advisors in Karachi",
   description:
     "Learn about AbadRaho, Pakistan's platform for discovering and investing in off-plan real estate with end-to-end buyer support.",
   path: "/about-us",

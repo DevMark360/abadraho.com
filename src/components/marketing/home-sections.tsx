@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   Headphones,
   BookOpen,
+  ChevronDown,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,8 +39,7 @@ import {
   popularPlaces,
   partnerLogos,
 } from "@/config/marketing";
-import { geoContent } from "@/config/geo-content";
-import { GeoPageSummary } from "@/components/marketing/geo-page-summary";
+import { homeSources, type HomeFaq, type HomeInsight, type homeGuide } from "@/config/home-aeo";
 import { MarkPropertiesBadge } from "@/components/marketing/trust-signals";
 import { legacyStaticUrl } from "@/lib/legacy-url";
 import { cn } from "@/lib/utils";
@@ -89,7 +90,7 @@ function SectionHeader({
   );
 }
 
-export function HomeHero() {
+export function HomeHero({ lead }: { lead: string }) {
   return (
     <section className="relative overflow-hidden">
       <div
@@ -109,8 +110,7 @@ export function HomeHero() {
               <span className="text-brand-accent">off-plan property</span>
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-zinc-600 md:text-lg">
-              Search verified listings, compare installment plans, and get free Mark Properties
-              advisor support — all in one place.
+              {lead}
             </p>
 
             <div className={cn(homeCardClass, "mt-8 p-4 sm:p-5")}>
@@ -204,8 +204,8 @@ export function HomeInsightsSection({
       <div className={container}>
         <SectionHeader
           eyebrow="Market insights"
-          title="Map & buyer journey"
-          subtitle="See project locations across Karachi and how AbadRaho guides your investment process."
+          title="Where are off-plan projects in Karachi?"
+          subtitle="Every listed project on one map, plus the steps AbadRaho takes you through from search to booking."
         />
         <div className="grid gap-6 lg:grid-cols-2">
           <HomeProjectsMap projects={mapProjects} />
@@ -222,8 +222,8 @@ export function AssistanceSection() {
       <div className={container}>
         <SectionHeader
           eyebrow="How it works"
-          title="Four steps to your next investment"
-          subtitle="Mark Properties advisors support you at every stage."
+          title="How do you buy off-plan property on AbadRaho?"
+          subtitle="Four steps, with free Mark Properties advisor support at each one."
         />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {assistanceSteps.map((step, i) => {
@@ -281,7 +281,7 @@ export function CategoriesSection() {
       <div className={container}>
         <SectionHeader
           eyebrow="Quick filters"
-          title="Browse by property type"
+          title="What types of off-plan property can you buy?"
           subtitle="Jump straight to the inventory that matches your investment goal."
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -311,13 +311,19 @@ export function PopularPlacesSection({
 }: {
   areaCounts?: Record<string, number>;
 }) {
+  const listed = popularPlaces.filter((p) => (areaCounts[p.name] ?? 0) > 0);
+  const listedTotal = listed.reduce((sum, p) => sum + (areaCounts[p.name] ?? 0), 0);
   return (
     <section className={section}>
       <div className={container}>
         <SectionHeader
           eyebrow="Locations"
-          title="Popular areas in Karachi"
-          subtitle="High-demand zones for off-plan apartments, plots, and houses."
+          title="Which Karachi areas are popular for off-plan property?"
+          subtitle={
+            listedTotal > 0
+              ? `${listedTotal} listed projects across these ${listed.length} high-demand areas for apartments, plots, and houses.`
+              : "High-demand zones for off-plan apartments, plots, and houses."
+          }
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
           {popularPlaces.map((place) => {
@@ -450,7 +456,7 @@ export function BuilderPartnerSection() {
   );
 }
 
-export function WhatIsAbadRahoSection() {
+export function WhatIsAbadRahoSection({ answer }: { answer: string }) {
   const features = [
     "Search by area, budget, and handover date",
     "Compare payment plans across projects",
@@ -465,7 +471,7 @@ export function WhatIsAbadRahoSection() {
           <div>
             <SectionHeader title="What is AbadRaho?" className="mb-4" />
             <p className="text-base leading-relaxed text-zinc-700">
-              {geoContent.home.intents?.[0]?.answer}
+              {answer}
             </p>
             <ul className="mt-6 space-y-3">
               {features.map((f) => (
@@ -475,13 +481,6 @@ export function WhatIsAbadRahoSection() {
                 </li>
               ))}
             </ul>
-            <GeoPageSummary
-              variant="accordion"
-              compact
-              className="mt-6"
-              intents={geoContent.home.intents}
-              faqToggleLabel="Common questions"
-            />
           </div>
           <div className={cn(homeCardClass, "relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden lg:mr-0")}>
             <Image
@@ -532,6 +531,189 @@ export function LatestBlogSection({ posts }: { posts: BlogPostSummary[] }) {
             View all articles →
           </Link>
         </p>
+      </div>
+    </section>
+  );
+}
+
+/** Live listing statistics — first-party data that answer engines can cite. */
+export function HomeMarketDataSection({
+  insights,
+  projectCount,
+}: {
+  insights: HomeInsight[];
+  projectCount: number;
+}) {
+  if (!insights.length) return null;
+  return (
+    <section className={section} aria-labelledby="home-data-title">
+      <div className={container}>
+        <div className="mb-8 md:mb-10">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-accent">
+            Market data
+          </p>
+          <h2 id="home-data-title" className="text-2xl font-semibold tracking-tight text-zinc-900 md:text-3xl">
+            What does AbadRaho&apos;s listing data show?
+          </h2>
+          <p className="mt-2 max-w-3xl text-base leading-relaxed text-zinc-600">
+            According to AbadRaho&apos;s live listing data — {projectCount} off-plan projects, recalculated
+            every time this page loads — this is what Karachi&apos;s off-plan market looks like right now.
+          </p>
+        </div>
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {insights.map((item) => (
+            <li key={item.label} className={cn(homeCardClass, "p-5 sm:p-6")}>
+              <p className="text-3xl font-semibold tracking-tight text-zinc-900">{item.value}</p>
+              <p className="mt-1 text-sm font-medium text-brand-accent">{item.label}</p>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">{item.detail}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-xs text-zinc-400">
+          Source: AbadRaho project listings, as published by developers. Figures exclude projects that
+          have not shared that detail.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/** Buyer's guide — long-form answers, a comparison table, and a checklist (server-rendered for AEO). */
+export function HomeBuyerGuideSection({ guide }: { guide: ReturnType<typeof homeGuide> }) {
+  const { comparison } = guide;
+  return (
+    <section className={section} aria-labelledby="home-guide-title">
+      <div className={container}>
+        <SectionHeader eyebrow="Buyer's guide" title={guide.title} className="mb-4 md:mb-5" />
+        <p className="max-w-3xl text-base leading-relaxed text-zinc-600">{guide.intro}</p>
+
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <article className={cn(homeCardClass, "min-w-0 p-6 sm:p-7")}>
+            <h3 className="text-lg font-semibold text-zinc-900">{guide.paymentPlans.question}</h3>
+            {guide.paymentPlans.paragraphs.map((p) => (
+              <p key={p.slice(0, 24)} className="mt-3 text-sm leading-relaxed text-zinc-600 sm:text-base">
+                {p}
+              </p>
+            ))}
+            <h3 className="mt-6 text-lg font-semibold text-zinc-900">{guide.afterBooking.question}</h3>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-600 sm:text-base">
+              {guide.afterBooking.paragraph}
+            </p>
+          </article>
+
+          <article className={cn(homeCardClass, "min-w-0 p-6 sm:p-7")}>
+            <h3 className="text-lg font-semibold text-zinc-900">{guide.checklist.question}</h3>
+            <ul className="mt-4 space-y-3">
+              {guide.checklist.items.map((item) => {
+                const [label, ...rest] = item.split(": ");
+                return (
+                  <li key={label} className="flex gap-2.5 text-sm leading-relaxed text-zinc-600 sm:text-base">
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
+                    <span>
+                      <strong className="font-semibold text-zinc-900">{label}:</strong> {rest.join(": ")}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </article>
+        </div>
+
+        <div className={cn(homeCardClass, "mt-6 min-w-0 p-6 sm:p-7")}>
+          <h3 className="text-lg font-semibold text-zinc-900">{comparison.question}</h3>
+          {/* Scrolls sideways on narrow phones instead of squeezing three columns. */}
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[34rem] border-collapse text-left text-sm">
+              <caption className="sr-only">{comparison.caption}</caption>
+              <thead>
+                <tr>
+                  {comparison.columns.map((col, i) => (
+                    <th
+                      key={col || "aspect"}
+                      scope="col"
+                      className={cn(
+                        "bg-clay-well px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500",
+                        i === 0 && "rounded-l-xl",
+                        i === comparison.columns.length - 1 && "rounded-r-xl"
+                      )}
+                    >
+                      {col || <span className="sr-only">Aspect</span>}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {comparison.rows.map(([aspect, offPlan, ready]) => (
+                  <tr key={aspect} className="border-b border-clay-line last:border-0">
+                    <th scope="row" className="px-4 py-3 align-top font-semibold text-zinc-900">
+                      {aspect}
+                    </th>
+                    <td className="px-4 py-3 align-top text-zinc-600">{offPlan}</td>
+                    <td className="px-4 py-3 align-top text-zinc-600">{ready}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-zinc-900">Official sources</h3>
+          <ul className="mt-2 space-y-1.5">
+            {homeSources.map((src) => (
+              <li key={src.url} className="text-sm text-zinc-600">
+                <a
+                  href={src.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-2 hover:decoration-brand-accent"
+                >
+                  {src.name}
+                  <ExternalLink className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
+                </a>{" "}
+                — {src.note}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-zinc-400">
+            General guidance only, not financial or legal advice — confirm details with the developer
+            and a qualified professional before you pay.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Visible FAQ — the same questions and answers as the page's FAQPage JSON-LD. Answers live in
+ * the DOM even when collapsed (native <details>), so crawlers and AI engines can read them.
+ */
+export function HomeFaqSection({ faqs }: { faqs: HomeFaq[] }) {
+  if (!faqs.length) return null;
+  return (
+    <section className={section} aria-labelledby="home-faq-title">
+      <div className={cn(container, "max-w-4xl")}>
+        <div className="mb-8 text-center md:mb-10">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-accent">FAQ</p>
+          <h2 id="home-faq-title" className="text-2xl font-semibold tracking-tight text-zinc-900 md:text-3xl">
+            Frequently asked questions
+          </h2>
+        </div>
+        <div className="space-y-3">
+          {faqs.map(({ question, answer }, i) => (
+            <details key={question} className={cn(homeCardClass, "group")} open={i === 0}>
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 sm:px-6 [&::-webkit-details-marker]:hidden">
+                <h3 className="text-base font-semibold text-zinc-900">{question}</h3>
+                <ChevronDown
+                  className="h-5 w-5 shrink-0 text-zinc-400 transition-transform group-open:rotate-180"
+                  aria-hidden
+                />
+              </summary>
+              <p className="px-5 pb-5 text-sm leading-relaxed text-zinc-600 sm:px-6 sm:text-base">{answer}</p>
+            </details>
+          ))}
+        </div>
       </div>
     </section>
   );

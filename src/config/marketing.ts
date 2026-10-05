@@ -93,16 +93,19 @@ export const popularPlaces = [
   },
 ];
 
-export const partnerLogos = [
-  "Firdouse-01.jpg",
-  "Domanin-01.jpg",
-  "Elite-01.jpg",
-  "Untitled-2-01.jpg",
-  "NB-01.jpg",
-  "Falaknaz-01.jpg",
-  "Goldline-01.jpg",
-  "Shahmeer-01.jpg",
-].map((file) => legacyStaticUrl(`/assets/images/partners/${file}`));
+/** Builder partner logos — `name` is the logo's alt text (accessibility + image SEO). */
+export type PartnerLogo = { name: string; src: string };
+
+export const partnerLogos: PartnerLogo[] = [
+  { file: "Firdouse-01.jpg", name: "Firdous Builders and Developers" },
+  { file: "Domanin-01.jpg", name: "Dominion" },
+  { file: "Elite-01.jpg", name: "Elite Villas" },
+  { file: "Untitled-2-01.jpg", name: "Saima Group" },
+  { file: "NB-01.jpg", name: "Nadeem Brothers (NB) Group" },
+  { file: "Falaknaz-01.jpg", name: "Falaknaz" },
+  { file: "Goldline-01.jpg", name: "Goldline" },
+  { file: "Shahmeer-01.jpg", name: "Shahmir Residency" },
+].map(({ file, name }) => ({ name, src: legacyStaticUrl(`/assets/images/partners/${file}`) }));
 
 export const homeStatCards = [
   { label: "Search", description: "Live off-plan listings across Karachi & Pakistan", icon: "search" as const },

@@ -19,6 +19,21 @@ export type Illustration3DName =
   | "padlock"
   | "upload";
 
+/** Short descriptions for alt text (the icons are decorative, so screen readers still skip them). */
+const ALT: Record<Illustration3DName, string> = {
+  home: "3D house illustration",
+  calendar: "3D calendar illustration",
+  bookmark: "3D bookmark illustration",
+  chat: "3D chat bubble illustration",
+  search: "3D magnifying glass illustration",
+  "location-pin": "3D location pin illustration",
+  memo: "3D notepad illustration",
+  check: "3D check mark illustration",
+  eye: "3D eye illustration",
+  padlock: "3D padlock illustration",
+  upload: "3D upload illustration",
+};
+
 export function Illustration3D({
   name,
   size = 96,
@@ -34,7 +49,9 @@ export function Illustration3D({
   return (
     <Image
       src={`/icons/3d/${name}.png`}
-      alt=""
+      // Descriptive alt for image indexing / SEO checkers; aria-hidden keeps assistive tech
+      // from announcing a purely decorative image next to its visible text.
+      alt={ALT[name]}
       aria-hidden
       width={size}
       height={size}
