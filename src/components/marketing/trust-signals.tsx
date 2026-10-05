@@ -102,8 +102,8 @@ export function TrustStatsRow({
 
 export function SiteTrustFooter() {
   return (
-    <footer className={cn(designTw.publicContainer, "pb-24 pt-2")}>
-      {/* pb-24 keeps the floating Support button from covering footer links */}
+    <footer className={cn(designTw.publicContainer, "pb-24 pt-2 xl:pb-4")}>
+      {/* pb-24 keeps the floating Support button from covering footer links; on wide screens it sits beside the card */}
       <div className={cn(designTw.publicCard, "px-5 py-8 sm:px-8")}>
         <TrustStatsRow compact className="mb-8" />
         <div className="flex flex-col gap-6 border-t border-clay-line pt-8 sm:flex-row sm:items-center sm:justify-between">

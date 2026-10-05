@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Eye, Trash2, X } from "lucide-react";
 import { AdminPageToolbar, adminCard, adminTableHead } from "@/components/admin/admin-ui";
 import { FieldLabel } from "@/components/admin/admin-form-section";
 import { AdminSelect } from "@/components/admin/admin-select";
@@ -25,7 +26,10 @@ type Row = {
   status: string;
   adminNotes: string | null;
   createdAt: string;
+  updatedAt: string | null;
 };
+
+const iconBtn = "rounded-lg p-1.5 text-zinc-600 hover:bg-clay-well";
 
 function statusBadgeVariant(status: string): "default" | "success" | "muted" {
   if (status === "approved") return "success";
@@ -39,6 +43,7 @@ export function AdminBrokerAssignmentRequestsClient() {
   const [status, setStatus] = useState("");
   const [approveModal, setApproveModal] = useState<Row | null>(null);
   const [rejectModal, setRejectModal] = useState<Row | null>(null);
+  const [viewRow, setViewRow] = useState<Row | null>(null);
   const [commissionType, setCommissionType] = useState<string>("percentage");
   const [commissionValue, setCommissionValue] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
@@ -83,6 +88,26 @@ export function AdminBrokerAssignmentRequestsClient() {
     }
   }
 
+  async function onDelete(row: Row) {
+    const note =
+      row.status === "approved"
+        ? " The agent stays assigned to the project — remove that from the agent's page if needed."
+        : "";
+    const who = row.brokerName ?? "the agent";
+    const what = row.projectName ?? "this project";
+    if (!confirm(`Delete this request from ${who} for ${what}?${note}`)) return;
+    const res = await fetch(`/api/admin/broker-assignment-requests?id=${row.id}`, {
+      method: "DELETE",
+    });
+    const json = (await res.json().catch(() => ({}))) as { success?: boolean; message?: string };
+    if (!res.ok || !json.success) {
+      alert(json.message ?? "Delete failed");
+      return;
+    }
+    setViewRow(null);
+    load();
+  }
+
   return (
     <div className="min-w-0 space-y-4">
       <p className="text-sm text-zinc-500">
@@ -116,7 +141,7 @@ export function AdminBrokerAssignmentRequestsClient() {
               <th className={adminTableHead}>Message</th>
               <th className={adminTableHead}>Status</th>
               <th className={adminTableHead}>Created</th>
-              <th className={adminTableHead}>Actions</th>
+              <th className={`${adminTableHead} text-right`}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -152,7 +177,7 @@ export function AdminBrokerAssignmentRequestsClient() {
                     {new Date(row.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
                       {row.status === "pending" ? (
                         <>
                           <Button size="sm" onClick={() => setApproveModal(row)}>
@@ -166,9 +191,27 @@ export function AdminBrokerAssignmentRequestsClient() {
                             Reject
                           </Button>
                         </>
-                      ) : (
-                        <span className="text-xs text-zinc-400">No actions</span>
-                      )}
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setViewRow(row)}
+                        className={iconBtn}
+                        title="View"
+                        aria-label="View request"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      {row.status !== "pending" ? (
+                        <button
+                          type="button"
+                          onClick={() => void onDelete(row)}
+                          className={`${iconBtn} hover:text-red-600`}
+                          title="Delete"
+                          aria-label="Delete request"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -177,6 +220,88 @@ export function AdminBrokerAssignmentRequestsClient() {
           </tbody>
         </table>
       </div>
+
+      {viewRow ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setViewRow(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="request-view-title"
+            className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-clay-lg border border-white/80 bg-clay-surface p-6 shadow-clay"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h3 id="request-view-title" className="text-lg font-semibold text-zinc-900">
+                Assignment request
+              </h3>
+              <button
+                type="button"
+                onClick={() => setViewRow(null)}
+                className={iconBtn}
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <dl className="mt-4 space-y-3 text-sm">
+              {[
+                ["Agent / broker", viewRow.brokerName ?? "—"],
+                ["Project", viewRow.projectName ?? "—"],
+                ["Submitted", new Date(viewRow.createdAt).toLocaleString()],
+                ...(viewRow.status !== "pending" && viewRow.updatedAt
+                  ? [["Reviewed", new Date(viewRow.updatedAt).toLocaleString()]]
+                  : []),
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-4">
+                  <dt className="text-zinc-500">{label}</dt>
+                  <dd className="text-right font-medium text-zinc-900">{value}</dd>
+                </div>
+              ))}
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-zinc-500">Status</dt>
+                <dd>
+                  <Badge variant={statusBadgeVariant(viewRow.status)}>
+                    {ASSIGNMENT_REQUEST_STATUS_LABELS[viewRow.status as AssignmentRequestStatus] ??
+                      viewRow.status}
+                  </Badge>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500">Message from agent</dt>
+                <dd className="mt-1 whitespace-pre-wrap break-words rounded-clay bg-clay-well p-3 text-zinc-800 shadow-clay-inset">
+                  {viewRow.message?.trim() || "—"}
+                </dd>
+              </div>
+              {viewRow.adminNotes?.trim() ? (
+                <div>
+                  <dt className="text-zinc-500">
+                    {viewRow.status === "rejected" ? "Rejection reason" : "Admin note"}
+                  </dt>
+                  <dd className="mt-1 whitespace-pre-wrap break-words rounded-clay bg-clay-well p-3 text-zinc-800 shadow-clay-inset">
+                    {viewRow.adminNotes}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
+            <div className="mt-6 flex flex-wrap justify-end gap-2">
+              {viewRow.status !== "pending" ? (
+                <Button
+                  variant="outline"
+                  className="gap-1.5 text-red-600 hover:text-red-700"
+                  onClick={() => void onDelete(viewRow)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              ) : null}
+              <Button onClick={() => setViewRow(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {approveModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">

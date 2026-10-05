@@ -549,34 +549,91 @@ export async function saveAdminAgent(
   }
 }
 
-export async function archiveAdminAgent(id: number) {
+export type DeleteAgentResult =
+  | { ok: true; userKeptArchived: boolean }
+  | { ok: false; status: number; message: string };
+
+/**
+ * Deletes the login account; if other records still point at it, archives it instead (archived
+ * users can't sign in). Raw SQL on purpose: Prisma model calls read back every mapped column and
+ * fail on production tables that predate newer columns.
+ */
+async function deleteOrArchiveUser(userId: number): Promise<boolean> {
+  try {
+    await executeRaw(`DELETE FROM users WHERE id = ?`, userId);
+    return false;
+  } catch {
+    await executeRaw(`UPDATE users SET is_archive = 1 WHERE id = ?`, userId);
+    return true;
+  }
+}
+
+/** Tables holding data that belongs only to one broker — removed with the broker. */
+const BROKER_OWNED_TABLES = [
+  "broker_referral_clicks",
+  "broker_short_links",
+  "broker_whatsapp_cards",
+  "broker_pitch_decks",
+  "broker_assignment_requests",
+  "broker_project_assignments",
+  "broker_leads",
+  "broker_area",
+] as const;
+
+/**
+ * Permanently deletes an agent/broker and the data that only belongs to them (assignments, requests,
+ * leads, links, cards). Inquiries are customer records, so they are kept and just unlinked.
+ * Agents with commission records are refused — those are payment history.
+ * Uses raw SQL and skips tables that don't exist, so older production schemas work too.
+ */
+export async function deleteAdminAgent(id: number): Promise<DeleteAgentResult> {
+  if (!Number.isInteger(id) || id < 1) return { ok: false, status: 400, message: "Invalid agent" };
   const storageMode = await getAgentStorageMode();
 
   if (storageMode === "users") {
-    await prisma.user.update({
-      where: { id },
-      data: { isArchive: true },
-    });
-    return;
+    const rows = await queryRaw<{ id: number }[]>(
+      `SELECT id FROM users WHERE id = ? AND user_type_id = ? LIMIT 1`,
+      id,
+      userTypeIds.agent
+    );
+    if (!rows.length) return { ok: false, status: 404, message: "Agent not found" };
+    return { ok: true, userKeptArchived: await deleteOrArchiveUser(id) };
+  }
+
+  const rows = await queryRaw<{ id: number; user_id: number | null }[]>(
+    `SELECT id, user_id FROM brokers WHERE id = ? LIMIT 1`,
+    id
+  );
+  const broker = rows[0];
+  if (!broker) return { ok: false, status: 404, message: "Agent not found" };
+
+  if (await tableExists("broker_commissions")) {
+    const [c] = await queryRaw<{ n: bigint | number }[]>(
+      `SELECT COUNT(*) AS n FROM broker_commissions WHERE broker_id = ?`,
+      id
+    );
+    const n = Number(c?.n ?? 0);
+    if (n > 0) {
+      return {
+        ok: false,
+        status: 409,
+        message: `This agent has ${n} commission record(s). Delete those under Commissions first — they are payment history.`,
+      };
+    }
   }
 
   try {
-    const broker = await prisma.broker.findUnique({ where: { id } });
-    if (broker?.userId) {
-      await prisma.user.update({
-        where: { id: broker.userId },
-        data: { isArchive: true },
-      });
-    }
-    await prisma.broker.update({
-      where: { id },
-      data: { isArchive: true },
-    });
-  } catch (e) {
-    if (isTableMissingError(e)) {
-      await prisma.user.update({ where: { id }, data: { isArchive: true } });
-      return;
-    }
-    throw e;
+    await executeRaw(`UPDATE inquiries SET broker_id = NULL WHERE broker_id = ?`, id);
+  } catch {
+    // older schema without inquiries.broker_id — nothing to unlink
   }
+  for (const table of BROKER_OWNED_TABLES) {
+    if (await tableExists(table)) {
+      await executeRaw(`DELETE FROM ${table} WHERE broker_id = ?`, id);
+    }
+  }
+  await executeRaw(`DELETE FROM brokers WHERE id = ?`, id);
+
+  const userKeptArchived = broker.user_id ? await deleteOrArchiveUser(Number(broker.user_id)) : false;
+  return { ok: true, userKeptArchived };
 }

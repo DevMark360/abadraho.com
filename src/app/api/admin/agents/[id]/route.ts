@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin-session";
 import { prisma } from "@/lib/prisma";
 import {
-  archiveAdminAgent,
+  deleteAdminAgent,
   getAdminAgent,
   saveAdminAgent,
 } from "@/server/services/admin-agent.service";
@@ -70,6 +70,19 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  await archiveAdminAgent(Number(id));
-  return NextResponse.json({ success: true });
+  let result;
+  try {
+    result = await deleteAdminAgent(Number(id));
+  } catch (err) {
+    // Surface the reason in the admin UI instead of an empty 500.
+    console.error("[admin/agents] delete failed", err);
+    return NextResponse.json(
+      { success: false, message: err instanceof Error ? err.message : "Delete failed" },
+      { status: 500 }
+    );
+  }
+  if (!result.ok) {
+    return NextResponse.json({ success: false, message: result.message }, { status: result.status });
+  }
+  return NextResponse.json({ success: true, userKeptArchived: result.userKeptArchived });
 }

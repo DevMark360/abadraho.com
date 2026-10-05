@@ -150,7 +150,7 @@ export function LegalPage({
             </nav>
           </aside>
 
-          <main className="min-w-0 max-w-3xl space-y-6">
+          <main className="min-w-0 space-y-6">
             {/* Mobile table of contents */}
             <details className={cn(designTw.publicCard, "group lg:hidden")}>
               <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-sm font-semibold text-zinc-900">

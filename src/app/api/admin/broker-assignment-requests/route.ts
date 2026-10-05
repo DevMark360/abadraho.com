@@ -4,6 +4,7 @@ import {
   listAssignmentRequests,
   decideAssignmentRequest,
   countPendingAssignmentRequests,
+  deleteAssignmentRequest,
 } from "@/server/services/broker-agent-ops.service";
 import { COMMISSION_TYPES, type CommissionType } from "@/config/broker-agent";
 
@@ -68,5 +69,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  return NextResponse.json({ success: true });
+}
+
+export async function DELETE(req: NextRequest) {
+  const auth = await requireFullStaffAdmin();
+  if (auth instanceof NextResponse) return auth;
+
+  const id = Number(req.nextUrl.searchParams.get("id"));
+  if (!Number.isInteger(id) || id <= 0) {
+    return NextResponse.json({ success: false, message: "id required" }, { status: 400 });
+  }
+  const deleted = await deleteAssignmentRequest(id);
+  if (!deleted) {
+    return NextResponse.json({ success: false, message: "Request not found" }, { status: 404 });
+  }
   return NextResponse.json({ success: true });
 }

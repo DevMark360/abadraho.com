@@ -53,10 +53,10 @@ export function AdminAgentsListClient() {
   }, [load]);
 
   async function onDelete(id: number, name: string) {
-    if (!confirm(`Archive agent "${name}"?`)) return;
+    if (!confirm(`Permanently delete agent "${name}"? This can't be undone.`)) return;
     const res = await fetch(`/api/admin/agents/${id}`, { method: "DELETE" });
-    const json = await res.json();
-    if (!json.success) alert(json.message ?? "Delete failed");
+    const json = (await res.json().catch(() => ({}))) as { success?: boolean; message?: string };
+    if (!res.ok || !json.success) alert(json.message ?? "Delete failed");
     else load();
   }
 

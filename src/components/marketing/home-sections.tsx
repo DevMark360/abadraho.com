@@ -483,7 +483,7 @@ export function WhatIsAbadRahoSection() {
               faqToggleLabel="Common questions"
             />
           </div>
-          <div className={cn(homeCardClass, "relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden")}>
+          <div className={cn(homeCardClass, "relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden lg:mr-0")}>
             <Image
               src={legacyStaticUrl("/assets/images/home/mobile-view1.png")}
               alt="AbadRaho on mobile"

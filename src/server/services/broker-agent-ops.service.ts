@@ -1079,6 +1079,14 @@ export async function listAssignmentRequests(filters?: {
   }));
 }
 
+/** Removes the request record only — an approved request's project assignment stays in place. */
+export async function deleteAssignmentRequest(id: number): Promise<boolean> {
+  const ops = await getAgentOpsTables();
+  if (!ops.requests) return false;
+  const n = await executeRaw(`DELETE FROM broker_assignment_requests WHERE id = ?`, id);
+  return Number(n) > 0;
+}
+
 export async function countPendingAssignmentRequests(): Promise<number> {
   const ops = await getAgentOpsTables();
   if (!ops.requests) return 0;
