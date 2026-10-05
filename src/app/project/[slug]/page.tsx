@@ -10,7 +10,7 @@ import {
   Star,
   type LucideIcon,
 } from "lucide-react";
-import { AppShell } from "@/components/layout/app-shell";
+import { MarketingShell } from "@/components/layout/marketing-shell";
 import { cn, formatPrice } from "@/lib/utils";
 import { designTw } from "@/config/design-tokens";
 import { getSession } from "@/lib/session";
@@ -146,7 +146,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   const schemaDescription = projectDescription(project);
 
   return (
-    <AppShell>
+    <MarketingShell>
       <JsonLd
         data={buildRealEstateListingSchema({
           name: project.name,
@@ -418,6 +418,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
-    </AppShell>
+    </MarketingShell>
   );
 }

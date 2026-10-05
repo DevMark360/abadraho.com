@@ -4,7 +4,7 @@ import { Illustration3D, type Illustration3DName } from "@/components/ui/illustr
 import { cn } from "@/lib/utils";
 
 export const homeCardClass =
-  "rounded-2xl border border-zinc-200/80 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md";
+  "rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-clay-hover";
 
 export function HomeKpiCard({
   label,

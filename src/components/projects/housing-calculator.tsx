@@ -32,7 +32,7 @@ export function HousingCalculator() {
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4">
+    <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4">
       <h3 className="text-sm font-semibold text-zinc-900">Housing calculator</h3>
       <form onSubmit={calc} className="mt-3 space-y-2">
         <input

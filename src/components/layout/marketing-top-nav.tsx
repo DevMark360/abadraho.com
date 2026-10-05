@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ChevronDown, Heart, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AbadrahoLogo } from "@/components/brand/abadraho-logo";
 import { Button } from "@/components/ui/button";
 import { useAuth, userDisplayName, userInitials } from "@/components/auth/auth-provider";
+import { getAccountHomePath } from "@/config/account-nav";
+import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -21,18 +23,31 @@ const links = [
 
 function isActive(pathname: string, href: string) {
   if (href === "/projects") {
-    return pathname === "/projects" || pathname.startsWith("/project/");
+    return (
+      pathname === "/projects" ||
+      pathname.startsWith("/project/") ||
+      pathname.startsWith("/area/")
+    );
   }
-  if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/**
+ * Site-wide top navigation for public pages — a floating clay bar (inset like the cards
+ * below it). Signed-in users get a menu with their role's account home, saved projects
+ * and log out; logged-in areas (account, broker, advertising, admin) keep the sidebar.
+ */
 export function MarketingTopNav() {
   const pathname = usePathname();
-  const { user, loading } = useAuth();
+  const router = useRouter();
+  const { user, loading, refresh } = useAuth();
   const [open, setOpen] = useState(false);
+  const [userMenu, setUserMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const close = useCallback(() => setOpen(false), []);
+
+  const accountHref = user ? getAccountHomePath(user.userTypeId, user.role) : "/account";
 
   useEffect(() => {
     setMounted(true);
@@ -40,6 +55,7 @@ export function MarketingTopNav() {
 
   useEffect(() => {
     setOpen(false);
+    setUserMenu(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -51,21 +67,48 @@ export function MarketingTopNav() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!userMenu) return;
+    const onDown = (e: MouseEvent) => {
+      if (!userMenuRef.current?.contains(e.target as Node)) setUserMenu(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setUserMenu(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [userMenu]);
+
+  async function logout() {
+    await fetch("/api/v1/auth/logout", { method: "POST", credentials: "same-origin" });
+    await refresh();
+    router.push("/");
+    router.refresh();
+  }
+
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 shadow-sm backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:h-16 sm:px-6">
+    <header className="sticky top-0 z-50 px-3 pt-3 sm:px-4">
+      <div
+        className={cn(
+          designTw.publicCard,
+          "mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 bg-clay-surface/90 px-3 backdrop-blur-md sm:h-16 sm:px-5"
+        )}
+      >
         <AbadrahoLogo href="/" height={36} className="!w-auto shrink-0" />
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
+              aria-current={isActive(pathname, link.href) ? "page" : undefined}
               className={cn(
-                "rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
-                isActive(pathname, link.href)
-                  ? "bg-zinc-100 text-zinc-900"
-                  : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                "rounded-xl px-3.5 py-2 text-sm font-medium transition-colors",
+                isActive(pathname, link.href) ? designTw.navActive : designTw.navInactive
               )}
             >
               {link.label}
@@ -77,19 +120,61 @@ export function MarketingTopNav() {
           {user && <NotificationBell className="hidden sm:inline-flex" />}
 
           {!mounted || loading ? (
-            <div className="hidden h-9 w-20 animate-pulse rounded-lg bg-zinc-100 sm:block" />
+            <div className="hidden h-10 w-24 animate-pulse rounded-2xl bg-clay-well sm:block" />
           ) : user ? (
-            <Link
-              href="/account"
-              className="hidden items-center gap-2 rounded-full border border-zinc-200 py-1 pl-1 pr-3 transition hover:bg-zinc-50 sm:flex"
-            >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
-                {userInitials(user)}
-              </span>
-              <span className="max-w-[120px] truncate text-sm font-medium text-zinc-700">
-                {userDisplayName(user)}
-              </span>
-            </Link>
+            <div ref={userMenuRef} className="relative hidden sm:block">
+              <button
+                type="button"
+                onClick={() => setUserMenu((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={userMenu}
+                className="flex items-center gap-2 rounded-full border border-white/80 bg-clay-surface py-1 pl-1 pr-3 shadow-clay-sm transition-shadow hover:shadow-clay"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-b from-zinc-700 to-zinc-900 text-xs font-semibold text-white">
+                  {userInitials(user)}
+                </span>
+                <span className="max-w-[120px] truncate text-sm font-medium text-zinc-700">
+                  {userDisplayName(user)}
+                </span>
+                <ChevronDown
+                  className={cn("h-4 w-4 text-zinc-400 transition-transform", userMenu && "rotate-180")}
+                  aria-hidden
+                />
+              </button>
+              {userMenu ? (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-52 rounded-2xl border border-white/80 bg-clay-surface p-1.5 shadow-clay"
+                >
+                  <Link
+                    href={accountHref as "/account"}
+                    role="menuitem"
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-zinc-700 hover:bg-clay-well"
+                  >
+                    <LayoutDashboard className="h-4 w-4 text-zinc-500" aria-hidden />
+                    My account
+                  </Link>
+                  <Link
+                    href="/account/wishlist"
+                    role="menuitem"
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-zinc-700 hover:bg-clay-well"
+                  >
+                    <Heart className="h-4 w-4 text-zinc-500" aria-hidden />
+                    Saved projects
+                  </Link>
+                  <div className="my-1 h-px bg-clay-line" />
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => void logout()}
+                    className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm text-zinc-700 hover:bg-clay-well"
+                  >
+                    <LogOut className="h-4 w-4 text-zinc-500" aria-hidden />
+                    Log out
+                  </button>
+                </div>
+              ) : null}
+            </div>
           ) : (
             <Button asChild size="sm" className="hidden sm:inline-flex">
               <Link href="/login">Sign in</Link>
@@ -98,7 +183,7 @@ export function MarketingTopNav() {
 
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 text-zinc-700 lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/80 bg-clay-surface text-zinc-700 shadow-clay-sm lg:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? "Close menu" : "Open menu"}
@@ -109,43 +194,48 @@ export function MarketingTopNav() {
       </div>
 
       {open ? (
-        <div className="border-t border-zinc-200 bg-white lg:hidden">
-          <nav className="mx-auto max-w-7xl space-y-1 px-4 py-3" aria-label="Mobile">
+        <div className={cn(designTw.publicCard, "mx-auto mt-2 max-w-7xl lg:hidden")}>
+          <nav className="space-y-1 p-3" aria-label="Mobile">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={close}
                 className={cn(
-                  "block rounded-lg px-3 py-2.5 text-sm font-medium",
-                  isActive(pathname, link.href)
-                    ? "bg-zinc-100 text-zinc-900"
-                    : "text-zinc-700 hover:bg-zinc-50"
+                  "block rounded-xl px-3 py-2.5 text-sm font-medium",
+                  isActive(pathname, link.href) ? designTw.navActive : designTw.navInactive
                 )}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="flex gap-2 pt-2">
-              <Button asChild variant="outline" className="flex-1">
-                <Link href="/contact" onClick={close}>
-                  Contact
-                </Link>
-              </Button>
+            <div className="grid grid-cols-2 gap-2 pt-2">
               {!mounted || loading ? (
-                <div className="h-10 flex-1 animate-pulse rounded-lg bg-zinc-100" />
+                <div className="col-span-2 h-11 animate-pulse rounded-2xl bg-clay-well" />
               ) : user ? (
-                <Button asChild className="flex-1">
-                  <Link href="/account" onClick={close}>
-                    Account
-                  </Link>
-                </Button>
+                <>
+                  <Button asChild>
+                    <Link href={accountHref as "/account"} onClick={close}>
+                      My account
+                    </Link>
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => void logout()}>
+                    Log out
+                  </Button>
+                </>
               ) : (
-                <Button asChild className="flex-1">
-                  <Link href="/login" onClick={close}>
-                    Sign in
-                  </Link>
-                </Button>
+                <>
+                  <Button asChild>
+                    <Link href="/login" onClick={close}>
+                      Sign in
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/login?tab=register" onClick={close}>
+                      Create account
+                    </Link>
+                  </Button>
+                </>
               )}
             </div>
           </nav>

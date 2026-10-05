@@ -14,7 +14,7 @@ export function FeaturedSectionSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="w-[min(78vw,280px)] shrink-0 rounded-2xl border border-zinc-200 bg-white p-4 sm:w-[300px] md:w-[320px]"
+            className="w-[min(78vw,280px)] shrink-0 rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay p-4 sm:w-[300px] md:w-[320px]"
           >
             <div className="mx-auto h-28 w-28 rounded-full bg-zinc-200" />
             <div className="mx-auto mt-5 h-5 w-3/4 rounded bg-zinc-200" />

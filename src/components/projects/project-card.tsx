@@ -50,10 +50,10 @@ export function ProjectCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 ease-in-out",
+        "group relative flex flex-col overflow-hidden rounded-clay-lg border bg-clay-surface shadow-clay transition-[box-shadow,transform] duration-300 ease-in-out",
         selected
           ? "border-blue-500 ring-2 ring-blue-500/30"
-          : "border-zinc-200 hover:border-zinc-300 hover:shadow-md"
+          : "border-white/80 hover:-translate-y-0.5 hover:shadow-clay-hover"
       )}
     >
       <Link href={`/project/${project.slug}`} className="flex flex-1 flex-col">
@@ -116,7 +116,7 @@ export function ProjectCard({
           )}
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-zinc-100 bg-zinc-50/40 p-4">
+        <div className="flex flex-col gap-3 border-t border-clay-line p-4">
           <div>
             <h3 className="line-clamp-1 text-base font-bold text-zinc-900">
               {project.name}
@@ -133,13 +133,13 @@ export function ProjectCard({
           {hasSpecs ? (
             <div className="flex flex-wrap gap-1.5">
               {beds ? (
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-clay-well px-2.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-clay-inset">
                   <BedDouble className="h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                   {beds}
                 </span>
               ) : null}
               {size ? (
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-clay-well px-2.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-clay-inset">
                   <Maximize2 className="h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden />
                   {size}
                 </span>
@@ -149,7 +149,7 @@ export function ProjectCard({
         </div>
       </Link>
 
-      <div className="flex items-baseline justify-between gap-2 border-t border-zinc-200 bg-white px-4 py-3">
+      <div className="flex items-baseline justify-between gap-2 border-t border-clay-line px-4 py-3">
         <span className="text-sm font-medium text-zinc-600">
           {useMatchedPrice ? "Matched price" : "Price from"}
         </span>
@@ -158,7 +158,7 @@ export function ProjectCard({
         </span>
       </div>
 
-      <div className="border-t border-zinc-200 bg-white px-4 py-3">
+      <div className="border-t border-clay-line px-4 py-3">
         <ProjectCardCompareToggle projectId={project.id} slug={project.slug} />
       </div>
 

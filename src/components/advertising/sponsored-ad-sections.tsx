@@ -97,7 +97,7 @@ export function SponsoredFeaturedSection({ ad }: { ad: ServedAd | null }) {
       <div className={container}>
         <a
           href={`/api/v1/ads/click/${ad.campaignId}`}
-          className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md"
+          className="group flex flex-col overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay transition-[box-shadow,transform] hover:-translate-y-0.5 hover:shadow-clay-hover"
         >
           <div className="flex flex-col sm:flex-row">
             <SponsorArt
@@ -133,7 +133,7 @@ export function SponsoredContentSection({ ad }: { ad: ServedAd | null }) {
       <div className={container}>
         <a
           href={`/api/v1/ads/click/${ad.campaignId}`}
-          className="group flex max-w-xl flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md"
+          className="group flex max-w-xl flex-col overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay transition-[box-shadow,transform] hover:-translate-y-0.5 hover:shadow-clay-hover"
         >
           <div className="flex items-center gap-3 p-3">
             <SponsorArt

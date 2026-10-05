@@ -120,7 +120,7 @@ export function CompareProjectPicker({
           <ul
             id={listId}
             role="listbox"
-            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-20 max-h-64 overflow-y-auto rounded-xl border border-zinc-200 bg-white py-1 shadow-lg"
+            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-20 max-h-64 overflow-y-auto rounded-2xl border border-white/80 bg-clay-surface py-1 shadow-clay"
           >
             {loading ? (
               <li className="flex items-center justify-center gap-2 px-4 py-6 text-sm text-zinc-500">

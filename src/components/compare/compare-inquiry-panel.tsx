@@ -78,7 +78,7 @@ export function CompareInquiryPanel({
 
   if (!units.length) {
     return (
-      <div className="rounded-2xl border border-zinc-200 bg-white p-5 text-center">
+      <div className="rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay p-5 text-center">
         <h3 className="font-semibold text-zinc-900">{projectName}</h3>
         <p className="mt-2 text-sm text-zinc-500">
           No units available to submit an inquiry for this project.

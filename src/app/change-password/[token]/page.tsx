@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
+import { MarketingShell } from "@/components/layout/marketing-shell";
 import { Button } from "@/components/ui/button";
 
 export default function ChangePasswordTokenPage() {
@@ -37,7 +37,7 @@ export default function ChangePasswordTokenPage() {
   }
 
   return (
-    <AppShell>
+    <MarketingShell>
       <div className="mx-auto max-w-md flex-1 px-4 py-10">
         <h1 className="text-2xl font-semibold">Set new password</h1>
         <form onSubmit={onSubmit} className="mt-6 space-y-3">
@@ -66,6 +66,6 @@ export default function ChangePasswordTokenPage() {
           Sign in
         </Link>
       </div>
-    </AppShell>
+    </MarketingShell>
   );
 }

@@ -7,7 +7,7 @@ import { useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Building2, GitCompare, Link2, X } from "lucide-react";
-import { AppShell } from "@/components/layout/app-shell";
+import { MarketingShell } from "@/components/layout/marketing-shell";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CompareInquiryPanel } from "@/components/compare/compare-inquiry-panel";
 import { CompareProjectPicker } from "@/components/compare/compare-project-picker";
@@ -430,7 +430,7 @@ export function CompareView({
   ] as [string | null, string | null]);
 
   return (
-    <AppShell>
+    <MarketingShell>
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-6xl px-4 py-6 lg:px-8">
           <Link
@@ -516,7 +516,7 @@ export function CompareView({
           )}
 
           {slots.length > 0 && (
-            <div className="mt-8 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+            <div className="mt-8 overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
               <div className="grid grid-cols-1 border-b border-zinc-200 sm:grid-cols-2">
                 {[0, 1].map((col) => {
                   const entry = slots[col];
@@ -760,7 +760,7 @@ export function CompareView({
                                 fallbackUnits={project.units}
                               />
                             ) : (
-                              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-6 text-center text-sm text-zinc-400">
+                              <div className="rounded-clay-lg bg-clay-well shadow-clay-inset p-6 text-center text-sm text-zinc-400">
                                 Add a project to inquire
                               </div>
                             )}
@@ -791,6 +791,6 @@ export function CompareView({
             )}
         </div>
       </div>
-    </AppShell>
+    </MarketingShell>
   );
 }

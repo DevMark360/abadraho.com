@@ -24,7 +24,7 @@ function FeaturedScrollerCard({
   return (
     <article
       className={cn(
-        "flex h-full w-[min(78vw,280px)] shrink-0 snap-start flex-col rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm",
+        "flex h-full w-[min(78vw,280px)] shrink-0 snap-start flex-col rounded-clay-lg border border-white/80 bg-clay-surface p-4 shadow-clay",
         "sm:w-[300px] md:w-[320px]"
       )}
     >

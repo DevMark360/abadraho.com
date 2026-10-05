@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Building2, ChevronRight } from "lucide-react";
-import { AppShell } from "@/components/layout/app-shell";
+import { MarketingShell } from "@/components/layout/marketing-shell";
 import { ProjectCard } from "@/components/projects/project-card";
 import { JsonLd } from "@/components/seo/json-ld";
 import { buildAreaSchema } from "@/lib/schema-markup";
@@ -66,7 +66,7 @@ export default async function AreaPage({ params }: PageProps) {
   ]);
 
   return (
-    <AppShell>
+    <MarketingShell>
       <JsonLd
         data={buildAreaSchema({
           name: area.name,
@@ -144,6 +144,6 @@ export default async function AreaPage({ params }: PageProps) {
           )}
         </div>
       </div>
-    </AppShell>
+    </MarketingShell>
   );
 }

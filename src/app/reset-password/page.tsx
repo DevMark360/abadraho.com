@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
+import { MarketingShell } from "@/components/layout/marketing-shell";
 import { AuthFormMessage } from "@/components/auth/auth-form-message";
 import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -61,7 +61,7 @@ export default function ResetPasswordPage() {
   const signedIn = Boolean(user?.email);
 
   return (
-    <AppShell>
+    <MarketingShell>
       <div className="mx-auto max-w-md flex-1 px-4 py-10">
         <h1 className="text-2xl font-semibold">Reset password</h1>
         <p className="mt-2 text-sm text-zinc-600">
@@ -108,6 +108,6 @@ export default function ResetPasswordPage() {
           Back to sign in
         </Link>
       </div>
-    </AppShell>
+    </MarketingShell>
   );
 }

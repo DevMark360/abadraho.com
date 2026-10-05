@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
+import { MarketingShell } from "@/components/layout/marketing-shell";
 import { BuilderPublicPage } from "@/components/builder/builder-public-page";
 import { builderPublicPath } from "@/config/builder-pages";
 import { buildPageMetadata } from "@/lib/seo";
@@ -45,8 +45,8 @@ export default async function BuilderProfilePage({ params }: PageProps) {
   if (!data) notFound();
 
   return (
-    <AppShell>
+    <MarketingShell>
       <BuilderPublicPage data={data} />
-    </AppShell>
+    </MarketingShell>
   );
 }

@@ -47,7 +47,7 @@ export default async function HomePage() {
     ]);
 
   return (
-    <MarketingShell>
+    <MarketingShell mode="page">
       <JsonLd
         data={buildWebPageSchema({
           name: "AbadRaho Home",

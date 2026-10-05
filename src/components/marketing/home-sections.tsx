@@ -91,7 +91,7 @@ function SectionHeader({
 
 export function HomeHero() {
   return (
-    <section className="relative overflow-hidden border-b border-zinc-200 bg-white">
+    <section className="relative overflow-hidden">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.4]"
         aria-hidden
@@ -124,7 +124,7 @@ export function HomeHero() {
                     name="q"
                     type="search"
                     placeholder="Search project, area or developer…"
-                    className="h-12 border-zinc-200 bg-zinc-50 pl-10 focus:bg-white"
+                    className="h-12 pl-10"
                   />
                 </div>
                 <Button type="submit" variant="accent" size="lg" className="h-12 w-full sm:w-auto sm:px-8">
@@ -136,7 +136,7 @@ export function HomeHero() {
                   <Link
                     key={pill.label}
                     href={pill.href as Route}
-                    className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-200"
+                    className="rounded-full border border-white/80 bg-clay-surface px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-clay-sm transition-shadow hover:shadow-clay"
                   >
                     {pill.label}
                   </Link>
@@ -146,7 +146,7 @@ export function HomeHero() {
           </div>
 
           <div className="space-y-4">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-100 shadow-lg ring-1 ring-zinc-900/5">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-clay-lg bg-clay-well shadow-clay">
               <Image
                 src={homeHeroImage}
                 alt="Off-plan property in Karachi"
@@ -200,7 +200,7 @@ export function HomeInsightsSection({
   mapProjects: ProjectListItem[];
 }) {
   return (
-    <section className={cn(section, "bg-zinc-50")}>
+    <section className={section}>
       <div className={container}>
         <SectionHeader
           eyebrow="Market insights"
@@ -218,7 +218,7 @@ export function HomeInsightsSection({
 
 export function AssistanceSection() {
   return (
-    <section className={cn(section, "bg-white")}>
+    <section className={section}>
       <div className={container}>
         <SectionHeader
           eyebrow="How it works"
@@ -253,7 +253,7 @@ export function FeaturedPropertiesSection({
   projects: ProjectListItem[];
 }) {
   return (
-    <section className={cn(section, "bg-white")} id="featured">
+    <section className={section} id="featured">
       <div className={container}>
         {projects.length ? (
           <SmartFeaturedSectionClient defaultProjects={projects} />
@@ -277,7 +277,7 @@ export function FeaturedPropertiesSection({
 
 export function CategoriesSection() {
   return (
-    <section className={cn(section, "bg-zinc-50")}>
+    <section className={section}>
       <div className={container}>
         <SectionHeader
           eyebrow="Quick filters"
@@ -312,7 +312,7 @@ export function PopularPlacesSection({
   areaCounts?: Record<string, number>;
 }) {
   return (
-    <section className={cn(section, "bg-white")}>
+    <section className={section}>
       <div className={container}>
         <SectionHeader
           eyebrow="Locations"
@@ -409,7 +409,7 @@ export function HomeTestimonialSection() {
 
 export function BuilderPartnerSection() {
   return (
-    <section className={cn(section, "border-y border-zinc-200 bg-zinc-50")}>
+    <section className={section}>
       <div className={container}>
         <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
           <div className={cn(homeCardClass, "p-6 sm:p-8")}>
@@ -459,7 +459,7 @@ export function WhatIsAbadRahoSection() {
   ];
 
   return (
-    <section className={cn(section, "bg-white")}>
+    <section className={section}>
       <div className={container}>
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <div>
@@ -501,7 +501,7 @@ export function WhatIsAbadRahoSection() {
 export function LatestBlogSection({ posts }: { posts: BlogPostSummary[] }) {
   if (!posts.length) {
     return (
-      <section className={cn(section, "bg-zinc-50")}>
+      <section className={section}>
         <div className={container}>
           <SectionHeader title="Buyer guides" subtitle="Expert articles for off-plan investors." />
           <HomeEmptyState
@@ -515,7 +515,7 @@ export function LatestBlogSection({ posts }: { posts: BlogPostSummary[] }) {
   }
 
   return (
-    <section className={cn(section, "bg-zinc-50")}>
+    <section className={section}>
       <div className={container}>
         <SectionHeader
           eyebrow="Resources"

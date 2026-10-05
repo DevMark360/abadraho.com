@@ -369,7 +369,7 @@ export function GeoPageSummary({
       <section
         aria-label="Page summary"
         className={cn(
-          "rounded-xl border border-zinc-200 bg-white p-4 md:p-5",
+          "rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4 md:p-5",
           className
         )}
       >

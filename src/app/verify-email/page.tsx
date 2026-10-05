@@ -4,7 +4,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
+import { MarketingShell } from "@/components/layout/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth/auth-provider";
 
@@ -87,10 +87,10 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <AppShell>
+    <MarketingShell>
       <Suspense fallback={<div className="p-10"><LoadingState size="md" /></div>}>
         <VerifyEmailContent />
       </Suspense>
-    </AppShell>
+    </MarketingShell>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState, useEffect, useTransition } from "react";
 import { Calculator, Heart, LayoutGrid, Map, Search } from "lucide-react";
+import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -175,7 +176,7 @@ export function FilterChipsBar() {
     <>
       <div
         className={cn(
-          "border-b border-zinc-100 bg-white",
+          "mx-3 mt-3 rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay sm:mx-4 lg:mx-6",
           (pending || viewPending) && "opacity-90"
         )}
       >
@@ -198,14 +199,14 @@ export function FilterChipsBar() {
             <span className="whitespace-nowrap sm:hidden">Budget</span>
           </button>
 
-          <div className="flex min-h-[44px] rounded-lg border border-zinc-200 bg-zinc-50/50 p-0.5">
+          <div className="flex min-h-[44px] rounded-2xl bg-clay-well p-1 shadow-clay-inset">
             <button
               type="button"
               onClick={() => setViewParam("map")}
               className={cn(
-                "flex min-h-[40px] min-w-[44px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                "flex min-h-[40px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium transition-colors",
                 view === "map"
-                  ? "bg-white text-zinc-900 shadow-sm"
+                  ? designTw.navActive
                   : "text-zinc-600 hover:text-zinc-900"
               )}
             >
@@ -216,9 +217,9 @@ export function FilterChipsBar() {
               type="button"
               onClick={() => setViewParam("list")}
               className={cn(
-                "flex min-h-[40px] min-w-[44px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                "flex min-h-[40px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium transition-colors",
                 view !== "map"
-                  ? "bg-white text-zinc-900 shadow-sm"
+                  ? designTw.navActive
                   : "text-zinc-600 hover:text-zinc-900"
               )}
             >
@@ -229,7 +230,7 @@ export function FilterChipsBar() {
 
           <Link
             href="/account/wishlist"
-            className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50"
+            className="flex min-h-[44px] items-center gap-1.5 rounded-2xl border border-white/80 bg-clay-surface px-3.5 py-2 text-sm font-medium text-zinc-700 shadow-clay-sm transition-shadow hover:shadow-clay"
           >
             <Heart className="h-4 w-4" />
             <span className="hidden sm:inline">Saved</span>
