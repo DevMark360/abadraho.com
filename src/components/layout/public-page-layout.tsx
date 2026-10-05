@@ -1,19 +1,19 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
-import { MarketingShell } from "@/components/layout/marketing-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { SiteTrustFooter } from "@/components/marketing/trust-signals";
 import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
 
 export function PublicPage({ children }: { children: ReactNode }) {
   return (
-    <MarketingShell>
+    <AppShell>
       <div className={cn("flex flex-1 flex-col overflow-y-auto", designTw.pageCanvas)}>
         <div className="flex-1">{children}</div>
         <SiteTrustFooter />
       </div>
-    </MarketingShell>
+    </AppShell>
   );
 }
 

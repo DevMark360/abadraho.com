@@ -33,8 +33,10 @@ export function ShellLayout({
     <div className={designTw.shell}>
       <div
         className={cn(
-          "hidden shrink-0 py-3 pl-3 transition-[width] duration-300 ease-in-out lg:block",
-          sidebarExpanded ? "w-[232px] xl:w-[252px]" : "w-[4.25rem]"
+          // pr/pb leave room for the panel's soft shadow; z-10 keeps the content column from
+          // painting over it (both previously clipped the shadow into hard corners).
+          "relative z-10 hidden shrink-0 pb-4 pl-3 pr-3 pt-3 transition-[width] duration-300 ease-in-out lg:block",
+          sidebarExpanded ? "w-[244px] xl:w-[264px]" : "w-[5rem]"
         )}
         suppressHydrationWarning
       >

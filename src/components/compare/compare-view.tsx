@@ -7,7 +7,7 @@ import { useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Building2, GitCompare, Link2, X } from "lucide-react";
-import { MarketingShell } from "@/components/layout/marketing-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CompareInquiryPanel } from "@/components/compare/compare-inquiry-panel";
 import { CompareProjectPicker } from "@/components/compare/compare-project-picker";
@@ -430,7 +430,7 @@ export function CompareView({
   ] as [string | null, string | null]);
 
   return (
-    <MarketingShell>
+    <AppShell>
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-6xl px-4 py-6 lg:px-8">
           <Link
@@ -791,6 +791,6 @@ export function CompareView({
             )}
         </div>
       </div>
-    </MarketingShell>
+    </AppShell>
   );
 }

@@ -33,9 +33,9 @@ function isActive(pathname: string, href: string) {
 }
 
 /**
- * Site-wide top navigation for public pages — a floating clay bar (inset like the cards
- * below it). Signed-in users get a menu with their role's account home, saved projects
- * and log out; logged-in areas (account, broker, advertising, admin) keep the sidebar.
+ * Home page top navigation — a floating clay bar (inset like the cards below it). Signed-in
+ * users get a menu with their role's account home, saved projects and log out. All other
+ * pages use the sidebar (AppShell).
  */
 export function MarketingTopNav() {
   const pathname = usePathname();

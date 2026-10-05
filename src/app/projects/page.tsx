@@ -1,4 +1,4 @@
-import { MarketingShell } from "@/components/layout/marketing-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { ListingsPageShell } from "@/components/projects/listings-page-shell";
 import { buildFilterSummary } from "@/lib/filter-match-tiers";
 import { LISTINGS_PAGE_SIZE } from "@/lib/pagination";
@@ -78,7 +78,7 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
       ]);
 
   return (
-    <MarketingShell>
+    <AppShell>
       <JsonLd
         data={buildWebPageSchema({
           name: "Off-plan properties in Pakistan",
@@ -100,6 +100,6 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
         bannerRotation={bannerRotation}
         contentRotation={contentRotation}
       />
-    </MarketingShell>
+    </AppShell>
   );
 }

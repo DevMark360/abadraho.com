@@ -96,7 +96,7 @@ export const designTw = {
   publicSection: "py-6 sm:py-8",
   /** Floating clay sidebar panel (public + staff shells) */
   sidebarPanel:
-    "flex h-full w-full shrink-0 flex-col overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay",
+    "flex h-full w-full shrink-0 flex-col overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay-sm",
   publicCard: "rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay",
   /** Clay card that lifts on hover — clickable cards (listings, links) */
   publicCardInteractive:
