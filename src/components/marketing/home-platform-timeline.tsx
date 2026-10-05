@@ -1,39 +1,30 @@
-import { Search, GitCompare, Calendar, MessageSquare, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { homeCardClass } from "@/components/marketing/home-ui";
+import { Illustration3D, type Illustration3DName } from "@/components/ui/illustration-3d";
 import { cn } from "@/lib/utils";
 
-const events = [
+const events: Array<{ title: string; description: string; illustration: Illustration3DName }> = [
   {
     title: "Search & shortlist",
     description: "Filter projects by area, budget, unit type, and handover.",
-    icon: Search,
-    tone: "safe" as const,
+    illustration: "search",
   },
   {
     title: "Compare payment plans",
     description: "Review installments and pricing across two developments side by side.",
-    icon: GitCompare,
-    tone: "info" as const,
+    illustration: "memo",
   },
   {
     title: "Book a site visit",
     description: "Mark Properties advisors arrange guided visits for shortlisted projects.",
-    icon: Calendar,
-    tone: "warning" as const,
+    illustration: "calendar",
   },
   {
     title: "Submit inquiry",
     description: "Get expert answers and move forward with transparent documentation.",
-    icon: MessageSquare,
-    tone: "safe" as const,
+    illustration: "chat",
   },
 ];
-
-const toneClass = {
-  safe: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  info: "border-blue-200 bg-blue-50 text-blue-700",
-  warning: "border-amber-200 bg-amber-50 text-amber-700",
-};
 
 export function HomePlatformTimeline() {
   return (
@@ -46,25 +37,20 @@ export function HomePlatformTimeline() {
       </div>
       <ol className="space-y-0">
         {events.map((event, i) => {
-          const Icon = event.icon;
           const isLast = i === events.length - 1;
           return (
             <li key={event.title} className="relative flex gap-4">
               <div className="flex flex-col items-center">
-                <span
-                  className={cn(
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-zinc-200",
-                    toneClass[event.tone]
-                  )}
-                >
-                  <Icon className="h-3.5 w-3.5" aria-hidden />
-                </span>
+                <Illustration3D name={event.illustration} size={48} className="shrink-0" />
                 {!isLast ? (
-                  <span className="my-1 w-px flex-1 min-h-[2rem] bg-zinc-200" aria-hidden />
+                  <span className="my-1 w-px flex-1 min-h-[1.5rem] bg-clay-line" aria-hidden />
                 ) : null}
               </div>
-              <div className={cn("min-w-0 flex-1", isLast ? "pb-0" : "pb-8")}>
+              <div className={cn("min-w-0 flex-1 pt-2", isLast ? "pb-0" : "pb-6")}>
                 <p className="flex items-center gap-2 font-semibold text-zinc-900">
+                  <span className="text-xs font-semibold tabular-nums text-brand-accent">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
                   {event.title}
                   {isLast ? (
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden />

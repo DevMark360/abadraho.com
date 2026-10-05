@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Illustration3D } from "@/components/ui/illustration-3d";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { designTw } from "@/config/design-tokens";
@@ -239,13 +240,16 @@ function WalletPageContent() {
       ) : null}
 
       <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
-        <div>
-          <h2 className="text-sm font-semibold text-zinc-900">1. Send the payment</h2>
-          <p className="mt-1 text-xs text-zinc-500">
-            Transfer the amount you want to add to one of these accounts (bank transfer / IBFT,
-            JazzCash or Easypaisa). Keep the receipt — you&apos;ll need its transaction ID and a
-            screenshot.
-          </p>
+        <div className="flex items-start gap-4">
+          <Illustration3D name="memo" size={64} className="shrink-0" />
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-900">1. Send the payment</h2>
+            <p className="mt-1 text-xs text-zinc-500">
+              Transfer the amount you want to add to one of these accounts (bank transfer / IBFT,
+              JazzCash or Easypaisa). Keep the receipt — you&apos;ll need its transaction ID and a
+              screenshot.
+            </p>
+          </div>
         </div>
         {paymentAccounts.length === 0 ? (
           <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -255,7 +259,7 @@ function WalletPageContent() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {paymentAccounts.map((acc, i) => (
-              <div key={`${acc.label}-${i}`} className="rounded-xl border border-zinc-200 p-4">
+              <div key={`${acc.label}-${i}`} className={cn(designTw.clayTile, "p-4")}>
                 <p className="text-sm font-semibold text-zinc-900">{acc.label}</p>
                 <dl className="mt-2 space-y-2">
                   {acc.fields.map((f) => (
@@ -275,12 +279,15 @@ function WalletPageContent() {
       </section>
 
       <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
-        <div>
-          <h2 className="text-sm font-semibold text-zinc-900">2. Submit your payment details</h2>
-          <p className="mt-1 text-xs text-zinc-500">
-            An admin checks the payment arrived, then credits your wallet. You&apos;ll get a
-            notification when it&apos;s confirmed or rejected.
-          </p>
+        <div className="flex items-start gap-4">
+          <Illustration3D name="upload" size={64} className="shrink-0" />
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-900">2. Submit your payment details</h2>
+            <p className="mt-1 text-xs text-zinc-500">
+              An admin checks the payment arrived, then credits your wallet. You&apos;ll get a
+              notification when it&apos;s confirmed or rejected.
+            </p>
+          </div>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError ? <p className="text-sm text-red-700">{formError}</p> : null}

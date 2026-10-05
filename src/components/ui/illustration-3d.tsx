@@ -12,7 +12,12 @@ export type Illustration3DName =
   | "bookmark"
   | "chat"
   | "search"
-  | "location-pin";
+  | "location-pin"
+  | "memo"
+  | "check"
+  | "eye"
+  | "padlock"
+  | "upload";
 
 export function Illustration3D({
   name,

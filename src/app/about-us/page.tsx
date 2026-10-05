@@ -11,7 +11,7 @@ import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
 import { aboutContent, partnerLogos } from "@/config/marketing";
 import { geoContent } from "@/config/geo-content";
-import { Handshake, Eye, ArrowRight } from "lucide-react";
+import { Illustration3D } from "@/components/ui/illustration-3d";
 import {
   MarkPropertiesBadge,
   TrustStatsRow,
@@ -106,10 +106,10 @@ export default function AboutUsPage() {
           />
           <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scroll-px-4 md:mx-0 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pb-0">
             {[
-              { title: "Our mission", text: aboutContent.mission, icon: Handshake },
-              { title: "Our vision", text: aboutContent.vision, icon: Eye },
-              { title: "Our core values", text: aboutContent.values, icon: ArrowRight },
-            ].map(({ title, text, icon: Icon }) => (
+              { title: "Our mission", text: aboutContent.mission, illustration: "check" as const },
+              { title: "Our vision", text: aboutContent.vision, illustration: "eye" as const },
+              { title: "Our core values", text: aboutContent.values, illustration: "padlock" as const },
+            ].map(({ title, text, illustration }) => (
               <div
                 key={title}
                 className={cn(
@@ -117,7 +117,7 @@ export default function AboutUsPage() {
                   "w-[min(85vw,320px)] shrink-0 snap-start p-6 sm:p-7 md:w-auto"
                 )}
               >
-                <Icon className="h-6 w-6 text-brand-accent" aria-hidden />
+                <Illustration3D name={illustration} size={72} className="-ml-1" />
                 <h3 className="mt-4 text-lg font-semibold text-zinc-900">{title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-zinc-700 md:text-base">{text}</p>
               </div>
