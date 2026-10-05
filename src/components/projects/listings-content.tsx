@@ -65,7 +65,7 @@ export function ListingsContent({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-4 lg:px-6">
+    <div className="flex-1 px-4 py-4 lg:px-6">
       {source === "mock" && (
         <p className="mb-3 text-xs text-amber-600">Demo data — connect MySQL for live listings.</p>
       )}

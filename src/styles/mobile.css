@@ -222,6 +222,13 @@ video {
 }
 
 @media (max-width: 767px) {
+  /* Phones: map + card strip take their natural height and the page scrolls (no squeezed strip). */
+  .listings-split-view,
+  .listings-split-view__list {
+    height: auto;
+    flex: none;
+  }
+
   .listings-split-view__map {
     flex: 0 0 30vh;
     height: 30vh;

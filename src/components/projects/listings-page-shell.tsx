@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { LoadingState } from "@/components/ui/loading-state";
+import { cn } from "@/lib/utils";
 import { FilterChipsBar } from "@/components/projects/filter-chips-bar";
 import { ListingsSeoFooter } from "@/components/marketing/listings-seo-footer";
 import { ListingsContent } from "@/components/projects/listings-content";
@@ -41,13 +42,25 @@ function ListingsPageShellInner({
   const isMapView = searchParams.get("view") === "map";
 
   return (
-    <>
-      <FilterChipsBar />
+    // One scroll area for filters + results. Previously only the results scrolled, squeezed
+    // between the filter panel and the footer strip — on phones that left room for barely one
+    // card. Desktop keeps the filters pinned (sticky); the desktop map view keeps its fixed
+    // split layout, while on phones the map view scrolls like the list.
+    <div
+      className={
+        isMapView
+          ? "flex min-h-0 flex-1 flex-col overflow-y-auto md:overflow-hidden"
+          : "flex min-h-0 flex-1 flex-col overflow-y-auto"
+      }
+    >
+      <div className={cn("shrink-0", !isMapView && "bg-clay-canvas lg:sticky lg:top-0 lg:z-20 lg:pb-1")}>
+        <FilterChipsBar />
+      </div>
       <div
         className={
           isMapView
-            ? "flex min-h-0 flex-1 flex-col overflow-hidden"
-            : "flex min-h-0 flex-1 flex-col"
+            ? "flex flex-col md:min-h-0 md:flex-1 md:overflow-hidden"
+            : "flex flex-1 flex-col" /* keeps the SEO strip at the bottom when results are short */
         }
       >
         <ListingsContent
@@ -65,7 +78,7 @@ function ListingsPageShellInner({
         />
         {!isMapView ? <ListingsSeoFooter /> : null}
       </div>
-    </>
+    </div>
   );
 }
 
