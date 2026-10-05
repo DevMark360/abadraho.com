@@ -105,11 +105,10 @@ function ProfileHero({
 
   return (
     <div className="relative overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
-      <div className="h-24 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-700" aria-hidden />
-      <div className="px-5 pb-5 sm:px-6">
-        <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-end">
-            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-4 border-white bg-zinc-100 shadow-md ring-1 ring-zinc-200">
+      <div className="px-5 py-6">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-white bg-clay-well shadow-clay-sm">
               <Image
                 src={displaySrc}
                 alt=""
@@ -122,9 +121,9 @@ function ProfileHero({
                 }}
               />
             </div>
-            <div className="text-center sm:pb-1 sm:text-left">
-              <p className="text-xl font-semibold tracking-tight text-zinc-900">{displayName}</p>
-              <p className="mt-0.5 text-sm text-zinc-600">{email}</p>
+            <div className="min-w-0 max-w-full">
+              <p className="break-words text-lg font-semibold tracking-tight text-zinc-900">{displayName}</p>
+              <p className="mt-0.5 break-all text-sm text-zinc-600">{email}</p>
               {username ? (
                 <p className="mt-1 inline-flex rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
                   @{username}
@@ -133,7 +132,7 @@ function ProfileHero({
             </div>
           </div>
 
-          <div className="flex flex-col items-center sm:items-end">
+          <div className="flex flex-col items-center">
             <input
               ref={inputRef}
               name="image"
@@ -246,207 +245,206 @@ export function AdminProfileClient() {
     "Workspace user";
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5">
+    <div className="mx-auto w-full max-w-6xl">
       <form
         key={formKey}
         onSubmit={onSubmit}
         encType="multipart/form-data"
-        className="space-y-5"
+        className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start"
       >
-        {isUser ? (
-          <ProfileHero
-            displayName={displayName}
-            email={profile.email}
-            username={profile.username}
-            imageUrl={profile.imageUrl}
-          />
-        ) : (
-          <div className={cn(adminCard, "flex items-start gap-3 p-5")}>
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white">
-              <UserRound className="h-5 w-5" aria-hidden />
-            </div>
-            <div>
-              <p className="text-lg font-semibold text-zinc-900">{displayName}</p>
-              <p className="text-sm text-zinc-600">{profile.email}</p>
-            </div>
-          </div>
-        )}
-
-        <div className={cn(adminCard, "p-5 sm:p-6")}>
-          {isUser ? (
-            <>
-              <ProfileBlock
-                title="Account details"
-                description="How you sign in and how your name appears in the workspace."
-              >
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <ProfileField id={usernameId} label="Username" required icon={UserRound}>
-                    <Input
-                      id={usernameId}
-                      name="username"
-                      layout="inline"
-                      defaultValue={profile.username ?? ""}
-                      autoComplete="username"
-                      required
-                      className="bg-white"
-                    />
-                  </ProfileField>
-                  <ProfileField
-                    id={emailId}
-                    label="Email address"
-                   // hint="Contact support to change your login email."
-                    icon={Mail}
-                  >
-                    <div className="relative">
+        <div className="min-w-0 space-y-5">
+          <div className={cn(adminCard, "p-5 sm:p-6")}>
+            {isUser ? (
+              <>
+                <ProfileBlock
+                  title="Account details"
+                  description="How you sign in and how your name appears in the workspace."
+                >
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <ProfileField id={usernameId} label="Username" required icon={UserRound}>
                       <Input
-                        id={emailId}
-                        name="email"
-                        type="email"
+                        id={usernameId}
+                        name="username"
                         layout="inline"
-                        defaultValue={profile.email}
-                        readOnly
-                        disabled
-                        className="bg-zinc-50 pr-10 text-zinc-600"
+                        defaultValue={profile.username ?? ""}
+                        autoComplete="username"
+                        required
+                        className="bg-white"
                       />
-                      <Lock
-                        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
-                        aria-hidden
-                      />
-                    </div>
-                  </ProfileField>
-                  <ProfileField id={firstNameId} label="First name" required>
-                    <Input
-                      id={firstNameId}
-                      name="first_name"
-                      layout="inline"
-                      defaultValue={profile.firstName ?? ""}
-                      autoComplete="given-name"
-                      required
-                    />
-                  </ProfileField>
-                  <ProfileField id={lastNameId} label="Last name">
-                    <Input
-                      id={lastNameId}
-                      name="last_name"
-                      layout="inline"
-                      defaultValue={profile.lastName ?? ""}
-                      autoComplete="family-name"
-                    />
-                  </ProfileField>
-                </div>
-              </ProfileBlock>
-
-              <ProfileBlock
-                title="Contact"
-                description="Shown on inquiries and when customers reach out to you."
-              >
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <ProfileField id={phoneId} label="Phone number" icon={Phone}>
-                    <Input
-                      id={phoneId}
-                      name="phone_number"
-                      type="tel"
-                      layout="inline"
-                      defaultValue={profile.phoneNumber ?? ""}
-                      autoComplete="tel"
-                      inputMode="tel"
-                      placeholder="+92 300 1234567"
-                    />
-                  </ProfileField>
-                  <ProfileField id={cityId} label="City" icon={MapPin}>
-                    <Input
-                      id={cityId}
-                      name="city"
-                      layout="inline"
-                      defaultValue={profile.city ?? ""}
-                      autoComplete="address-level2"
-                      placeholder="Karachi"
-                    />
-                  </ProfileField>
-                  <div className="sm:col-span-2">
-                    <ProfileField id={addressId} label="Street address" icon={MapPin}>
+                    </ProfileField>
+                    <ProfileField
+                      id={emailId}
+                      label="Email address"
+                     // hint="Contact support to change your login email."
+                      icon={Mail}
+                    >
+                      <div className="relative">
+                        <Input
+                          id={emailId}
+                          name="email"
+                          type="email"
+                          layout="inline"
+                          defaultValue={profile.email}
+                          readOnly
+                          disabled
+                          className="bg-zinc-50 pr-10 text-zinc-600"
+                        />
+                        <Lock
+                          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                          aria-hidden
+                        />
+                      </div>
+                    </ProfileField>
+                    <ProfileField id={firstNameId} label="First name" required>
                       <Input
-                        id={addressId}
-                        name="Address"
+                        id={firstNameId}
+                        name="first_name"
                         layout="inline"
-                        defaultValue={profile.address ?? ""}
-                        autoComplete="street-address"
-                        placeholder="Building, street, area"
+                        defaultValue={profile.firstName ?? ""}
+                        autoComplete="given-name"
+                        required
+                      />
+                    </ProfileField>
+                    <ProfileField id={lastNameId} label="Last name">
+                      <Input
+                        id={lastNameId}
+                        name="last_name"
+                        layout="inline"
+                        defaultValue={profile.lastName ?? ""}
+                        autoComplete="family-name"
                       />
                     </ProfileField>
                   </div>
+                </ProfileBlock>
+
+                <ProfileBlock
+                  title="Contact"
+                  description="Shown on inquiries and when customers reach out to you."
+                >
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <ProfileField id={phoneId} label="Phone number" icon={Phone}>
+                      <Input
+                        id={phoneId}
+                        name="phone_number"
+                        type="tel"
+                        layout="inline"
+                        defaultValue={profile.phoneNumber ?? ""}
+                        autoComplete="tel"
+                        inputMode="tel"
+                        placeholder="+92 300 1234567"
+                      />
+                    </ProfileField>
+                    <ProfileField id={cityId} label="City" icon={MapPin}>
+                      <Input
+                        id={cityId}
+                        name="city"
+                        layout="inline"
+                        defaultValue={profile.city ?? ""}
+                        autoComplete="address-level2"
+                        placeholder="Karachi"
+                      />
+                    </ProfileField>
+                    <div className="sm:col-span-2">
+                      <ProfileField id={addressId} label="Street address" icon={MapPin}>
+                        <Input
+                          id={addressId}
+                          name="Address"
+                          layout="inline"
+                          defaultValue={profile.address ?? ""}
+                          autoComplete="street-address"
+                          placeholder="Building, street, area"
+                        />
+                      </ProfileField>
+                    </div>
+                  </div>
+                </ProfileBlock>
+
+                <ProfileBlock title="About" description="Optional — a short note about your role.">
+                  <ProfileField id={aboutId} label="Bio">
+                    <Textarea
+                      id={aboutId}
+                      name="about_me"
+                      layout="inline"
+                      rows={3}
+                      defaultValue={profile.aboutMe ?? ""}
+                      placeholder="e.g. Sales lead for DHA and Clifton projects"
+                      className="min-h-[5.5rem]"
+                    />
+                  </ProfileField>
+                </ProfileBlock>
+              </>
+            ) : (
+              <ProfileBlock title="Admin account">
+                <div className="space-y-4">
+                  <ProfileField id={nameId} label="Display name">
+                    <Input
+                      id={nameId}
+                      name="name"
+                      layout="inline"
+                      defaultValue={profile.name ?? ""}
+                      autoComplete="name"
+                    />
+                  </ProfileField>
+                  <ProfileField id={adminEmailId} label="Email address" icon={Mail}>
+                    <Input
+                      id={adminEmailId}
+                      name="email"
+                      type="email"
+                      layout="inline"
+                      defaultValue={profile.email}
+                      autoComplete="email"
+                    />
+                  </ProfileField>
                 </div>
               </ProfileBlock>
+            )}
+          </div>
 
-              <ProfileBlock title="About" description="Optional — a short note about your role.">
-                <ProfileField id={aboutId} label="Bio">
-                  <Textarea
-                    id={aboutId}
-                    name="about_me"
-                    layout="inline"
-                    rows={3}
-                    defaultValue={profile.aboutMe ?? ""}
-                    placeholder="e.g. Sales lead for DHA and Clifton projects"
-                    className="min-h-[5.5rem]"
-                  />
-                </ProfileField>
-              </ProfileBlock>
-            </>
-          ) : (
-            <ProfileBlock title="Admin account">
-              <div className="space-y-4">
-                <ProfileField id={nameId} label="Display name">
-                  <Input
-                    id={nameId}
-                    name="name"
-                    layout="inline"
-                    defaultValue={profile.name ?? ""}
-                    autoComplete="name"
-                  />
-                </ProfileField>
-                <ProfileField id={adminEmailId} label="Email address" icon={Mail}>
-                  <Input
-                    id={adminEmailId}
-                    name="email"
-                    type="email"
-                    layout="inline"
-                    defaultValue={profile.email}
-                    autoComplete="email"
-                  />
-                </ProfileField>
-              </div>
-            </ProfileBlock>
-          )}
+          {msg ? (
+            <AuthFormMessage variant={ok ? "success" : "error"}>{msg}</AuthFormMessage>
+          ) : null}
         </div>
 
-        {msg ? (
-          <AuthFormMessage variant={ok ? "success" : "error"}>{msg}</AuthFormMessage>
-        ) : null}
+        <aside className="space-y-4 lg:sticky lg:top-4">
+          {isUser ? (
+            <ProfileHero
+              displayName={displayName}
+              email={profile.email}
+              username={profile.username}
+              imageUrl={profile.imageUrl}
+            />
+          ) : (
+            <div className={cn(adminCard, "flex items-start gap-3 p-5")}>
+              <UserRound className="mt-1 h-5 w-5 shrink-0 text-brand-accent" aria-hidden />
+              <div className="min-w-0">
+                <p className="truncate text-lg font-semibold text-zinc-900">{displayName}</p>
+                <p className="truncate text-sm text-zinc-600">{profile.email}</p>
+              </div>
+            </div>
+          )}
 
-        <div className="sticky bottom-0 -mx-5 mt-2 border-t border-zinc-200 bg-white/95 px-5 py-4 backdrop-blur sm:-mx-6 sm:px-6">
-          <div className="flex items-center justify-between gap-3">
-            <p className="hidden text-sm text-zinc-500 sm:block">Unsaved changes are lost on refresh.</p>
-            <Button type="submit" disabled={saving} className="ml-auto min-w-[140px]">
+          <div className={cn(adminCard, "p-5")}>
+            <p className="font-semibold text-zinc-900">Save changes</p>
+            <p className="mt-1 text-sm text-zinc-500">Unsaved changes are lost on refresh.</p>
+            <Button type="submit" disabled={saving} className="mt-4 w-full">
               {saving ? "Saving…" : "Save profile"}
             </Button>
           </div>
-        </div>
-      </form>
 
-      <div className={cn(adminCard, "flex items-center justify-between gap-4 p-5")}>
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
-            <KeyRound className="h-4 w-4" aria-hidden />
+          <div className={cn(adminCard, "flex items-center justify-between gap-4 p-5")}>
+            <div className="flex min-w-0 items-center gap-3">
+              <KeyRound className="h-5 w-5 shrink-0 text-brand-accent" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-medium text-zinc-900">Password</p>
+                <p className="text-sm text-zinc-500">Update your sign-in password</p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/admin-change-password">Change</Link>
+            </Button>
           </div>
-          <div>
-            <p className="font-medium text-zinc-900">Password</p>
-            <p className="text-sm text-zinc-500">Update your sign-in password</p>
-          </div>
-        </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/admin/admin-change-password">Change</Link>
-        </Button>
-      </div>
+        </aside>
+      </form>
     </div>
   );
 }

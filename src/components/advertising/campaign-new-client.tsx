@@ -158,7 +158,7 @@ function CampaignNewContent() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       <Link
         href="/advertising/campaigns"
         className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900"
@@ -168,220 +168,251 @@ function CampaignNewContent() {
       </Link>
       <h1 className="text-xl font-semibold text-zinc-900">New campaign</h1>
 
-      <form onSubmit={handleSubmit} className={cn(designTw.publicCard, "space-y-5 p-6")}>
-        {formError ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{formError}</p>
-        ) : null}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+        <div className="min-w-0">
+          <form onSubmit={handleSubmit} className={cn(designTw.publicCard, "space-y-5 p-6")}>
+            {formError ? (
+              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{formError}</p>
+            ) : null}
 
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">Project</label>
-          <Select
-            layout="field"
-            value={projectId}
-            onChange={(e) => setProjectId(Number(e.target.value))}
-          >
-            {options.projects.length === 0 ? (
-              <option value="">No owned projects found</option>
-            ) : (
-              options.projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))
-            )}
-          </Select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">Placement</label>
-          <Select
-            layout="field"
-            value={placementType}
-            onChange={(e) => setPlacementType(e.target.value)}
-          >
-            {options.placementTypes.map((p) => (
-              <option key={p} value={p}>
-                {placementLabel(p)}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">Title</label>
-          <Input
-            layout="field"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Summer launch — Featured listing"
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Max bid (Rs. / 1000 impressions)</label>
-            <Input
-              layout="field"
-              type="number"
-              min={1}
-              value={maxBidCpm}
-              onChange={(e) => setMaxBidCpm(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Budget cap (Rs.)</label>
-            <Input
-              layout="field"
-              type="number"
-              min={1}
-              value={budgetCap}
-              onChange={(e) => setBudgetCap(e.target.value)}
-              required
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">
-            Daily budget (Rs., optional)
-          </label>
-          <Input
-            layout="field"
-            type="number"
-            min={1}
-            value={dailyBudget}
-            onChange={(e) => setDailyBudget(e.target.value)}
-            placeholder="Leave blank to spread the budget cap evenly over the campaign"
-          />
-          <p className="mt-1 text-xs text-zinc-500">
-            Caps how much this campaign spends per day and sets its weight in the ad rotation
-            alongside your max bid. Leave blank to derive it automatically from the budget cap
-            divided across the campaign&apos;s days.
-          </p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">
-            Impression cap (optional)
-          </label>
-          <Input
-            layout="field"
-            type="number"
-            min={1}
-            value={impressionCap}
-            onChange={(e) => setImpressionCap(e.target.value)}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Start date</label>
-            <Input
-              layout="field"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">End date</label>
-            <Input
-              layout="field"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              required
-            />
-          </div>
-        </div>
-
-        <label className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
-          <input
-            type="checkbox"
-            className="mt-0.5"
-            checked={showOnHomepage}
-            onChange={(e) => handleShowOnHomepageChange(e.target.checked)}
-          />
-          <span>
-            <span className="block text-sm font-medium text-zinc-800">Show on home page</span>
-            <span className="block text-xs text-zinc-500">
-              Skip targeting below — an untargeted campaign is eligible for the homepage&apos;s
-              broad placements. Target specific areas, property types, or tiers instead if you
-              want this campaign focused on matching listing pages only.
-            </span>
-          </span>
-        </label>
-
-        {!showOnHomepage && (
-          <>
             <div>
-              <label className="block text-sm font-medium text-zinc-700">Target areas</label>
-              <div className="mt-2 flex max-h-40 flex-wrap gap-2 overflow-y-auto rounded-lg border border-zinc-200 p-3">
-                {options.areas.map((a) => (
-                  <label
-                    key={a.id}
-                    className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-xs"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={areaIds.includes(a.id)}
-                      onChange={() => toggleId(areaIds, a.id, setAreaIds)}
-                    />
-                    {a.name}
-                  </label>
-                ))}
-              </div>
+              <label className="block text-sm font-medium text-zinc-700">Project</label>
+              <Select
+                layout="field"
+                value={projectId}
+                onChange={(e) => setProjectId(Number(e.target.value))}
+              >
+                {options.projects.length === 0 ? (
+                  <option value="">No owned projects found</option>
+                ) : (
+                  options.projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))
+                )}
+              </Select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700">Target property types</label>
-              <div className="mt-2 flex flex-wrap gap-2 rounded-lg border border-zinc-200 p-3">
-                {options.projectTypes.map((t) => (
-                  <label
-                    key={t.id}
-                    className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-xs"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={projectTypeIds.includes(t.id)}
-                      onChange={() => toggleId(projectTypeIds, t.id, setProjectTypeIds)}
-                    />
-                    {t.title}
-                  </label>
+              <label className="block text-sm font-medium text-zinc-700">Placement</label>
+              <Select
+                layout="field"
+                value={placementType}
+                onChange={(e) => setPlacementType(e.target.value)}
+              >
+                {options.placementTypes.map((p) => (
+                  <option key={p} value={p}>
+                    {placementLabel(p)}
+                  </option>
                 ))}
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-700">Title</label>
+              <Input
+                layout="field"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Summer launch — Featured listing"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">Max bid (Rs. / 1000 impressions)</label>
+                <Input
+                  layout="field"
+                  type="number"
+                  min={1}
+                  value={maxBidCpm}
+                  onChange={(e) => setMaxBidCpm(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">Budget cap (Rs.)</label>
+                <Input
+                  layout="field"
+                  type="number"
+                  min={1}
+                  value={budgetCap}
+                  onChange={(e) => setBudgetCap(e.target.value)}
+                  required
+                />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-zinc-700">
-                Target project tiers (optional)
+                Daily budget (Rs., optional)
               </label>
-              <div className="mt-2 flex flex-wrap gap-2 rounded-lg border border-zinc-200 p-3">
-                {options.tiers.map((tier) => (
-                  <label
-                    key={tier}
-                    className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-xs"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={tiers.includes(tier)}
-                      onChange={() => toggleValue(tiers, tier, setTiers)}
-                    />
-                    {tierLabel(tier)}
-                  </label>
-                ))}
+              <Input
+                layout="field"
+                type="number"
+                min={1}
+                value={dailyBudget}
+                onChange={(e) => setDailyBudget(e.target.value)}
+                placeholder="Leave blank to spread the budget cap evenly over the campaign"
+              />
+              <p className="mt-1 text-xs text-zinc-500">
+                Caps how much this campaign spends per day and sets its weight in the ad rotation
+                alongside your max bid. Leave blank to derive it automatically from the budget cap
+                divided across the campaign&apos;s days.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-700">
+                Impression cap (optional)
+              </label>
+              <Input
+                layout="field"
+                type="number"
+                min={1}
+                value={impressionCap}
+                onChange={(e) => setImpressionCap(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">Start date</label>
+                <Input
+                  layout="field"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">End date</label>
+                <Input
+                  layout="field"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  required
+                />
               </div>
             </div>
-          </>
-        )}
 
-        <Button type="submit" className={designTw.btnPrimary} disabled={submitting}>
-          {submitting ? "Creating…" : "Create draft"}
-        </Button>
-      </form>
+            <label className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={showOnHomepage}
+                onChange={(e) => handleShowOnHomepageChange(e.target.checked)}
+              />
+              <span>
+                <span className="block text-sm font-medium text-zinc-800">Show on home page</span>
+                <span className="block text-xs text-zinc-500">
+                  Skip targeting below — an untargeted campaign is eligible for the homepage&apos;s
+                  broad placements. Target specific areas, property types, or tiers instead if you
+                  want this campaign focused on matching listing pages only.
+                </span>
+              </span>
+            </label>
+
+            {!showOnHomepage && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700">Target areas</label>
+                  <div className="mt-2 flex max-h-40 flex-wrap gap-2 overflow-y-auto rounded-lg border border-zinc-200 p-3">
+                    {options.areas.map((a) => (
+                      <label
+                        key={a.id}
+                        className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={areaIds.includes(a.id)}
+                          onChange={() => toggleId(areaIds, a.id, setAreaIds)}
+                        />
+                        {a.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700">Target property types</label>
+                  <div className="mt-2 flex flex-wrap gap-2 rounded-lg border border-zinc-200 p-3">
+                    {options.projectTypes.map((t) => (
+                      <label
+                        key={t.id}
+                        className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={projectTypeIds.includes(t.id)}
+                          onChange={() => toggleId(projectTypeIds, t.id, setProjectTypeIds)}
+                        />
+                        {t.title}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700">
+                    Target project tiers (optional)
+                  </label>
+                  <div className="mt-2 flex flex-wrap gap-2 rounded-lg border border-zinc-200 p-3">
+                    {options.tiers.map((tier) => (
+                      <label
+                        key={tier}
+                        className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={tiers.includes(tier)}
+                          onChange={() => toggleValue(tiers, tier, setTiers)}
+                        />
+                        {tierLabel(tier)}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            <Button type="submit" className={designTw.btnPrimary} disabled={submitting}>
+              {submitting ? "Creating…" : "Create draft"}
+            </Button>
+          </form>
+        </div>
+        <aside className="lg:sticky lg:top-4">
+          <div className={cn(designTw.publicCard, "space-y-4 p-6")}>
+            <h2 className="text-sm font-semibold text-zinc-900">How campaigns work</h2>
+            <ul className="space-y-3 text-sm leading-relaxed text-zinc-600">
+              <li>
+                <span className="font-medium text-zinc-900">Max bid</span> — the most you pay each
+                time your ad is shown 1,000 times.
+              </li>
+              <li>
+                <span className="font-medium text-zinc-900">Budget cap</span> — your total spend
+                limit. A daily budget spreads it across the campaign&apos;s days.
+              </li>
+              <li>
+                <span className="font-medium text-zinc-900">Wallet</span> — spend is deducted from
+                your ad wallet, so{" "}
+                <Link href="/advertising/wallet" className="font-medium text-brand-accent hover:underline">
+                  top up first
+                </Link>
+                .
+              </li>
+              <li>
+                <span className="font-medium text-zinc-900">Review</span> — our team checks new
+                campaigns before they go live.
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

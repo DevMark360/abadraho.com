@@ -30,8 +30,10 @@ export function AuthPageShell({
   panelDescription?: string;
 }) {
   return (
-    <div className={cn("flex min-h-screen", designTw.pageCanvas)}>
-      <aside className="relative hidden w-[min(42%,30rem)] shrink-0 flex-col justify-between overflow-hidden border-r border-zinc-200 bg-gradient-to-br from-white via-white to-red-50/60 p-10 lg:flex xl:p-12">
+    // body is overflow-hidden site-wide (each layout owns its scroll area), so this shell must
+    // scroll itself — otherwise tall forms (signup) are cut off on short phone screens.
+    <div className={cn("flex h-[100dvh] overflow-y-auto", designTw.pageCanvas)}>
+      <aside className="sticky top-0 hidden h-[100dvh] w-[min(42%,30rem)] shrink-0 flex-col justify-between overflow-hidden border-r border-zinc-200 bg-gradient-to-br from-white via-white to-red-50/60 p-10 lg:flex xl:p-12">
         <div
           className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-brand-accent/5"
           aria-hidden
@@ -71,13 +73,16 @@ export function AuthPageShell({
         </div>
       </aside>
 
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-10">
-        <div className="mb-6 lg:hidden">
-          <AbadrahoLogo href="/" height={44} />
-        </div>
-        {children}
-        <div className="lg:hidden">
-          <AuthPortalFooter />
+      <main className="flex min-h-full min-w-0 flex-1 flex-col items-center px-4 py-8 sm:px-6 sm:py-10">
+        {/* my-auto centres when there's room but lets a tall form start at the top and scroll */}
+        <div className="my-auto flex w-full flex-col items-center">
+          <div className="mb-6 lg:hidden">
+            <AbadrahoLogo href="/" height={44} />
+          </div>
+          {children}
+          <div className="lg:hidden">
+            <AuthPortalFooter />
+          </div>
         </div>
       </main>
     </div>

@@ -201,7 +201,8 @@ export function AdminSidebar({ collapsible = false }: { collapsible?: boolean })
       <nav
         className={cn(
           "min-h-0 flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden overscroll-contain",
-          collapsed ? "w-full px-2 py-2" : "px-3 py-3"
+          // Collapsed: hide the scrollbar — next to the narrow rail it squeezed icons to dots.
+          collapsed ? "w-full scrollbar-none space-y-1 px-2 py-2" : "px-3 py-3"
         )}
       >
         {userTypeId == null && !collapsed && (
@@ -220,7 +221,7 @@ export function AdminSidebar({ collapsible = false }: { collapsible?: boolean })
                   prefetch={false}
                   title={group.label}
                   className={cn(
-                    "flex items-center justify-center rounded-lg p-2.5 transition-colors",
+                    "mx-auto flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
                     active ? designTw.navActive : designTw.navInactive
                   )}
                 >

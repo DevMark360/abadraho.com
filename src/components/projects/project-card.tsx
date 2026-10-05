@@ -50,7 +50,7 @@ export function ProjectCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-clay-lg border bg-clay-surface shadow-clay transition-[box-shadow,transform] duration-300 ease-in-out",
+        "group relative flex flex-col overflow-hidden rounded-xl border bg-clay-surface shadow-clay transition-[box-shadow,transform] duration-300 ease-in-out",
         selected
           ? "border-blue-500 ring-2 ring-blue-500/30"
           : "border-white/80 hover:-translate-y-0.5 hover:shadow-clay-hover"

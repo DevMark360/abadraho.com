@@ -131,7 +131,7 @@ export function ProfilePageClient() {
   const profile = user ?? authUser;
 
   return (
-    <div className="mx-auto w-full max-w-2xl pb-8">
+    <div className="mx-auto w-full max-w-6xl pb-8">
       <AccountBackLink />
       <div className="mt-2">
         <AccountPageHeader
@@ -140,202 +140,211 @@ export function ProfilePageClient() {
         />
       </div>
 
-      <form onSubmit={save} className="mt-6 space-y-6">
-        <AccountFormCard>
-          <AccountFormSection
-            title="Personal details"
-            description="Your name appears on inquiries and account records."
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <AccountFormField id={firstNameId} label="First name" required>
-                <Input
-                  id={firstNameId}
-                  name="firstName"
-                  layout="inline"
-                  defaultValue={profile.firstName ?? ""}
-                  autoComplete="given-name"
-                  required
-                />
-              </AccountFormField>
-              <AccountFormField id={lastNameId} label="Last name" required>
-                <Input
-                  id={lastNameId}
-                  name="lastName"
-                  layout="inline"
-                  defaultValue={profile.lastName ?? ""}
-                  autoComplete="family-name"
-                  required
-                />
-              </AccountFormField>
-            </div>
-          </AccountFormSection>
-
-          <AccountFormSection
-            title="Contact"
-            description="Used when you inquire about a project or request documents."
-          >
-            <AccountFormField
-              id={phoneId}
-              label="WhatsApp number"
-              hint="Include country code if outside Pakistan."
-              required
-            >
-              <Input
-                id={phoneId}
-                name="phoneNumber"
-                type="tel"
-                layout="inline"
-                defaultValue={profile.phoneNumber ?? ""}
-                autoComplete="tel"
-                inputMode="tel"
-                required
-              />
-            </AccountFormField>
-            <AccountFormField id={addressId} label="Street address">
-              <Input
-                id={addressId}
-                name="address"
-                layout="inline"
-                defaultValue={profile.address ?? ""}
-                autoComplete="street-address"
-              />
-            </AccountFormField>
-            <AccountFormField id={cityId} label="City">
-              <Input
-                id={cityId}
-                name="city"
-                layout="inline"
-                defaultValue={profile.city ?? ""}
-                autoComplete="address-level2"
-              />
-            </AccountFormField>
-          </AccountFormSection>
-
-          <AccountFormSection title="About you" description="Optional — helps our team tailor follow-ups.">
-            <AccountFormField id={aboutId} label="Bio / notes">
-              <Textarea
-                id={aboutId}
-                name="aboutMe"
-                layout="inline"
-                rows={4}
-                defaultValue={profile.aboutMe ?? ""}
-                placeholder="e.g. Looking for a 3-bed in DHA with post-handover plan"
-              />
-            </AccountFormField>
-          </AccountFormSection>
-
-          <AccountFormSection title="Account verification">
-            <AccountFormField
-              id={emailId}
-              label="Email address"
-              //hint="Contact support to change your login email."
-            >
-              <Input
-                id={emailId}
-                name="email"
-                type="email"
-                layout="inline"
-                value={profile.email ?? ""}
-                readOnly
-                disabled
-                className="bg-zinc-50 text-zinc-600"
-              />
-            </AccountFormField>
-
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span
-                className={
-                  profile.emailVerified
-                    ? "inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-800 ring-1 ring-emerald-100"
-                    : "inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 font-medium text-amber-900 ring-1 ring-amber-100"
-                }
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <div className="min-w-0">
+          <form onSubmit={save} className="space-y-6">
+            <AccountFormCard>
+              <AccountFormSection
+                title="Personal details"
+                description="Your name appears on inquiries and account records."
               >
-                <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-                Email {profile.emailVerified ? "verified" : "not verified"}
-              </span>
-              <span
-                className={
-                  profile.isPhoneNoVerified
-                    ? "inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-800 ring-1 ring-emerald-100"
-                    : "inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 font-medium text-amber-900 ring-1 ring-amber-100"
-                }
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <AccountFormField id={firstNameId} label="First name" required>
+                    <Input
+                      id={firstNameId}
+                      name="firstName"
+                      layout="inline"
+                      defaultValue={profile.firstName ?? ""}
+                      autoComplete="given-name"
+                      required
+                    />
+                  </AccountFormField>
+                  <AccountFormField id={lastNameId} label="Last name" required>
+                    <Input
+                      id={lastNameId}
+                      name="lastName"
+                      layout="inline"
+                      defaultValue={profile.lastName ?? ""}
+                      autoComplete="family-name"
+                      required
+                    />
+                  </AccountFormField>
+                </div>
+              </AccountFormSection>
+
+              <AccountFormSection
+                title="Contact"
+                description="Used when you inquire about a project or request documents."
               >
-                <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-                Phone {profile.isPhoneNoVerified ? "verified (WhatsApp)" : "not verified"}
-              </span>
-            </div>
+                <AccountFormField
+                  id={phoneId}
+                  label="WhatsApp number"
+                  hint="Include country code if outside Pakistan."
+                  required
+                >
+                  <Input
+                    id={phoneId}
+                    name="phoneNumber"
+                    type="tel"
+                    layout="inline"
+                    defaultValue={profile.phoneNumber ?? ""}
+                    autoComplete="tel"
+                    inputMode="tel"
+                    required
+                  />
+                </AccountFormField>
+                <AccountFormField id={addressId} label="Street address">
+                  <Input
+                    id={addressId}
+                    name="address"
+                    layout="inline"
+                    defaultValue={profile.address ?? ""}
+                    autoComplete="street-address"
+                  />
+                </AccountFormField>
+                <AccountFormField id={cityId} label="City">
+                  <Input
+                    id={cityId}
+                    name="city"
+                    layout="inline"
+                    defaultValue={profile.city ?? ""}
+                    autoComplete="address-level2"
+                  />
+                </AccountFormField>
+              </AccountFormSection>
 
-            {!profile.emailVerified ? (
-              <Button type="button" variant="outline" size="sm" onClick={() => void resendEmail()}>
-                Resend verification email
-              </Button>
-            ) : null}
+              <AccountFormSection title="About you" description="Optional — helps our team tailor follow-ups.">
+                <AccountFormField id={aboutId} label="Bio / notes">
+                  <Textarea
+                    id={aboutId}
+                    name="aboutMe"
+                    layout="inline"
+                    rows={4}
+                    defaultValue={profile.aboutMe ?? ""}
+                    placeholder="e.g. Looking for a 3-bed in DHA with post-handover plan"
+                  />
+                </AccountFormField>
+              </AccountFormSection>
 
-            {devVerifyLink ? (
-              <AuthFormMessage variant="info">
-                Dev verify link:{" "}
-                <a href={devVerifyLink} className="underline">
-                  {devVerifyLink}
-                </a>
-              </AuthFormMessage>
-            ) : null}
+              <div className="border-t border-zinc-100 pt-5">
+                <Button type="submit" disabled={saving} className="w-full sm:w-auto">
+                  {saving ? "Saving…" : "Save profile"}
+                </Button>
+              </div>
+            </AccountFormCard>
+        </form>
 
-            {!profile.isPhoneNoVerified ? (
-              <PhoneVerifyPanel
-                initialPhone={profile.phoneNumber ?? ""}
-                onVerified={() => {
-                  void refresh();
-                  fetch("/api/v1/auth/me", { credentials: "same-origin" })
-                    .then((r) => r.json())
-                    .then((j) => setUser(j.user ?? null));
-                }}
-              />
-            ) : null}
-          </AccountFormSection>
-
-          <div className="border-t border-zinc-100 pt-5">
-            <Button type="submit" disabled={saving} className="w-full sm:w-auto">
-              {saving ? "Saving…" : "Save profile"}
-            </Button>
-          </div>
-        </AccountFormCard>
-      </form>
-
-      {msg ? (
-        <div className="mt-4">
-          <AuthFormMessage variant={msgTone === "error" ? "error" : msgTone === "ok" ? "success" : "info"}>
-            {msg}
-          </AuthFormMessage>
+        {msg ? (
+          <div className="mt-4">
+            <AuthFormMessage variant={msgTone === "error" ? "error" : msgTone === "ok" ? "success" : "info"}>
+              {msg}
+            </AuthFormMessage>
         </div>
       ) : null}
 
-      <AccountFormCard className="mt-6">
-        <AccountFormSection title="Security">
-          <p className="text-sm text-zinc-600">
-            Use a strong password you do not reuse on other sites.
-          </p>
-          <Button asChild variant="outline">
-            <Link href="/account/password">
-              <KeyRound className="h-4 w-4" aria-hidden />
-              Change password
-            </Link>
-          </Button>
-        </AccountFormSection>
-      </AccountFormCard>
+        </div>
 
-      <form
-        className="mt-6"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          await fetch("/api/v1/auth/logout", { method: "POST", credentials: "same-origin" });
-          window.location.href = "/login";
-        }}
-      >
-        <Button type="submit" variant="outline" className="text-zinc-700">
-          <LogOut className="h-4 w-4" aria-hidden />
-          Log out
-        </Button>
-      </form>
+        {/* Verification, security and logout stay in view beside the form */}
+        <aside className="space-y-6 lg:sticky lg:top-4">
+          <AccountFormCard>
+            <AccountFormSection title="Account verification">
+              <AccountFormField
+                id={emailId}
+                label="Email address"
+                //hint="Contact support to change your login email."
+              >
+                <Input
+                  id={emailId}
+                  name="email"
+                  type="email"
+                  layout="inline"
+                  value={profile.email ?? ""}
+                  readOnly
+                  disabled
+                  className="bg-zinc-50 text-zinc-600"
+                />
+              </AccountFormField>
+
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <span
+                  className={
+                    profile.emailVerified
+                      ? "inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-800 ring-1 ring-emerald-100"
+                      : "inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 font-medium text-amber-900 ring-1 ring-amber-100"
+                  }
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
+                  Email {profile.emailVerified ? "verified" : "not verified"}
+                </span>
+                <span
+                  className={
+                    profile.isPhoneNoVerified
+                      ? "inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-800 ring-1 ring-emerald-100"
+                      : "inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 font-medium text-amber-900 ring-1 ring-amber-100"
+                  }
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
+                  Phone {profile.isPhoneNoVerified ? "verified (WhatsApp)" : "not verified"}
+                </span>
+              </div>
+
+              {!profile.emailVerified ? (
+                <Button type="button" variant="outline" size="sm" onClick={() => void resendEmail()}>
+                  Resend verification email
+                </Button>
+              ) : null}
+
+              {devVerifyLink ? (
+                <AuthFormMessage variant="info">
+                  Dev verify link:{" "}
+                  <a href={devVerifyLink} className="underline">
+                    {devVerifyLink}
+                  </a>
+                </AuthFormMessage>
+              ) : null}
+
+              {!profile.isPhoneNoVerified ? (
+                <PhoneVerifyPanel
+                  initialPhone={profile.phoneNumber ?? ""}
+                  onVerified={() => {
+                    void refresh();
+                    fetch("/api/v1/auth/me", { credentials: "same-origin" })
+                      .then((r) => r.json())
+                      .then((j) => setUser(j.user ?? null));
+                  }}
+                />
+              ) : null}
+            </AccountFormSection>
+          </AccountFormCard>
+
+          <AccountFormCard>
+            <AccountFormSection title="Security">
+              <p className="text-sm text-zinc-600">
+                Use a strong password you do not reuse on other sites.
+              </p>
+              <Button asChild variant="outline">
+                <Link href="/account/password">
+                  <KeyRound className="h-4 w-4" aria-hidden />
+                  Change password
+                </Link>
+              </Button>
+            </AccountFormSection>
+          </AccountFormCard>
+
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await fetch("/api/v1/auth/logout", { method: "POST", credentials: "same-origin" });
+              window.location.href = "/login";
+            }}
+          >
+            <Button type="submit" variant="outline" className="text-zinc-700">
+              <LogOut className="h-4 w-4" aria-hidden />
+              Log out
+            </Button>
+          </form>
+        </aside>
+      </div>
     </div>
   );
 }

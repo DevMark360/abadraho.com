@@ -179,7 +179,7 @@ function WalletPageContent() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       <Link
         href="/advertising"
         className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900"
@@ -189,231 +189,248 @@ function WalletPageContent() {
       </Link>
       <h1 className="text-xl font-semibold text-zinc-900">Wallet</h1>
 
-      <section className={cn(designTw.publicCard, "p-6")}>
-        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-          Current balance
-        </p>
-        <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
-          Rs. {wallet.balance.toLocaleString()}
-        </p>
-      </section>
-
-      {jazzcashReturnStatus === "confirmed" ? (
-        <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          Payment confirmed — your wallet has been credited.
-        </div>
-      ) : jazzcashReturnStatus === "rejected" ? (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
-          Payment was not successful — no amount was deducted from your wallet.
-        </div>
-      ) : jazzcashReturnStatus === "error" ? (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
-          Payment could not be verified{jazzcashReturnMessage ? `: ${jazzcashReturnMessage}` : ""}.
-        </div>
-      ) : null}
-
-      {jazzcashOnline ? (
-      <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
-        <h2 className="text-sm font-semibold text-zinc-900">Pay online (JazzCash)</h2>
-        <p className="text-xs text-zinc-500">
-          Pay instantly via JazzCash mobile wallet — your balance is credited automatically as
-          soon as the payment is confirmed, no admin action needed.
-        </p>
-        <form onSubmit={handleJazzcashSubmit} className="space-y-4">
-          {jazzcashError ? <p className="text-sm text-red-700">{jazzcashError}</p> : null}
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Amount (Rs.)</label>
-            <Input
-              layout="field"
-              type="number"
-              min={1}
-              value={jazzcashAmount}
-              onChange={(e) => setJazzcashAmount(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className={designTw.btnPrimary} disabled={jazzcashSubmitting}>
-            {jazzcashSubmitting ? "Redirecting…" : "Pay with JazzCash"}
-          </Button>
-        </form>
-      </section>
-      ) : null}
-
-      <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
-        <div className="flex items-start gap-4">
-          <Illustration3D name="memo" size={64} className="shrink-0" />
-          <div>
-            <h2 className="text-sm font-semibold text-zinc-900">1. Send the payment</h2>
-            <p className="mt-1 text-xs text-zinc-500">
-              Transfer the amount you want to add to one of these accounts (bank transfer / IBFT,
-              JazzCash or Easypaisa). Keep the receipt — you&apos;ll need its transaction ID and a
-              screenshot.
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <div className="min-w-0 space-y-6">
+          {/* Phones: balance first (the aside with it stacks below the form) */}
+          <section className={cn(designTw.publicCard, "p-6 lg:hidden")}>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              Current balance
             </p>
-          </div>
-        </div>
-        {paymentAccounts.length === 0 ? (
-          <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Payment account details aren&apos;t available right now — please contact support
-            before sending money.
-          </p>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {paymentAccounts.map((acc, i) => (
-              <div key={`${acc.label}-${i}`} className={cn(designTw.clayTile, "p-4")}>
-                <p className="text-sm font-semibold text-zinc-900">{acc.label}</p>
-                <dl className="mt-2 space-y-2">
-                  {acc.fields.map((f) => (
-                    <div key={f.name}>
-                      <dt className="text-[11px] uppercase tracking-wide text-zinc-400">{f.name}</dt>
-                      <dd className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="break-all font-mono text-sm text-zinc-900">{f.value}</span>
-                        <CopyValue value={f.value} />
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+              Rs. {wallet.balance.toLocaleString()}
+            </p>
+          </section>
+          {jazzcashReturnStatus === "confirmed" ? (
+            <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              Payment confirmed — your wallet has been credited.
+            </div>
+          ) : jazzcashReturnStatus === "rejected" ? (
+            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
+              Payment was not successful — no amount was deducted from your wallet.
+            </div>
+          ) : jazzcashReturnStatus === "error" ? (
+            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
+              Payment could not be verified{jazzcashReturnMessage ? `: ${jazzcashReturnMessage}` : ""}.
+            </div>
+          ) : null}
+
+          {jazzcashOnline ? (
+          <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
+            <h2 className="text-sm font-semibold text-zinc-900">Pay online (JazzCash)</h2>
+            <p className="text-xs text-zinc-500">
+              Pay instantly via JazzCash mobile wallet — your balance is credited automatically as
+              soon as the payment is confirmed, no admin action needed.
+            </p>
+            <form onSubmit={handleJazzcashSubmit} className="space-y-4">
+              {jazzcashError ? <p className="text-sm text-red-700">{jazzcashError}</p> : null}
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">Amount (Rs.)</label>
+                <Input
+                  layout="field"
+                  type="number"
+                  min={1}
+                  value={jazzcashAmount}
+                  onChange={(e) => setJazzcashAmount(e.target.value)}
+                  required
+                />
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+              <Button type="submit" className={designTw.btnPrimary} disabled={jazzcashSubmitting}>
+                {jazzcashSubmitting ? "Redirecting…" : "Pay with JazzCash"}
+              </Button>
+            </form>
+          </section>
+          ) : null}
 
-      <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
-        <div className="flex items-start gap-4">
-          <Illustration3D name="upload" size={64} className="shrink-0" />
-          <div>
-            <h2 className="text-sm font-semibold text-zinc-900">2. Submit your payment details</h2>
-            <p className="mt-1 text-xs text-zinc-500">
-              An admin checks the payment arrived, then credits your wallet. You&apos;ll get a
-              notification when it&apos;s confirmed or rejected.
+          <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
+            <div className="flex items-start gap-4">
+              <Illustration3D name="memo" size={64} className="shrink-0" />
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-900">1. Send the payment</h2>
+                <p className="mt-1 text-xs text-zinc-500">
+                  Transfer the amount you want to add to one of these accounts (bank transfer / IBFT,
+                  JazzCash or Easypaisa). Keep the receipt — you&apos;ll need its transaction ID and a
+                  screenshot.
+                </p>
+              </div>
+            </div>
+            {paymentAccounts.length === 0 ? (
+              <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Payment account details aren&apos;t available right now — please contact support
+                before sending money.
+              </p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {paymentAccounts.map((acc, i) => (
+                  <div key={`${acc.label}-${i}`} className={cn(designTw.clayTile, "p-4")}>
+                    <p className="text-sm font-semibold text-zinc-900">{acc.label}</p>
+                    <dl className="mt-2 space-y-2">
+                      {acc.fields.map((f) => (
+                        <div key={f.name}>
+                          <dt className="text-[11px] uppercase tracking-wide text-zinc-400">{f.name}</dt>
+                          <dd className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="break-all font-mono text-sm text-zinc-900">{f.value}</span>
+                            <CopyValue value={f.value} />
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
+            <div className="flex items-start gap-4">
+              <Illustration3D name="upload" size={64} className="shrink-0" />
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-900">2. Submit your payment details</h2>
+                <p className="mt-1 text-xs text-zinc-500">
+                  An admin checks the payment arrived, then credits your wallet. You&apos;ll get a
+                  notification when it&apos;s confirmed or rejected.
+                </p>
+              </div>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {formError ? <p className="text-sm text-red-700">{formError}</p> : null}
+              {formSuccess ? <p className="text-sm text-emerald-700">{formSuccess}</p> : null}
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">Amount sent (Rs.)</label>
+                <Input
+                  layout="field"
+                  name="amount"
+                  type="number"
+                  min={1}
+                  step="any"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">
+                  Transaction ID / reference number
+                </label>
+                <Input
+                  layout="field"
+                  name="transactionId"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  placeholder="As shown on your receipt"
+                  minLength={4}
+                  maxLength={40}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">
+                  Payment screenshot
+                </label>
+                <input
+                  name="proof"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  required
+                  className="mt-1.5 block w-full text-sm text-zinc-700 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-zinc-200"
+                />
+                <p className="mt-1 text-xs text-zinc-400">JPG, PNG, WebP or PDF — max 5MB.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">
+                  Note <span className="font-normal text-zinc-400">(optional)</span>
+                </label>
+                <Input
+                  layout="field"
+                  name="referenceNote"
+                  value={referenceNote}
+                  onChange={(e) => setReferenceNote(e.target.value)}
+                  placeholder="e.g. paid from Meezan Bank, account title"
+                  maxLength={500}
+                />
+              </div>
+              <Button type="submit" className={designTw.btnPrimary} disabled={submitting}>
+                {submitting ? "Submitting…" : "Submit payment"}
+              </Button>
+            </form>
+          </section>
+
+        </div>
+
+        {/* Balance and history stay in view while filling in the top-up form */}
+        <aside className="space-y-6 lg:sticky lg:top-4">
+          <section className={cn(designTw.publicCard, "hidden p-6 lg:block")}>
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              Current balance
             </p>
-          </div>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {formError ? <p className="text-sm text-red-700">{formError}</p> : null}
-          {formSuccess ? <p className="text-sm text-emerald-700">{formSuccess}</p> : null}
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Amount sent (Rs.)</label>
-            <Input
-              layout="field"
-              name="amount"
-              type="number"
-              min={1}
-              step="any"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">
-              Transaction ID / reference number
-            </label>
-            <Input
-              layout="field"
-              name="transactionId"
-              value={transactionId}
-              onChange={(e) => setTransactionId(e.target.value)}
-              placeholder="As shown on your receipt"
-              minLength={4}
-              maxLength={40}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">
-              Payment screenshot
-            </label>
-            <input
-              name="proof"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,application/pdf"
-              required
-              className="mt-1.5 block w-full text-sm text-zinc-700 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-zinc-200"
-            />
-            <p className="mt-1 text-xs text-zinc-400">JPG, PNG, WebP or PDF — max 5MB.</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">
-              Note <span className="font-normal text-zinc-400">(optional)</span>
-            </label>
-            <Input
-              layout="field"
-              name="referenceNote"
-              value={referenceNote}
-              onChange={(e) => setReferenceNote(e.target.value)}
-              placeholder="e.g. paid from Meezan Bank, account title"
-              maxLength={500}
-            />
-          </div>
-          <Button type="submit" className={designTw.btnPrimary} disabled={submitting}>
-            {submitting ? "Submitting…" : "Submit payment"}
-          </Button>
-        </form>
-      </section>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+              Rs. {wallet.balance.toLocaleString()}
+            </p>
+          </section>
 
-      <section className={cn(designTw.publicCard, "overflow-hidden")}>
-        <div className="border-b border-zinc-100 px-5 py-4">
-          <h2 className="font-semibold text-zinc-900">Transaction history</h2>
-        </div>
-        {transactions.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-zinc-500">No transactions yet.</p>
-        ) : (
-          <ul className="divide-y divide-zinc-100">
-            {transactions.map((t) => (
-              <li
-                key={t.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
-              >
-                <div className="min-w-0">
-                  <p className="font-medium text-zinc-900">
-                    {TX_TYPE_LABELS[t.type] ?? t.type}
-                  </p>
-                  {t.transactionId ? (
-                    <p className="mt-0.5 text-xs text-zinc-700">
-                      TID: <span className="font-mono">{t.transactionId}</span>
-                      {t.hasProof ? (
-                        <>
-                          {" · "}
-                          <a
-                            href={`/api/v1/advertising/wallet/topups/${t.id}/proof`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-brand-accent hover:underline"
-                          >
-                            View screenshot
-                          </a>
-                        </>
-                      ) : null}
-                    </p>
-                  ) : null}
-                  <p className="mt-0.5 text-xs text-zinc-500">
-                    {t.referenceNote ?? "—"} ·{" "}
-                    {new Date(t.createdAt).toLocaleDateString(undefined, {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-zinc-900">
-                    Rs. {t.amount.toLocaleString()}
-                  </span>
-                  <span
-                    className={cn(
-                      "rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
-                      TX_STATUS_BADGE[t.status] ?? TX_STATUS_BADGE.pending
-                    )}
+          <section className={cn(designTw.publicCard, "overflow-hidden")}>
+            <div className="border-b border-zinc-100 px-5 py-4">
+              <h2 className="text-base font-semibold text-zinc-900">Transaction history</h2>
+            </div>
+            {transactions.length === 0 ? (
+              <p className="px-5 py-8 text-sm text-zinc-500">No transactions yet.</p>
+            ) : (
+              <ul className="divide-y divide-zinc-100">
+                {transactions.map((t) => (
+                  <li
+                    key={t.id}
+                    className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
                   >
-                    {t.status}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                    <div className="min-w-0">
+                      <p className="font-medium text-zinc-900">
+                        {TX_TYPE_LABELS[t.type] ?? t.type}
+                      </p>
+                      {t.transactionId ? (
+                        <p className="mt-0.5 text-xs text-zinc-700">
+                          TID: <span className="font-mono">{t.transactionId}</span>
+                          {t.hasProof ? (
+                            <>
+                              {" · "}
+                              <a
+                                href={`/api/v1/advertising/wallet/topups/${t.id}/proof`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-brand-accent hover:underline"
+                              >
+                                View screenshot
+                              </a>
+                            </>
+                          ) : null}
+                        </p>
+                      ) : null}
+                      <p className="mt-0.5 text-xs text-zinc-500">
+                        {t.referenceNote ?? "—"} ·{" "}
+                        {new Date(t.createdAt).toLocaleDateString(undefined, {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-zinc-900">
+                        Rs. {t.amount.toLocaleString()}
+                      </span>
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+                          TX_STATUS_BADGE[t.status] ?? TX_STATUS_BADGE.pending
+                        )}
+                      >
+                        {t.status}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </aside>
+      </div>
     </div>
   );
 }

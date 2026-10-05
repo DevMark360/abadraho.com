@@ -142,7 +142,7 @@ function WhatsappPackagesContent() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       <Link
         href="/advertising"
         className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900"
@@ -157,126 +157,131 @@ function WhatsappPackagesContent() {
         auction campaign.
       </p>
 
-      <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
-        <h2 className="text-sm font-semibold text-zinc-900">Buy a package</h2>
-        <form onSubmit={handlePurchase} className="space-y-4">
-          {purchaseError ? <p className="text-sm text-red-700">{purchaseError}</p> : null}
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Project</label>
-            <Select
-              layout="field"
-              value={projectId}
-              onChange={(e) => setProjectId(Number(e.target.value))}
-            >
-              {projects.length === 0 ? (
-                <option value="">No owned projects found</option>
-              ) : (
-                projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))
-              )}
-            </Select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-zinc-700">Package size</label>
-            <Select layout="field" value={cards} onChange={(e) => setCards(Number(e.target.value))}>
-              {catalog.map((c) => (
-                <option key={c.cards} value={c.cards}>
-                  {c.cards} cards — Rs. {c.price.toLocaleString()}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <Button type="submit" className={designTw.btnPrimary} disabled={purchasing}>
-            {purchasing ? "Purchasing…" : "Purchase package"}
-          </Button>
-        </form>
-      </section>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
+        <div className="min-w-0 space-y-6">
+          <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
+            <h2 className="text-sm font-semibold text-zinc-900">Buy a package</h2>
+            <form onSubmit={handlePurchase} className="space-y-4">
+              {purchaseError ? <p className="text-sm text-red-700">{purchaseError}</p> : null}
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">Project</label>
+                <Select
+                  layout="field"
+                  value={projectId}
+                  onChange={(e) => setProjectId(Number(e.target.value))}
+                >
+                  {projects.length === 0 ? (
+                    <option value="">No owned projects found</option>
+                  ) : (
+                    projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))
+                  )}
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">Package size</label>
+                <Select layout="field" value={cards} onChange={(e) => setCards(Number(e.target.value))}>
+                  {catalog.map((c) => (
+                    <option key={c.cards} value={c.cards}>
+                      {c.cards} cards — Rs. {c.price.toLocaleString()}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <Button type="submit" className={designTw.btnPrimary} disabled={purchasing}>
+                {purchasing ? "Purchasing…" : "Purchase package"}
+              </Button>
+            </form>
+          </section>
 
-      {lastShareUrl ? (
-        <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          Card generated —{" "}
-          <a href={lastShareUrl} target="_blank" rel="noopener noreferrer" className="underline">
-            share on WhatsApp
-          </a>
+          {lastShareUrl ? (
+            <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              Card generated —{" "}
+              <a href={lastShareUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                share on WhatsApp
+              </a>
+            </div>
+          ) : null}
         </div>
-      ) : null}
-
-      <section className={cn(designTw.publicCard, "overflow-hidden")}>
-        <div className="border-b border-zinc-100 px-5 py-4">
-          <h2 className="font-semibold text-zinc-900">Your packages</h2>
-        </div>
-        {generateError ? (
-          <p className="border-b border-zinc-100 px-5 py-3 text-sm text-red-700">
-            {generateError}
-          </p>
-        ) : null}
-        {packages.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-zinc-500">No packages purchased yet.</p>
-        ) : (
-          <ul className="divide-y divide-zinc-100">
-            {packages.map((pkg) => (
-              <li key={pkg.id} className="px-5 py-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-medium text-zinc-900">{pkg.projectName}</p>
-                    <p className="mt-0.5 text-xs text-zinc-500">
-                      {pkg.usedCards}/{pkg.totalCards} cards used · Rs.{" "}
-                      {pkg.pricePaid.toLocaleString()} paid
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        "rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
-                        pkg.status === "active"
-                          ? "bg-emerald-50 text-emerald-800 ring-emerald-600/20"
-                          : "bg-zinc-100 text-zinc-600 ring-zinc-500/20"
-                      )}
-                    >
-                      {pkg.status}
-                    </span>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={pkg.status !== "active" || generatingId === pkg.id}
-                      onClick={() => handleGenerate(pkg.id)}
-                    >
-                      {generatingId === pkg.id ? "Generating…" : "Generate card"}
-                    </Button>
-                    <button
-                      type="button"
-                      className="text-xs font-medium text-zinc-500 underline"
-                      onClick={() => toggleExpand(pkg.id)}
-                    >
-                      {expandedId === pkg.id ? "Hide cards" : "View cards"}
-                    </button>
-                  </div>
-                </div>
-                {expandedId === pkg.id ? (
-                  <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                    {(cardsByPackage[pkg.id] ?? []).length === 0 ? (
-                      <p className="col-span-full text-xs text-zinc-500">No cards generated yet.</p>
-                    ) : (
-                      (cardsByPackage[pkg.id] ?? []).map((c) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          key={c.id}
-                          src={c.fileUrl}
-                          alt="WhatsApp ad card"
-                          className="aspect-square w-full rounded-lg object-cover"
-                        />
-                      ))
-                    )}
-                  </div>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        <aside className="min-w-0 space-y-6 lg:sticky lg:top-4">
+          <section className={cn(designTw.publicCard, "overflow-hidden")}>
+            <div className="border-b border-zinc-100 px-5 py-4">
+              <h2 className="font-semibold text-zinc-900">Your packages</h2>
+            </div>
+            {generateError ? (
+              <p className="border-b border-zinc-100 px-5 py-3 text-sm text-red-700">
+                {generateError}
+              </p>
+            ) : null}
+            {packages.length === 0 ? (
+              <p className="px-5 py-8 text-sm text-zinc-500">No packages purchased yet.</p>
+            ) : (
+              <ul className="divide-y divide-zinc-100">
+                {packages.map((pkg) => (
+                  <li key={pkg.id} className="px-5 py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium text-zinc-900">{pkg.projectName}</p>
+                        <p className="mt-0.5 text-xs text-zinc-500">
+                          {pkg.usedCards}/{pkg.totalCards} cards used · Rs.{" "}
+                          {pkg.pricePaid.toLocaleString()} paid
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn(
+                            "rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+                            pkg.status === "active"
+                              ? "bg-emerald-50 text-emerald-800 ring-emerald-600/20"
+                              : "bg-zinc-100 text-zinc-600 ring-zinc-500/20"
+                          )}
+                        >
+                          {pkg.status}
+                        </span>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={pkg.status !== "active" || generatingId === pkg.id}
+                          onClick={() => handleGenerate(pkg.id)}
+                        >
+                          {generatingId === pkg.id ? "Generating…" : "Generate card"}
+                        </Button>
+                        <button
+                          type="button"
+                          className="text-xs font-medium text-zinc-500 underline"
+                          onClick={() => toggleExpand(pkg.id)}
+                        >
+                          {expandedId === pkg.id ? "Hide cards" : "View cards"}
+                        </button>
+                      </div>
+                    </div>
+                    {expandedId === pkg.id ? (
+                      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                        {(cardsByPackage[pkg.id] ?? []).length === 0 ? (
+                          <p className="col-span-full text-xs text-zinc-500">No cards generated yet.</p>
+                        ) : (
+                          (cardsByPackage[pkg.id] ?? []).map((c) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              key={c.id}
+                              src={c.fileUrl}
+                              alt="WhatsApp ad card"
+                              className="aspect-square w-full rounded-lg object-cover"
+                            />
+                          ))
+                        )}
+                      </div>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </aside>
+      </div>
     </div>
   );
 }

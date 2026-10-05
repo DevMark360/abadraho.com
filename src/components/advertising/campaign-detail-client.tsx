@@ -166,7 +166,7 @@ function CampaignDetailContent({ campaignId }: { campaignId: number }) {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       <Link
         href="/advertising/campaigns"
         className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900"
@@ -186,214 +186,218 @@ function CampaignDetailContent({ campaignId }: { campaignId: number }) {
         </span>
       </div>
 
-      {campaign.isArchive ? (
-        <div className="rounded-lg bg-zinc-100 px-4 py-3 text-sm text-zinc-700">
-          This campaign has been archived by an admin — it has stopped competing in auctions and
-          is no longer serving, even though its underlying status is still &quot;{campaign.status}
-          &quot;.
-        </div>
-      ) : null}
-
-      {campaign.status === "rejected" && campaign.rejectionReason ? (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
-          <span className="font-medium">Rejected:</span> {campaign.rejectionReason}
-        </div>
-      ) : null}
-
-      {autoApproved ? (
-        <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          <span className="font-medium">Auto-approved:</span> based on your track record, this
-          campaign skipped manual review and will go live per its schedule.
-        </div>
-      ) : null}
-
-      {campaign.refundedAt ? (
-        <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          <span className="font-medium">Refund issued:</span> Rs.{" "}
-          {(campaign.refundAmount ?? 0).toLocaleString()} credited to your wallet on{" "}
-          {new Date(campaign.refundedAt).toLocaleDateString()} for undelivered impressions.
-        </div>
-      ) : null}
-
-      <section className={cn(designTw.publicCard, "space-y-3 p-6 text-sm")}>
-        <div className="flex justify-between">
-          <span className="text-zinc-500">Placement</span>
-          <span className="font-medium text-zinc-900">{placementLabel(campaign.placementType)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-zinc-500">Max bid CPM</span>
-          <span className="font-medium text-zinc-900">Rs. {campaign.maxBidCpm.toLocaleString()}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-zinc-500">Budget cap</span>
-          <span className="font-medium text-zinc-900">Rs. {campaign.budgetCap.toLocaleString()}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-zinc-500">Daily budget</span>
-          <span className="font-medium text-zinc-900">
-            {campaign.dailyBudget
-              ? `Rs. ${campaign.dailyBudget.toLocaleString()}`
-              : "Auto (budget cap ÷ campaign days)"}
-          </span>
-        </div>
-        {campaign.impressionCap ? (
-          <div className="flex justify-between">
-            <span className="text-zinc-500">Impression cap</span>
-            <span className="font-medium text-zinc-900">
-              {campaign.impressionCap.toLocaleString()}
-            </span>
-          </div>
-        ) : null}
-        <div className="flex justify-between">
-          <span className="text-zinc-500">Schedule</span>
-          <span className="font-medium text-zinc-900">
-            {new Date(campaign.startDate).toLocaleDateString()} –{" "}
-            {new Date(campaign.endDate).toLocaleDateString()}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-zinc-500">Targeting</span>
-          <span className="font-medium text-zinc-900">
-            {campaign.areaIds.length} area(s), {campaign.projectTypeIds.length} property type(s)
-            {campaign.tiers.length ? `, ${campaign.tiers.length} tier(s)` : ""}
-          </span>
-        </div>
-      </section>
-
-      {stats ? (
-        <section className={cn(designTw.publicCard, "p-6")}>
-          <h2 className="mb-4 text-sm font-semibold text-zinc-900">Performance</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div>
-              <p className="text-xs text-zinc-500">Impressions</p>
-              <p className="mt-1 text-lg font-semibold text-zinc-900">
-                {stats.impressions.toLocaleString()}
-              </p>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
+        <div className="min-w-0 space-y-6">
+          {campaign.isArchive ? (
+            <div className="rounded-lg bg-zinc-100 px-4 py-3 text-sm text-zinc-700">
+              This campaign has been archived by an admin — it has stopped competing in auctions and
+              is no longer serving, even though its underlying status is still &quot;{campaign.status}
+              &quot;.
             </div>
-            <div>
-              <p className="text-xs text-zinc-500">Clicks</p>
-              <p className="mt-1 text-lg font-semibold text-zinc-900">
-                {stats.clicks.toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-zinc-500">CTR</p>
-              <p className="mt-1 text-lg font-semibold text-zinc-900">
-                {(stats.ctr * 100).toFixed(2)}%
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-zinc-500">Spend</p>
-              <p className="mt-1 text-lg font-semibold text-zinc-900">
-                Rs. {stats.spend.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </p>
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      {pacing ? (
-        <section className={cn(designTw.publicCard, "space-y-3 p-6 text-sm")}>
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-900">Auction insight &amp; pacing</h2>
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
-                PACING_BADGE[pacing.status]
-              )}
-            >
-              {PACING_LABELS[pacing.status]}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-zinc-500">Current effective CPM</span>
-            <span className="font-medium text-zinc-900">
-              {pacing.currentEffectiveCpm != null
-                ? `Rs. ${pacing.currentEffectiveCpm.toLocaleString()}`
-                : "Not currently winning a slot"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-zinc-500">
-              Delivery pace ({pacing.pacingBasis === "impressions" ? "impressions" : "spend"}/day)
-            </span>
-            <span className="font-medium text-zinc-900">
-              {pacing.pacingBasis === "impressions"
-                ? `${pacing.actualPace.toFixed(1)} / ${pacing.targetPace.toFixed(1)} target`
-                : `Rs. ${pacing.actualPace.toFixed(2)} / Rs. ${pacing.targetPace.toFixed(2)} target`}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-zinc-500">Days elapsed</span>
-            <span className="font-medium text-zinc-900">
-              {pacing.daysElapsed} / {pacing.totalDays}
-            </span>
-          </div>
-          {slotCompetition ? (
-            <>
-              <div className="flex justify-between border-t border-zinc-100 pt-3">
-                <span className="text-zinc-500">Average share of targeted slots</span>
-                <span className="font-medium text-zinc-900">{slotCompetition.avgSharePercent}%</span>
-              </div>
-              {slotCompetition.slotsContesting > 0 ? (
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Contested slots</span>
-                  <span className="font-medium text-zinc-900">{slotCompetition.slotsContesting}</span>
-                </div>
-              ) : null}
-              {slotCompetition.slotsAtFloorShare > 0 ? (
-                <p className="text-xs text-amber-700">
-                  Getting a small share of airtime in {slotCompetition.slotsAtFloorShare} of your
-                  targeted slot(s) — other campaigns there have significantly more bidding/budget
-                  power.
-                </p>
-              ) : null}
-              {campaign.status === "live" && !campaign.isArchive ? (
-                <form
-                  onSubmit={handleRaiseBid}
-                  className="flex items-end gap-2 border-t border-zinc-100 pt-3"
-                >
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-zinc-500">
-                      Raise bid to grow your share (takes effect within 15 minutes)
-                    </label>
-                    <Input
-                      layout="field"
-                      type="number"
-                      min={1}
-                      value={bidInput}
-                      onChange={(e) => setBidInput(e.target.value)}
-                    />
-                  </div>
-                  <Button type="submit" className={designTw.btnPrimary} disabled={raisingBid}>
-                    {raisingBid ? "Updating…" : "Raise bid"}
-                  </Button>
-                </form>
-              ) : null}
-              {raiseBidError ? <p className="text-sm text-red-700">{raiseBidError}</p> : null}
-              {raiseBidMessage ? (
-                <p className="text-sm text-emerald-700">{raiseBidMessage}</p>
-              ) : null}
-            </>
           ) : null}
-        </section>
-      ) : null}
 
-      {campaign.status === "draft" ? (
-        <section className={cn(designTw.publicCard, "space-y-3 p-6")}>
-          {actionError ? <p className="text-sm text-red-700">{actionError}</p> : null}
-          <p className="text-sm text-zinc-500">
-            This campaign is still a draft. Submit it for admin review once you&apos;re ready.
-          </p>
-          <Button
-            className={designTw.btnPrimary}
-            onClick={handleSubmitForReview}
-            disabled={submitting}
-          >
-            {submitting ? "Submitting…" : "Submit for review"}
-          </Button>
-        </section>
-      ) : null}
+          {campaign.status === "rejected" && campaign.rejectionReason ? (
+            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
+              <span className="font-medium">Rejected:</span> {campaign.rejectionReason}
+            </div>
+          ) : null}
+
+          {autoApproved ? (
+            <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              <span className="font-medium">Auto-approved:</span> based on your track record, this
+              campaign skipped manual review and will go live per its schedule.
+            </div>
+          ) : null}
+
+          {campaign.refundedAt ? (
+            <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              <span className="font-medium">Refund issued:</span> Rs.{" "}
+              {(campaign.refundAmount ?? 0).toLocaleString()} credited to your wallet on{" "}
+              {new Date(campaign.refundedAt).toLocaleDateString()} for undelivered impressions.
+            </div>
+          ) : null}
+
+          <section className={cn(designTw.publicCard, "space-y-3 p-6 text-sm")}>
+            <div className="flex justify-between">
+              <span className="text-zinc-500">Placement</span>
+              <span className="font-medium text-zinc-900">{placementLabel(campaign.placementType)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-zinc-500">Max bid CPM</span>
+              <span className="font-medium text-zinc-900">Rs. {campaign.maxBidCpm.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-zinc-500">Budget cap</span>
+              <span className="font-medium text-zinc-900">Rs. {campaign.budgetCap.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-zinc-500">Daily budget</span>
+              <span className="font-medium text-zinc-900">
+                {campaign.dailyBudget
+                  ? `Rs. ${campaign.dailyBudget.toLocaleString()}`
+                  : "Auto (budget cap ÷ campaign days)"}
+              </span>
+            </div>
+            {campaign.impressionCap ? (
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Impression cap</span>
+                <span className="font-medium text-zinc-900">
+                  {campaign.impressionCap.toLocaleString()}
+                </span>
+              </div>
+            ) : null}
+            <div className="flex justify-between">
+              <span className="text-zinc-500">Schedule</span>
+              <span className="font-medium text-zinc-900">
+                {new Date(campaign.startDate).toLocaleDateString()} –{" "}
+                {new Date(campaign.endDate).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-zinc-500">Targeting</span>
+              <span className="font-medium text-zinc-900">
+                {campaign.areaIds.length} area(s), {campaign.projectTypeIds.length} property type(s)
+                {campaign.tiers.length ? `, ${campaign.tiers.length} tier(s)` : ""}
+              </span>
+            </div>
+          </section>
+          {campaign.status === "draft" ? (
+            <section className={cn(designTw.publicCard, "space-y-3 p-6")}>
+              {actionError ? <p className="text-sm text-red-700">{actionError}</p> : null}
+              <p className="text-sm text-zinc-500">
+                This campaign is still a draft. Submit it for admin review once you&apos;re ready.
+              </p>
+              <Button
+                className={designTw.btnPrimary}
+                onClick={handleSubmitForReview}
+                disabled={submitting}
+              >
+                {submitting ? "Submitting…" : "Submit for review"}
+              </Button>
+            </section>
+          ) : null}
+        </div>
+        <aside className="min-w-0 space-y-6 lg:sticky lg:top-4">
+          {stats ? (
+            <section className={cn(designTw.publicCard, "p-6")}>
+              <h2 className="mb-4 text-sm font-semibold text-zinc-900">Performance</h2>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div>
+                  <p className="text-xs text-zinc-500">Impressions</p>
+                  <p className="mt-1 text-lg font-semibold text-zinc-900">
+                    {stats.impressions.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500">Clicks</p>
+                  <p className="mt-1 text-lg font-semibold text-zinc-900">
+                    {stats.clicks.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500">CTR</p>
+                  <p className="mt-1 text-lg font-semibold text-zinc-900">
+                    {(stats.ctr * 100).toFixed(2)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500">Spend</p>
+                  <p className="mt-1 text-lg font-semibold text-zinc-900">
+                    Rs. {stats.spend.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {pacing ? (
+            <section className={cn(designTw.publicCard, "space-y-3 p-6 text-sm")}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-zinc-900">Auction insight &amp; pacing</h2>
+                <span
+                  className={cn(
+                    "rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+                    PACING_BADGE[pacing.status]
+                  )}
+                >
+                  {PACING_LABELS[pacing.status]}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Current effective CPM</span>
+                <span className="font-medium text-zinc-900">
+                  {pacing.currentEffectiveCpm != null
+                    ? `Rs. ${pacing.currentEffectiveCpm.toLocaleString()}`
+                    : "Not currently winning a slot"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">
+                  Delivery pace ({pacing.pacingBasis === "impressions" ? "impressions" : "spend"}/day)
+                </span>
+                <span className="font-medium text-zinc-900">
+                  {pacing.pacingBasis === "impressions"
+                    ? `${pacing.actualPace.toFixed(1)} / ${pacing.targetPace.toFixed(1)} target`
+                    : `Rs. ${pacing.actualPace.toFixed(2)} / Rs. ${pacing.targetPace.toFixed(2)} target`}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Days elapsed</span>
+                <span className="font-medium text-zinc-900">
+                  {pacing.daysElapsed} / {pacing.totalDays}
+                </span>
+              </div>
+              {slotCompetition ? (
+                <>
+                  <div className="flex justify-between border-t border-zinc-100 pt-3">
+                    <span className="text-zinc-500">Average share of targeted slots</span>
+                    <span className="font-medium text-zinc-900">{slotCompetition.avgSharePercent}%</span>
+                  </div>
+                  {slotCompetition.slotsContesting > 0 ? (
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Contested slots</span>
+                      <span className="font-medium text-zinc-900">{slotCompetition.slotsContesting}</span>
+                    </div>
+                  ) : null}
+                  {slotCompetition.slotsAtFloorShare > 0 ? (
+                    <p className="text-xs text-amber-700">
+                      Getting a small share of airtime in {slotCompetition.slotsAtFloorShare} of your
+                      targeted slot(s) — other campaigns there have significantly more bidding/budget
+                      power.
+                    </p>
+                  ) : null}
+                  {campaign.status === "live" && !campaign.isArchive ? (
+                    <form
+                      onSubmit={handleRaiseBid}
+                      className="flex items-end gap-2 border-t border-zinc-100 pt-3"
+                    >
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-zinc-500">
+                          Raise bid to grow your share (takes effect within 15 minutes)
+                        </label>
+                        <Input
+                          layout="field"
+                          type="number"
+                          min={1}
+                          value={bidInput}
+                          onChange={(e) => setBidInput(e.target.value)}
+                        />
+                      </div>
+                      <Button type="submit" className={designTw.btnPrimary} disabled={raisingBid}>
+                        {raisingBid ? "Updating…" : "Raise bid"}
+                      </Button>
+                    </form>
+                  ) : null}
+                  {raiseBidError ? <p className="text-sm text-red-700">{raiseBidError}</p> : null}
+                  {raiseBidMessage ? (
+                    <p className="text-sm text-emerald-700">{raiseBidMessage}</p>
+                  ) : null}
+                </>
+              ) : null}
+            </section>
+          ) : null}
+        </aside>
+      </div>
     </div>
   );
 }

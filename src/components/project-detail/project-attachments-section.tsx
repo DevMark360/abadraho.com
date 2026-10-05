@@ -44,20 +44,18 @@ export function ProjectAttachmentsSection({
             href={doc.downloadPath}
             download
             onClick={() => onDownload(doc)}
-            className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-zinc-50"
+            className="flex items-center gap-3 px-4 py-4 transition-colors hover:bg-clay-well sm:gap-4 sm:px-5"
           >
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
-              <FileText className="h-6 w-6" />
-            </div>
+            <FileText className="h-6 w-6 shrink-0 text-brand-accent" aria-hidden />
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-zinc-900">
+              <p className="truncate font-medium text-zinc-900">
                 {doc.label === "Download PDF" ? "Download PDF" : doc.label}
               </p>
-              <p className="text-xs text-zinc-500">{doc.filename}</p>
+              <p className="truncate text-xs text-zinc-500" title={doc.filename}>{doc.filename}</p>
             </div>
             <span className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-zinc-700">
               <Download className="h-4 w-4" />
-              Download
+              <span className="hidden sm:inline">Download</span>
             </span>
           </a>
         ))}

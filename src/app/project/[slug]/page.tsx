@@ -178,8 +178,10 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             Off-plan
           </Link>
 
-          <div className="grid gap-8 lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2">
+          {/* grid-cols-1 + min-w-0: without them one long unbreakable string in project content
+              (e.g. an attachment filename) widens the column past the phone screen. */}
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div className="min-w-0 space-y-6 lg:col-span-2">
               <div className={cn(designTw.publicCard, "overflow-hidden")}>
                 <div className="p-3 pb-0 sm:p-4 sm:pb-0">
                   <TrackedSection section="gallery" projectId={project.id}>
@@ -308,7 +310,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               {project.details?.trim() ? (
                 <SanitizedHtml
                   html={project.details}
-                  className={cn(designTw.publicCard, "prose prose-sm max-w-none p-6 text-zinc-600 sm:p-7")}
+                  className={cn(designTw.publicCard, "prose prose-sm max-w-none overflow-hidden p-6 text-zinc-600 [overflow-wrap:anywhere] sm:p-7 prose-img:rounded-xl prose-table:block prose-table:overflow-x-auto [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full")}
                 />
               ) : null}
 
@@ -392,7 +394,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
+            <aside className="min-w-0 space-y-4 lg:sticky lg:top-4 lg:self-start">
               <TrackedSection section="inquiry_form" projectId={project.id}>
                 <InquiryForm projectId={project.id} units={project.units} />
               </TrackedSection>
