@@ -90,7 +90,7 @@ export function ProjectFeatures({
         </h2>
         <p className="mt-1 text-sm text-zinc-600">
           {hasFeatures
-            ? "Compare what this development offers — from lifestyle amenities to on-site utilities."
+            ? "Compare what this development offers, from lifestyle amenities to on-site utilities."
             : `Amenity details for ${projectName ?? "this project"} are not listed yet.`}
         </p>
       </div>

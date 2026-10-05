@@ -62,7 +62,7 @@ export function BrokerBrowseClient() {
     <BrokerGate>
       <BrokerSubpageShell
         title="Browse projects"
-        description="All active listings — request assignment for new projects"
+        description="All active listings. Request assignment for new projects"
         icon={brokerPageIcon(Search)}
       >
         <div className="mb-6 flex gap-2">

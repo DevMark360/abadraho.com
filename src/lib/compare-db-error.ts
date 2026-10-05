@@ -32,7 +32,7 @@ export function classifyCompareDbError(err: unknown): {
   ) {
     return {
       code: "PRISMA_CLIENT_STALE",
-      hint: "Prisma client is stale — run `npx prisma generate` and restart.",
+      hint: "Prisma client is stale. Run `npx prisma generate` and restart.",
     };
   }
 

@@ -158,7 +158,7 @@ export function BrokerProjectsClient() {
     <BrokerGate>
       <BrokerSubpageShell
         title="All listings"
-        description="Active platform listings — generate pitch decks, WhatsApp cards, and trackable short links."
+        description="Active platform listings. Generate pitch decks, WhatsApp cards, and trackable short links."
         icon={brokerPageIcon(Building2)}
         iconBgClassName="bg-zinc-100"
       >

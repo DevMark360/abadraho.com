@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     return csvAttachmentResponse(csv, `contact-inquiries-${Date.now()}.csv`);
   } catch {
     return NextResponse.json(
-      { success: false, message: "Export failed — check database connection." },
+      { success: false, message: "Export failed. Check the database connection." },
       { status: 500 }
     );
   }

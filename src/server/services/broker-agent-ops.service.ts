@@ -210,7 +210,7 @@ export async function assignProjectToBroker(input: {
   notes?: string | null;
 }) {
   const ops = await getAgentOpsTables();
-  if (!ops.assignments) throw new Error("Assignment table missing — run scripts/sql/create-broker-agent-ops-tables.sql");
+  if (!ops.assignments) throw new Error("Assignment table missing. Run scripts/sql/create-broker-agent-ops-tables.sql");
 
   await executeRaw(
     `INSERT INTO broker_project_assignments
@@ -813,8 +813,8 @@ async function loadRecentActivity(brokerId: number, limit: number) {
         type: r.kind,
         text:
           r.kind === "paid"
-            ? `Commission paid — ${r.project_name} (Rs ${Number(r.amount).toLocaleString("en-PK")})`
-            : `Commission confirmed — ${r.project_name}`,
+            ? `Commission paid: ${r.project_name} (Rs ${Number(r.amount).toLocaleString("en-PK")})`
+            : `Commission confirmed: ${r.project_name}`,
         at: new Date(r.created_at).toISOString(),
         color: "green",
       });
@@ -830,7 +830,7 @@ async function loadRecentActivity(brokerId: number, limit: number) {
     for (const r of rows) {
       events.push({
         type: "lead",
-        text: `New lead — ${r.client_name}`,
+        text: `New lead: ${r.client_name}`,
         at: new Date(r.created_at).toISOString(),
         color: "blue",
       });
@@ -850,7 +850,7 @@ async function loadRecentActivity(brokerId: number, limit: number) {
     for (const r of rows) {
       events.push({
         type: "assignment",
-        text: `Project assigned — ${r.project_name}`,
+        text: `Project assigned: ${r.project_name}`,
         at: new Date(r.assigned_at).toISOString(),
         color: "blue",
       });

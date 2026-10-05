@@ -28,7 +28,7 @@ export function ProjectGallery({
       <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-zinc-100">
         <Image
           src={safe[active] ?? safe[0]}
-          alt={`${projectName} — photo ${active + 1} of ${safe.length}`}
+          alt={`${projectName}, photo ${active + 1} of ${safe.length}`}
           fill
           className="object-cover"
           unoptimized
@@ -49,7 +49,7 @@ export function ProjectGallery({
             >
               <Image
                 src={src}
-                alt={`${projectName} — thumbnail ${i + 1}`}
+                alt={`${projectName}, thumbnail ${i + 1}`}
                 fill
                 className="object-cover"
                 unoptimized

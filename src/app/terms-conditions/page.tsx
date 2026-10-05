@@ -36,7 +36,7 @@ const sections: LegalSection[] = [
       <p>
         AbadRaho helps buyers discover, compare, and inquire about off-plan projects, and Mark
         Properties advisors may assist with your inquiry. Projects are built and sold by their
-        developers — <strong>any booking or purchase agreement is between you and the
+        developers. <strong>Any booking or purchase agreement is between you and the
         developer</strong>, not AbadRaho.
       </p>
     ),
@@ -59,7 +59,7 @@ const sections: LegalSection[] = [
     content: (
       <ul>
         <li>Give accurate information and keep your password private.</li>
-        <li>You are responsible for activity on your account — tell us if you suspect misuse.</li>
+        <li>You are responsible for activity on your account. Tell us if you suspect misuse.</li>
         <li>
           Buyer accounts are created at signup; agent and builder accounts are set up by our team.
         </li>

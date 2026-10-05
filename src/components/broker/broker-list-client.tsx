@@ -44,7 +44,7 @@ type ListConfig = {
 
 const PITCH_DECK_CONFIG: ListConfig = {
   title: "Pitch decks",
-  description: "PDF brochures linked to your listings — open, share, or regenerate from All listings.",
+  description: "PDF brochures linked to your listings. Open, share, or regenerate from All listings.",
   apiPath: "/api/v1/broker/pitch-decks",
   emptyTitle: "No pitch decks yet",
   emptyDescription: "Generate a deck from a listing on All listings.",
@@ -57,7 +57,7 @@ const PITCH_DECK_CONFIG: ListConfig = {
 
 const WHATSAPP_CONFIG: ListConfig = {
   title: "WhatsApp cards",
-  description: "Shareable images for WhatsApp — generated from listing covers.",
+  description: "Shareable images for WhatsApp, generated from listing covers.",
   apiPath: "/api/v1/broker/whatsapp-cards",
   emptyTitle: "No WhatsApp cards yet",
   emptyDescription: "Generate a card from a project cover on All listings.",

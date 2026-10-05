@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps) {
   if (!data) notFound();
 
   return buildPageMetadata({
-    title: `${data.profile.fullName} — Developer Profile`,
+    title: `${data.profile.fullName}: Developer Profile`,
     description: data.description,
     keywords: [
       data.profile.fullName,

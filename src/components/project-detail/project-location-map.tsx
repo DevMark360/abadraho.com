@@ -141,7 +141,7 @@ export function ProjectLocationMap({
           />
         ) : (
           <div className="flex h-[200px] items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-sm text-zinc-500">
-            Map coordinates not available — open in Google Maps below.
+            Map coordinates not available. Open in Google Maps below.
           </div>
         )}
 

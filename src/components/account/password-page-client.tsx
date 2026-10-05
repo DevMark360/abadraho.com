@@ -182,7 +182,7 @@ export function PasswordPageClient() {
         <aside className={cn(designTw.publicCard, "space-y-3 p-5 lg:sticky lg:top-4")}>
           <h2 className="text-sm font-semibold text-zinc-900">Tips for a strong password</h2>
           <ul className="space-y-2 text-sm text-zinc-600">
-            <li>Use at least 8 characters — longer is stronger.</li>
+            <li>Use at least 8 characters. Longer is stronger.</li>
             <li>Mix words, numbers, and symbols.</li>
             <li>Don&apos;t reuse a password from another site.</li>
             <li>Change it right away if you think someone else knows it.</li>

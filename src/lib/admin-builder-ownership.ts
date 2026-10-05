@@ -7,7 +7,7 @@ import { jsonNum } from "@/lib/prisma-json";
 import { userTypeIds } from "@/config/site";
 
 export const BUILDER_PROFILE_MISSING =
-  "Builder profile missing — contact admin to link your account.";
+  "Builder profile missing. Contact admin to link your account.";
 
 /** undefined = unrestricted (full staff); [] = scoped but no projects. */
 export async function resolveSessionProjectScope(

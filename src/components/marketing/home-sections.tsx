@@ -20,6 +20,8 @@ import {
   BookOpen,
   ChevronDown,
   ExternalLink,
+  Info,
+  Landmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +41,7 @@ import {
   popularPlaces,
   partnerLogos,
 } from "@/config/marketing";
-import { homeSources, type HomeFaq, type HomeInsight, type homeGuide } from "@/config/home-aeo";
+import { homeSources, type HomeFaq, type homeGuide } from "@/config/home-aeo";
 import { MarkPropertiesBadge } from "@/components/marketing/trust-signals";
 import { legacyStaticUrl } from "@/lib/legacy-url";
 import { cn } from "@/lib/utils";
@@ -306,28 +308,17 @@ export function CategoriesSection() {
   );
 }
 
-export function PopularPlacesSection({
-  areaCounts = {},
-}: {
-  areaCounts?: Record<string, number>;
-}) {
-  const listed = popularPlaces.filter((p) => (areaCounts[p.name] ?? 0) > 0);
-  const listedTotal = listed.reduce((sum, p) => sum + (areaCounts[p.name] ?? 0), 0);
+export function PopularPlacesSection() {
   return (
     <section className={section}>
       <div className={container}>
         <SectionHeader
           eyebrow="Locations"
           title="Which Karachi areas are popular for off-plan property?"
-          subtitle={
-            listedTotal > 0
-              ? `${listedTotal} listed projects across these ${listed.length} high-demand areas for apartments, plots, and houses.`
-              : "High-demand zones for off-plan apartments, plots, and houses."
-          }
+          subtitle="High-demand zones for off-plan apartments, plots, and houses."
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
           {popularPlaces.map((place) => {
-            const count = areaCounts[place.name];
             return (
               <Link
                 key={place.name}
@@ -351,22 +342,15 @@ export function PopularPlacesSection({
                     unoptimized
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/10" />
-                  {count != null && count > 0 ? (
-                    <span className="absolute right-3 top-3 z-10 rounded-full bg-brand-accent px-3 py-1 text-xs font-bold text-white shadow-sm">
-                      {count} listings
-                    </span>
-                  ) : null}
                   <div className="absolute bottom-0 left-0 z-10 p-5">
                     <h3 className="text-xl font-semibold text-white drop-shadow-sm">
                       {place.name}
                     </h3>
-                    {count != null && count > 0 ? (
-                      <p className="mt-0.5 text-sm text-white/90">
-                        {count} projects available
-                      </p>
-                    ) : (
-                      <p className="mt-0.5 text-sm text-white/80">Explore projects</p>
-                    )}
+                    {/* No project counts: they change over time (see home-aeo.ts). */}
+                    <p className="mt-0.5 inline-flex items-center gap-1 text-sm text-white/90">
+                      Explore projects
+                      <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" aria-hidden />
+                    </p>
                   </div>
                 </div>
               </Link>
@@ -536,48 +520,6 @@ export function LatestBlogSection({ posts }: { posts: BlogPostSummary[] }) {
   );
 }
 
-/** Live listing statistics — first-party data that answer engines can cite. */
-export function HomeMarketDataSection({
-  insights,
-  projectCount,
-}: {
-  insights: HomeInsight[];
-  projectCount: number;
-}) {
-  if (!insights.length) return null;
-  return (
-    <section className={section} aria-labelledby="home-data-title">
-      <div className={container}>
-        <div className="mb-8 md:mb-10">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-accent">
-            Market data
-          </p>
-          <h2 id="home-data-title" className="text-2xl font-semibold tracking-tight text-zinc-900 md:text-3xl">
-            What does AbadRaho&apos;s listing data show?
-          </h2>
-          <p className="mt-2 max-w-3xl text-base leading-relaxed text-zinc-600">
-            According to AbadRaho&apos;s live listing data — {projectCount} off-plan projects, recalculated
-            every time this page loads — this is what Karachi&apos;s off-plan market looks like right now.
-          </p>
-        </div>
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {insights.map((item) => (
-            <li key={item.label} className={cn(homeCardClass, "p-5 sm:p-6")}>
-              <p className="text-3xl font-semibold tracking-tight text-zinc-900">{item.value}</p>
-              <p className="mt-1 text-sm font-medium text-brand-accent">{item.label}</p>
-              <p className="mt-3 text-sm leading-relaxed text-zinc-600">{item.detail}</p>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-xs text-zinc-400">
-          Source: AbadRaho project listings, as published by developers. Figures exclude projects that
-          have not shared that detail.
-        </p>
-      </div>
-    </section>
-  );
-}
-
 /** Buyer's guide — long-form answers, a comparison table, and a checklist (server-rendered for AEO). */
 export function HomeBuyerGuideSection({ guide }: { guide: ReturnType<typeof homeGuide> }) {
   const { comparison } = guide;
@@ -619,64 +561,119 @@ export function HomeBuyerGuideSection({ guide }: { guide: ReturnType<typeof home
           </article>
         </div>
 
-        <div className={cn(homeCardClass, "mt-6 min-w-0 p-6 sm:p-7")}>
-          <h3 className="text-lg font-semibold text-zinc-900">{comparison.question}</h3>
-          {/* Scrolls sideways on narrow phones instead of squeezing three columns. */}
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[34rem] border-collapse text-left text-sm">
-              <caption className="sr-only">{comparison.caption}</caption>
-              <thead>
-                <tr>
-                  {comparison.columns.map((col, i) => (
+        <div className={cn(designTw.publicCard, "mt-6 min-w-0 p-6 sm:p-8")}>
+          <h3 className="text-lg font-semibold text-zinc-900 sm:text-xl">{comparison.question}</h3>
+          <p className="mt-1 text-sm text-zinc-500">The main differences at a glance.</p>
+
+          {/* Tablet/desktop: a real <table> with the off-plan column highlighted. */}
+          <table className="mt-6 hidden w-full table-fixed border-separate border-spacing-0 text-left text-sm md:table">
+            <caption className="sr-only">{comparison.caption}</caption>
+            <colgroup>
+              <col className="w-[22%]" />
+              <col className="w-[39%]" />
+              <col className="w-[39%]" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">
+                  <span className="sr-only">Aspect</span>
+                </th>
+                <th scope="col" className="rounded-t-2xl bg-brand-accent/[0.06] px-5 pb-4 pt-5 align-bottom">
+                  <span className="flex items-center gap-2 text-base font-semibold text-zinc-900">
+                    <span className="h-2 w-2 rounded-full bg-brand-accent" aria-hidden />
+                    {comparison.columns[1]}
+                  </span>
+                  <span className="mt-0.5 block text-xs font-normal text-zinc-500">
+                    {comparison.columnNotes[1]}
+                  </span>
+                </th>
+                <th scope="col" className="px-5 pb-4 pt-5 align-bottom">
+                  <span className="flex items-center gap-2 text-base font-semibold text-zinc-900">
+                    <span className="h-2 w-2 rounded-full bg-zinc-400" aria-hidden />
+                    {comparison.columns[2]}
+                  </span>
+                  <span className="mt-0.5 block text-xs font-normal text-zinc-500">
+                    {comparison.columnNotes[2]}
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {comparison.rows.map(([aspect, offPlan, ready], i) => {
+                const last = i === comparison.rows.length - 1;
+                return (
+                  <tr key={aspect}>
                     <th
-                      key={col || "aspect"}
-                      scope="col"
-                      className={cn(
-                        "bg-clay-well px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500",
-                        i === 0 && "rounded-l-xl",
-                        i === comparison.columns.length - 1 && "rounded-r-xl"
-                      )}
+                      scope="row"
+                      className="border-t border-clay-line py-4 pr-4 align-top text-xs font-semibold uppercase tracking-wide text-zinc-500"
                     >
-                      {col || <span className="sr-only">Aspect</span>}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {comparison.rows.map(([aspect, offPlan, ready]) => (
-                  <tr key={aspect} className="border-b border-clay-line last:border-0">
-                    <th scope="row" className="px-4 py-3 align-top font-semibold text-zinc-900">
                       {aspect}
                     </th>
-                    <td className="px-4 py-3 align-top text-zinc-600">{offPlan}</td>
-                    <td className="px-4 py-3 align-top text-zinc-600">{ready}</td>
+                    <td
+                      className={cn(
+                        "border-t border-clay-line bg-brand-accent/[0.06] px-5 py-4 align-top leading-relaxed text-zinc-800",
+                        last && "rounded-b-2xl"
+                      )}
+                    >
+                      {offPlan}
+                    </td>
+                    <td className="border-t border-clay-line px-5 py-4 align-top leading-relaxed text-zinc-600">
+                      {ready}
+                    </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {/* Phones: one card per aspect instead of a sideways-scrolling table. */}
+          <dl className="mt-5 space-y-3 md:hidden">
+            {comparison.rows.map(([aspect, offPlan, ready]) => (
+              <div key={aspect} className={cn(designTw.clayWell, "p-4")}>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{aspect}</dt>
+                <dd className="mt-2 space-y-1.5 text-sm leading-relaxed">
+                  <p>
+                    <span className="font-semibold text-brand-accent">Off-plan: </span>
+                    <span className="text-zinc-800">{offPlan}</span>
+                  </p>
+                  <p>
+                    <span className="font-semibold text-zinc-500">Ready: </span>
+                    <span className="text-zinc-600">{ready}</span>
+                  </p>
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
-        <div className="mt-6">
-          <h3 className="text-sm font-semibold text-zinc-900">Official sources</h3>
-          <ul className="mt-2 space-y-1.5">
+        <div className="mt-10">
+          <h3 className="text-lg font-semibold text-zinc-900">Official sources</h3>
+          <p className="mt-1 text-sm text-zinc-500">
+            Check a project&apos;s approvals with the development authority for its city.
+          </p>
+          <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {homeSources.map((src) => (
-              <li key={src.url} className="text-sm text-zinc-600">
+              <li key={src.url} className="min-w-0">
                 <a
                   href={src.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-2 hover:decoration-brand-accent"
+                  className={cn(homeCardClass, "group flex h-full flex-col p-5")}
                 >
-                  {src.name}
-                  <ExternalLink className="h-3.5 w-3.5 text-zinc-400" aria-hidden />
-                </a>{" "}
-                — {src.note}
+                  <Landmark className="h-5 w-5 text-brand-accent" aria-hidden />
+                  <span className="mt-3 font-semibold text-zinc-900">{src.name}</span>
+                  <span className="mt-1 flex-1 text-sm leading-relaxed text-zinc-600">{src.note}</span>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 group-hover:text-brand-accent">
+                    {new URL(src.url).hostname.replace(/^www\./, "")}
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                  </span>
+                </a>
               </li>
             ))}
           </ul>
-          <p className="mt-4 text-xs text-zinc-400">
-            General guidance only, not financial or legal advice — confirm details with the developer
+          <p className="mt-6 flex items-start gap-2 text-xs leading-relaxed text-zinc-500">
+            <Info className="mt-px h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+            General guidance only, not financial or legal advice. Confirm details with the developer
             and a qualified professional before you pay.
           </p>
         </div>

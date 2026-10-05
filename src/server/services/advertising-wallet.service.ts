@@ -88,7 +88,7 @@ export async function submitAdWalletTopUp(
     return { success: false, error: "Amount must be greater than zero" };
   }
   if (input.amount > TOPUP_MAX_AMOUNT) {
-    return { success: false, error: "Amount is too large — check the figure or contact support" };
+    return { success: false, error: "Amount is too large. Check the figure or contact support" };
   }
   const transactionId = input.transactionId?.trim() ?? "";
   if (!PAYER_TXN_ID_PATTERN.test(transactionId)) {
@@ -136,7 +136,7 @@ export async function submitAdWalletTopUp(
     recipientId: 0,
     type: "ad_wallet_topup_submitted",
     title: "New wallet top-up to verify",
-    message: `Rs. ${input.amount.toLocaleString()} — transaction ID ${transactionId}. Check the payment arrived, then confirm or reject.`,
+    message: `Rs. ${input.amount.toLocaleString()}, transaction ID ${transactionId}. Check the payment arrived, then confirm or reject.`,
     link: "/admin/ad-wallet-transactions",
   }).catch(() => {});
 

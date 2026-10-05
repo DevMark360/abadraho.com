@@ -34,25 +34,25 @@ const sections: LegalSection[] = [
     content: (
       <ul>
         <li>
-          <strong>Account details</strong> — your name, email address, password (stored only in
+          <strong>Account details:</strong> your name, email address, password (stored only in
           hashed form), and optionally your WhatsApp / mobile number, city, address, and profile
           information.
         </li>
         <li>
-          <strong>Google sign-in</strong> — if you continue with Google, we receive your name,
+          <strong>Google sign-in:</strong> if you continue with Google, we receive your name,
           email address, and profile picture. We never receive your Google password.
         </li>
         <li>
-          <strong>Inquiries and contact forms</strong> — the details you submit, such as your
+          <strong>Inquiries and contact forms:</strong> the details you submit, such as your
           name, phone, email, message, and the project you are asking about.
         </li>
         <li>
-          <strong>Activity on the site</strong> — projects you view, save, or compare and the
+          <strong>Activity on the site:</strong> projects you view, save, or compare and the
           searches and filters you use. We also record technical data such as IP address,
           browser, and device type for security.
         </li>
         <li>
-          <strong>Builders and agents</strong> — business details for your listings and, for
+          <strong>Builders and agents:</strong> business details for your listings and, for
           advertising wallet top-ups, the amount, transaction ID, and payment screenshot you
           upload.
         </li>
@@ -91,8 +91,8 @@ const sections: LegalSection[] = [
             <strong>Mark Properties advisors and partner agents</strong> handling your request.
           </li>
           <li>
-            With <strong>service providers</strong> that run parts of the platform for us —
-            hosting, email delivery, Meta (WhatsApp codes), and Google (sign-in) — only as needed.
+            With <strong>service providers</strong> that run parts of the platform for us
+            (hosting, email delivery, Meta for WhatsApp codes, and Google sign-in), only as needed.
           </li>
           <li>When required by law, or to protect the rights and safety of our users and us.</li>
         </ul>

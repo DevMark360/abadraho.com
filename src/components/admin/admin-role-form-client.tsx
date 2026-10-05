@@ -187,7 +187,7 @@ export function AdminRoleFormClient({
       {mode === "edit" && !isSuperAdmin ? (
         <AdminFormSection title="Assigned users">
           <p className="mb-3 text-sm text-zinc-500">
-            Staff and admin accounts are assigned to roles here — not from the user listing.
+            Staff and admin accounts are assigned to roles here, not from the user listing.
           </p>
 
           <div className={`${adminCard} mb-4 p-4`}>

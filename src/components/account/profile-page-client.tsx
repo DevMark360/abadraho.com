@@ -213,7 +213,7 @@ export function ProfilePageClient() {
                 </AccountFormField>
               </AccountFormSection>
 
-              <AccountFormSection title="About you" description="Optional — helps our team tailor follow-ups.">
+              <AccountFormSection title="About you" description="Optional. Helps our team tailor follow-ups.">
                 <AccountFormField id={aboutId} label="Bio / notes">
                   <Textarea
                     id={aboutId}

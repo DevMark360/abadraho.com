@@ -159,7 +159,7 @@ export function BrokerAssignedProjectsClient() {
     <BrokerGate>
       <BrokerSubpageShell
         title="My projects"
-        description="Assigned listings — generate pitch decks, WhatsApp cards, and trackable short links."
+        description="Assigned listings. Generate pitch decks, WhatsApp cards, and trackable short links."
         icon={brokerPageIcon(Building2)}
       >
         {!brokerToolsReady && (

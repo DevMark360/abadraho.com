@@ -35,7 +35,7 @@ export function ProjectGeoSummary({
   const intents = [
     {
       question: `What is ${name}?`,
-      answer: `${name} is a verified off-plan listing on AbadRaho — review units, amenities, location, and installment options on this page.`,
+      answer: `${name} is a verified off-plan listing on AbadRaho. Review units, amenities, location, and installment options on this page.`,
     },
     {
       question: `How do I inquire about ${name}?`,

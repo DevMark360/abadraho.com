@@ -50,7 +50,7 @@ export function VoucherButton({
     }
     setError(j.message ?? "No voucher available for this project.");
     logClientActivity(user?.id, {
-      description: `Tried to generate voucher for ${projectName} — none available`,
+      description: `Tried to generate voucher for ${projectName}, but none were available`,
       objective: "voucher_unavailable",
       subject_id: projectId,
       subject_type: "project",

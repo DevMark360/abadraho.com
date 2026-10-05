@@ -27,7 +27,7 @@ export function GET() {
     "",
     `> ${siteConfig.name} is an off-plan property search and comparison platform for Pakistan, operated by ${businessConfig.legalName} in Karachi, Sindh. Buyers browse verified pre-launch and under-construction projects, compare payment plans (down payment, installment length, monthly amounts), and get free advice from ${businessConfig.legalName} advisors.`,
     "",
-    `Key facts: operator ${businessConfig.legalName}; market focus Karachi and Pakistan; ${stats}. Browsing, comparing, and sending inquiries are free for buyers. Prices and payment plans are published by each developer — the sale contract is between the buyer and the developer, not ${siteConfig.name}. Contact: ${businessConfig.email}.`,
+    `Key facts: operator ${businessConfig.legalName}; market focus Karachi and Pakistan; ${stats}. Browsing, comparing, and sending inquiries are free for buyers. Prices and payment plans are published by each developer. The sale contract is between the buyer and the developer, not ${siteConfig.name}. Contact: ${businessConfig.email}.`,
     "",
     "## Main pages",
     link(

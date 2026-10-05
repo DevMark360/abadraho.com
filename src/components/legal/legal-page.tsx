@@ -229,7 +229,7 @@ export function LegalPage({
             <section className="flex flex-col gap-4 rounded-2xl bg-zinc-900 p-6 text-white sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Questions about this {doc === "privacy" ? "policy" : "page"}?</h2>
-                <p className="mt-1 text-sm text-zinc-300">Use the contact form or email us — we&apos;re happy to help.</p>
+                <p className="mt-1 text-sm text-zinc-300">Use the contact form or email us. We&apos;re happy to help.</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link

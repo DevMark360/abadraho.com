@@ -31,7 +31,7 @@ export const propertyCategories = [
   {
     title: "Apartments",
     description:
-      "Off-plan flats, apartments, and townhouses from trusted Karachi builders — with installment plans.",
+      "Off-plan flats, apartments, and townhouses from trusted Karachi builders, with installment plans.",
     href: "/projects?unitType=11",
     icon: "building" as const,
     image: legacyStaticUrl("/assets/images/home/jinnah_avenue.jpg"),
@@ -132,7 +132,7 @@ export const homeValueProps = [
   },
   {
     title: "Compare payment plans",
-    description: "Side-by-side installment breakdowns — unique to AbadRaho.",
+    description: "Side-by-side installment breakdowns, unique to AbadRaho.",
     icon: "compare" as const,
   },
   {
@@ -182,16 +182,16 @@ export const builderPartnerBenefits = [
 ] as const;
 
 export const aboutContent = {
-  pullQuote: "A leading real estate company in Pakistan — trusted by off-plan buyers.",
+  pullQuote: "A leading real estate company in Pakistan, trusted by off-plan buyers.",
   ceoParagraphs: [
     "Mark Properties has grown into one of Pakistan's trusted real estate advisory firms. Since our founding, we have helped buyers locate off-plan residential and commercial projects, evaluate payment plans, and complete purchases with clear documentation and ethical guidance.",
     "Our clients return to us because we combine market expertise with responsive service. Every AbadRaho listing is supported by trained property advisors who explain pricing, handover timelines, and developer credentials in plain language.",
-    "Our reputation is built on transparency, honest communication, and consistent follow-through — whether you are buying an apartment in Karachi, a plot in a growing corridor, or a commercial unit for rental income.",
+    "Our reputation is built on transparency, honest communication, and consistent follow-through, whether you are buying an apartment in Karachi, a plot in a growing corridor, or a commercial unit for rental income.",
   ],
   mission:
-    "Deliver residential and commercial off-plan opportunities that match real buyer needs — backed by competent advisors and an integrated team from search to closing.",
+    "Deliver residential and commercial off-plan opportunities that match real buyer needs, backed by competent advisors and an integrated team from search to closing.",
   vision:
-    "Become Pakistan's most trusted digital gateway for off-plan property — expanding reach while keeping every client relationship transparent and accountable.",
+    "Become Pakistan's most trusted digital gateway for off-plan property, expanding reach while keeping every client relationship transparent and accountable.",
   values:
     "Communication, commitment, and client care guide every recommendation. We provide holistic real estate advice, not just listings.",
   bannerImage: legacyStaticUrl("/assets/images/about/banner.jpg"),

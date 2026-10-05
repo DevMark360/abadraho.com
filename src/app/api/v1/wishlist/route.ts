@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     });
   } catch {
     return NextResponse.json(
-      { success: false, message: "Database unavailable — using local wishlist" },
+      { success: false, message: "Database unavailable, using local wishlist" },
       { status: 503 }
     );
   }

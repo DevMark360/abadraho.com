@@ -756,7 +756,7 @@ export async function issueAdCampaignRefund(
   const spend = Number(agg._sum.spend ?? 0);
   const amount = computeUndeliveredValue(campaign, impressions, spend);
   if (amount <= 0) {
-    return { success: false, error: "Nothing to refund — this campaign fully delivered" };
+    return { success: false, error: "Nothing to refund. This campaign fully delivered" };
   }
 
   // Claim the refund (refundedAt still null) inside the transaction so a double-click or two

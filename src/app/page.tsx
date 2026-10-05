@@ -11,7 +11,6 @@ import {
   WhatIsAbadRahoSection,
   HomeFaqSection,
   HomeBuyerGuideSection,
-  HomeMarketDataSection,
   HomePartnersSection,
   HomeAdvisorCtaSection,
 } from "@/components/marketing/home-sections";
@@ -21,7 +20,7 @@ import { listPublicEvents } from "@/server/services/event.service";
 import { getSession } from "@/lib/session";
 import { JsonLd } from "@/components/seo/json-ld";
 import { buildFaqSchema, buildHowToSchema, buildWebPageSchema } from "@/lib/schema-markup";
-import { homeFaqs, homeGuide, homeHowTo, homeInsights, homeLead } from "@/config/home-aeo";
+import { homeFaqs, homeGuide, homeHowTo, homeLead } from "@/config/home-aeo";
 import { absoluteUrl, buildPageMetadata } from "@/lib/seo";
 import { getSlotRotation } from "@/server/services/ad-serving.service";
 import {
@@ -69,7 +68,7 @@ export default async function HomePage() {
           buildHowToSchema({ ...homeHowTo, path: "/" }),
         ]}
       />
-      <HomeHero lead={homeLead(facts)} />
+      <HomeHero lead={homeLead()} />
       <FeaturedPropertiesSection projects={featured} />
       <RotatingFeaturedSection rotation={featuredRotation} />
       <HomeInsightsSection mapProjects={mapProjects} />
@@ -77,12 +76,11 @@ export default async function HomePage() {
       <AssistanceSection />
       <CategoriesSection />
       <RotatingBannerSection rotation={bannerRotation} />
-      <PopularPlacesSection areaCounts={areaCounts} />
+      <PopularPlacesSection />
       <HomeEventsSection events={upcomingEvents} />
       <BuilderPartnerSection />
       <WhatIsAbadRahoSection answer={whatIs.answer} />
-      <HomeMarketDataSection insights={homeInsights(mapProjects, projectCount)} projectCount={projectCount} />
-      <HomeBuyerGuideSection guide={homeGuide(facts)} />
+      <HomeBuyerGuideSection guide={homeGuide()} />
       <HomeFaqSection faqs={moreFaqs} />
       <HomePartnersSection />
       <HomeAdvisorCtaSection />

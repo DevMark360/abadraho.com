@@ -91,7 +91,7 @@ export function AdminBrokerAssignmentRequestsClient() {
   async function onDelete(row: Row) {
     const note =
       row.status === "approved"
-        ? " The agent stays assigned to the project — remove that from the agent's page if needed."
+        ? " The agent stays assigned to the project. Remove that from the agent's page if needed."
         : "";
     const who = row.brokerName ?? "the agent";
     const what = row.projectName ?? "this project";

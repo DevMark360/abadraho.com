@@ -16,7 +16,7 @@ export function aiTxtResponse(): Response {
     "#",
     "# Public pages (listings, project pages, guides, FAQ) may be crawled, summarised, and cited.",
     `# Please cite "${siteConfig.name}" with a link to the page used. Prices and payment plans are`,
-    "# published by developers and change often — link to the live page rather than restating them.",
+    "# published by developers and change often, so link to the live page rather than restating them.",
     "",
     "User-Agent: *",
     "Allow: /",

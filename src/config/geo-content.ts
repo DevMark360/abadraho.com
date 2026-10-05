@@ -16,7 +16,7 @@ export const geoContent = {
     summary:
       "AbadRaho is Pakistan's off-plan property platform, operated by Mark Properties. Search pre-launch and under-construction projects in Karachi and across Pakistan, compare payment plans, and connect with verified builders.",
     bullets: [
-      "Operated by Mark Properties — a Karachi-based real estate advisory team",
+      "Operated by Mark Properties, a Karachi-based real estate advisory team",
       "Lists apartments, plots, houses, and commercial off-plan projects",
       "Compare prices, handover dates, installments, and unit plans side by side",
       "Map search for popular areas including North Karachi, Scheme 33, and Gulshan-e-Maymar",
@@ -37,7 +37,7 @@ export const geoContent = {
   },
   listings: {
     summary:
-      "Browse live off-plan listings on AbadRaho — filter by area, budget, unit type, handover timeline, and payment plan to find projects that match your investment goals in Pakistan.",
+      "Browse live off-plan listings on AbadRaho. Filter by area, budget, unit type, handover timeline, and payment plan to find projects that match your investment goals in Pakistan.",
     bullets: [
       "Filter by location, price range, down payment, and monthly installment",
       "View project progress: pre-launch, under construction, and near handover",
@@ -62,7 +62,7 @@ export const geoContent = {
     summary:
       "AbadRaho is the digital property platform of Mark Properties, a Pakistan real estate company helping buyers source, evaluate, and secure off-plan residential and commercial investments with transparent advisory support.",
     bullets: [
-      "Operator: Mark Properties — established real estate advisors in Pakistan",
+      "Operator: Mark Properties, established real estate advisors in Pakistan",
       "Experience: end-to-end buyer assistance from search through deal closure",
       "Expertise: off-plan apartments, plots, villas, bungalows, shops, and commercial units",
       "Authority: partnerships with leading Karachi builders and developers",
@@ -77,7 +77,7 @@ export const geoContent = {
       {
         question: "What makes Mark Properties trustworthy for off-plan buyers?",
         answer:
-          "Mark Properties combines licensed advisory practice, long-standing builder relationships, and post-sale client support — with a focus on transparency in pricing and payment plans.",
+          "Mark Properties combines licensed advisory practice, long-standing builder relationships, and post-sale client support, with a focus on transparency in pricing and payment plans.",
       },
     ],
   },
@@ -101,7 +101,7 @@ export const geoContent = {
   },
   blog: {
     summary:
-      "The AbadRaho blog publishes practical guides and market updates for off-plan property buyers in Pakistan — written to help you understand payment plans, area trends, and investment decisions.",
+      "The AbadRaho blog publishes practical guides and market updates for off-plan property buyers in Pakistan, written to help you understand payment plans, area trends, and investment decisions.",
     bullets: [
       "Guides: how to compare installments, evaluate builders, and shortlist areas",
       "Market updates: Karachi and Pakistan off-plan trends",
@@ -111,7 +111,7 @@ export const geoContent = {
   },
   compare: {
     summary:
-      "AbadRaho Compare lets you evaluate two off-plan projects side by side — including location, starting price, handover date, developer, installment length, and unit-level payment breakdowns.",
+      "AbadRaho Compare lets you evaluate two off-plan projects side by side, including location, starting price, handover date, developer, installment length, and unit-level payment breakdowns.",
     bullets: [
       "Add up to two projects from any listing or project page",
       "Compare project specs: area, address, progress, and developer",
@@ -123,16 +123,16 @@ export const geoContent = {
       {
         question: "How does AbadRaho project comparison work?",
         answer:
-          "Add two projects to Compare, pick a unit on each side, and review pricing, handover, and plan details in one table — then contact the developer for the project that fits your budget.",
+          "Add two projects to Compare, pick a unit on each side, and review pricing, handover, and plan details in one table, then contact the developer for the project that fits your budget.",
       },
     ],
   },
   terms: {
     summary:
-      "These terms explain the rules for using AbadRaho, the off-plan property platform operated by Mark Properties in Pakistan — for buyers browsing listings, account holders, and builders who advertise.",
+      "These terms explain the rules for using AbadRaho, the off-plan property platform operated by Mark Properties in Pakistan. They apply to buyers browsing listings, account holders, and builders who advertise.",
     bullets: [
       "Browsing listings and sending inquiries is free for buyers",
-      "Prices and payment plans come from developers — always confirm before you pay",
+      "Prices and payment plans come from developers, so always confirm before you pay",
       "AbadRaho connects buyers with developers; the sale contract is with the developer",
       "Builder wallet top-ups are credited after our team verifies the payment",
     ],
@@ -161,7 +161,7 @@ export const geoContent = {
   },
   privacy: {
     summary:
-      "How AbadRaho, operated by Mark Properties, collects, uses, shares, and protects your personal information — and how you can access, correct, or delete it.",
+      "How AbadRaho, operated by Mark Properties, collects, uses, shares, and protects your personal information, and how you can access, correct, or delete it.",
     bullets: [
       "We collect what you give us (name, email, phone) plus basic usage data",
       "Your inquiry goes only to that project's developer and Mark Properties advisors",

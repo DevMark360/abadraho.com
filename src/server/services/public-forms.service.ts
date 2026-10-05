@@ -202,7 +202,7 @@ export async function createPropertyInquiry(
     recipientId: ADMIN_BROADCAST.id,
     type: "inquiry",
     title: "New property inquiry",
-    message: `${name} inquired about ${project?.name ?? "a project"} — ${unit.title ?? `Unit #${unit.id}`}`,
+    message: `${name} inquired about ${project?.name ?? "a project"}, ${unit.title ?? `Unit #${unit.id}`}`,
     link: "/admin/inquiries",
   }).catch(() => {});
 
@@ -273,7 +273,7 @@ export async function createContactInquiry(body: Record<string, unknown>) {
     recipientId: ADMIN_BROADCAST.id,
     type: "contact",
     title: "New contact inquiry",
-    message: `${name} — ${subject || "No subject"}`,
+    message: `${name}: ${subject || "No subject"}`,
     link: "/admin/contact",
   }).catch(() => {});
 

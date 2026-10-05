@@ -102,7 +102,7 @@ export function BuilderProfileRating({
         <p className="mt-2 text-sm font-medium text-zinc-600">
           {count > 0
             ? `Based on ${count} review${count === 1 ? "" : "s"}`
-            : "No reviews yet — be the first"}
+            : "No reviews yet. Be the first"}
         </p>
       </div>
     );
@@ -121,7 +121,7 @@ export function BuilderProfileRating({
       <p className="mt-2 text-sm font-medium text-white/90">
         {count > 0
           ? `Based on ${count} review${count === 1 ? "" : "s"}`
-          : "No reviews yet — be the first"}
+          : "No reviews yet. Be the first"}
       </p>
     </div>
   );

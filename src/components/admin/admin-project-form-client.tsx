@@ -421,7 +421,7 @@ export function AdminProjectFormClient({
             {isBuilder ? (
               <div className="mt-1 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
                 {mode === "create"
-                  ? "On hold — admin will review before the project goes live."
+                  ? "On hold. Admin will review before the project goes live."
                   : PROJECT_STATUS_LABELS[Number(form.status)] ?? "On hold"}
               </div>
             ) : (
@@ -716,7 +716,7 @@ export function AdminProjectFormClient({
         </label>
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block">
-            <FieldLabel hint="Optional — leave empty to hide on project page">Marketed By</FieldLabel>
+            <FieldLabel hint="Optional. Leave empty to hide on project page">Marketed By</FieldLabel>
             <Input layout="field"
               value={form.marketedBy}
               onChange={(e) => update("marketedBy", e.target.value)}

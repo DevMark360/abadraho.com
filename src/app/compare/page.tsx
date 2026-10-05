@@ -6,7 +6,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata = buildPageMetadata({
   title: "Compare Off-plan Projects & Payment Plans",
   description:
-    "Compare off-plan projects side by side — payment plans, prices, handover timelines, and unit details on AbadRaho.",
+    "Compare off-plan projects side by side: payment plans, prices, handover timelines, and unit details on AbadRaho.",
   path: "/compare",
 });
 

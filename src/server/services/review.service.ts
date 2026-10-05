@@ -153,7 +153,7 @@ export async function addProjectReview(
     success: true,
     message: existing
       ? "Your review was updated and submitted for approval"
-      : "Thank you — your review was submitted for approval",
+      : "Thank you! Your review was submitted for approval",
     review: {
       id: row.id,
       projectId: row.projectId,

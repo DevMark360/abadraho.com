@@ -159,7 +159,7 @@ export function AdminAdCampaignsClient() {
   async function refund(id: number, amount: number) {
     if (
       !confirm(
-        `Issue a refund of Rs. ${amount.toLocaleString()} for undelivered impressions? This credits the builder's wallet immediately — it cannot be undone.`
+        `Issue a refund of Rs. ${amount.toLocaleString()} for undelivered impressions? This credits the builder's wallet immediately and cannot be undone.`
       )
     ) {
       return;
@@ -588,7 +588,7 @@ export function AdminAdCampaignsClient() {
                     <div className="py-3">
                       <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
                         Paused ({viewDetail.pausedReason.replace(/_/g, " ")}) since{" "}
-                        {viewDetail.pausedDate ? fmtDate(viewDetail.pausedDate) : "—"} — resumes automatically the
+                        {viewDetail.pausedDate ? fmtDate(viewDetail.pausedDate) : "—"}. It resumes automatically the
                         next day.
                       </div>
                     </div>

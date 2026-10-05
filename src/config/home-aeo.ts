@@ -21,9 +21,11 @@ const yearsExperience =
 const builderPartners =
   trustStats.find((s) => s.label === "Builder partners")?.value ?? "50+";
 
-function projectsPhrase(count: number): string {
-  return count > 0 ? `${count} verified` : "verified";
-}
+/**
+ * Visible copy never states project counts: numbers in text get copied and cached by search and
+ * AI engines and go stale as projects are added or removed. Live counts only appear in UI that
+ * re-renders (and in /llms-full.txt, which is generated per request).
+ */
 
 /** Popular areas with at least one listed project, busiest first. */
 export function topAreas(areaCounts: Record<string, number>, limit = 4) {
@@ -35,23 +37,20 @@ export function topAreas(areaCounts: Record<string, number>, limit = 4) {
 }
 
 /** Opening paragraph — answers "what is this site" directly, with facts, in ~45 words. */
-export function homeLead({ projectCount }: HomeFacts): string {
-  return `AbadRaho is an off-plan property platform for Pakistan, operated by Mark Properties in Karachi. Browse ${projectsPhrase(projectCount)} pre-launch and under-construction projects, compare down payments and monthly installments side by side, and get free help from advisors with ${yearsExperience} years in real estate.`;
+export function homeLead(): string {
+  return `AbadRaho is an off-plan property platform for Pakistan, operated by Mark Properties in Karachi. Browse verified pre-launch and under-construction projects, compare down payments and monthly installments side by side, and get free help from advisors with ${yearsExperience} years in real estate.`;
 }
 
 export function homeFaqs(facts: HomeFacts): HomeFaq[] {
   const areas = topAreas(facts.areaCounts);
-  const areaList = areas.map(
-    (a) => `${a.name} (${a.count} ${a.count === 1 ? "project" : "projects"})`,
-  );
-  const areaSentence = areaList.length
-    ? ` The busiest areas right now are ${areaList.join(", ")}.`
+  const areaSentence = areas.length
+    ? ` Popular areas include ${areas.map((a) => a.name).join(", ")}.`
     : "";
 
   return [
     {
       question: "What is AbadRaho?",
-      answer: `AbadRaho is an off-plan property search and comparison platform in Pakistan, operated by Mark Properties. It lists ${projectsPhrase(facts.projectCount)} pre-launch and under-construction projects, mainly in Karachi, with prices, payment plans, and handover dates on every project page.`,
+      answer: `AbadRaho is an off-plan property search and comparison platform in Pakistan, operated by Mark Properties. It lists verified pre-launch and under-construction projects, mainly in Karachi, with prices, payment plans, and handover dates on every project page.`,
     },
     {
       question: "Is AbadRaho free for buyers?",
@@ -65,7 +64,7 @@ export function homeFaqs(facts: HomeFacts): HomeFaq[] {
     {
       question: "What is an off-plan property?",
       answer:
-        "An off-plan property is sold before construction is finished — at pre-launch or while it is being built. Buyers pay a down payment first and the rest in installments until possession, which usually costs less up front than buying a finished property.",
+        "An off-plan property is sold before construction is finished, at pre-launch or while it is being built. Buyers pay a down payment first and the rest in installments until possession, which usually costs less up front than buying a finished property.",
     },
     {
       question: "How do I compare payment plans on AbadRaho?",
@@ -84,14 +83,14 @@ export function homeFaqs(facts: HomeFacts): HomeFaq[] {
  * Buyer's guide section — general, non-promotional guidance (not financial or legal advice).
  * Gives answer engines quotable passages, a comparison table, and a checklist.
  */
-export function homeGuide({ projectCount }: HomeFacts) {
+export function homeGuide() {
   return {
     title: "Buying off-plan property in Karachi: what to know",
-    intro: `Many new projects in Karachi are sold off-plan — from apartments in North Karachi and Scheme 33 to plots and houses on the city's edges. AbadRaho lists ${projectsPhrase(projectCount)} of these projects in one place, so you can check prices, payment plans, and handover dates before you speak to a developer. The notes below cover what buyers most often ask Mark Properties advisors before booking.`,
+    intro: `Many new projects in Karachi are sold off-plan, from apartments in North Karachi and Scheme 33 to plots and houses on the city's edges. AbadRaho lists these projects in one place, so you can check prices, payment plans, and handover dates before you speak to a developer. The notes below cover what buyers most often ask Mark Properties advisors before booking.`,
     paymentPlans: {
       question: "How do off-plan payment plans work?",
       paragraphs: [
-        "Most off-plan projects ask for a down payment at booking, then spread the rest of the price over installments — usually monthly or quarterly — until possession. Many plans also include larger balloon payments at milestones such as confirmation, structure completion, or handover.",
+        "Most off-plan projects ask for a down payment at booking, then spread the rest of the price over installments (usually monthly or quarterly) until possession. Many plans also include larger balloon payments at milestones such as confirmation, structure completion, or handover.",
         "Each project page on AbadRaho shows the plan the developer has shared: down payment, installment length, monthly amount, and unit-level prices where available. Plans change between phases, so always confirm the current schedule in writing before you pay.",
       ],
     },
@@ -100,6 +99,11 @@ export function homeGuide({ projectCount }: HomeFacts) {
       caption:
         "Off-plan compared with ready (completed) property for buyers in Pakistan",
       columns: ["", "Off-plan property", "Ready property"] as const,
+      columnNotes: [
+        "",
+        "Bought before construction finishes",
+        "Completed and ready to move in",
+      ] as const,
       rows: [
         [
           "Price",
@@ -129,7 +133,7 @@ export function homeGuide({ projectCount }: HomeFacts) {
         [
           "Main risk",
           "Construction delays or changes to the plan",
-          "Fewer surprises — you can inspect the unit",
+          "Fewer surprises, since you can inspect the unit",
         ],
       ],
     },
@@ -147,7 +151,7 @@ export function homeGuide({ projectCount }: HomeFacts) {
     afterBooking: {
       question: "What happens after you book?",
       paragraph:
-        "After booking you receive a booking or allotment document and follow the installment schedule until handover. Keep every receipt, track construction progress, and contact the developer — or your Mark Properties advisor — if milestones slip. At possession, check the unit against the agreed specifications before taking the keys.",
+        "After booking you receive a booking or allotment document and follow the installment schedule until handover. Keep every receipt, track construction progress, and contact the developer (or your Mark Properties advisor) if milestones slip. At possession, check the unit against the agreed specifications before taking the keys.",
     },
   };
 }

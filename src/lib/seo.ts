@@ -79,7 +79,7 @@ export function buildPageMetadata(input: PageSeoInput = {}): Metadata {
 
   const imagePath = input.image?.trim() || siteConfig.defaultOgImage;
   const imageUrl = imagePath ? absoluteUrl(imagePath) : undefined;
-  const imageAlt = input.imageAlt?.trim() || `${siteName} — off-plan properties`;
+  const imageAlt = input.imageAlt?.trim() || `${siteName}: off-plan properties`;
   const socialTitle =
     absoluteTitle || (pageTitle ? `${pageTitle} | ${siteName}` : siteConfig.defaultTitle);
 

@@ -154,7 +154,7 @@ export function BuilderReviewsSection({
 
       if (res.ok && j.success) {
         setMsgTone("ok");
-        setMsg(j.message ?? "Thank you — your review was submitted for approval.");
+        setMsg(j.message ?? "Thank you! Your review was submitted for approval.");
         setComment("");
         await refreshReviews();
       } else {

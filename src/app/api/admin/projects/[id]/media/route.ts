@@ -28,7 +28,7 @@ export async function POST(
         {
           success: false,
           message:
-            `Upload too large. Each PDF can be up to ${ADMIN_PDF_MAX_LABEL} — if your file is smaller, rebuild/restart the app after deploy (Next.js middleware body limit) or ask hosting to raise Apache upload limits.`,
+            `Upload too large. Each PDF can be up to ${ADMIN_PDF_MAX_LABEL}. If your file is smaller, rebuild/restart the app after deploy (Next.js middleware body limit) or ask hosting to raise Apache upload limits.`,
           detail: process.env.NODE_ENV === "development" ? String(e) : undefined,
         },
         { status: 413 }

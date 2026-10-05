@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         code,
-        message: "Compare sync failed — using local compare only.",
+        message: "Compare sync failed, using local compare only.",
         hint,
       },
       { status: 503 }

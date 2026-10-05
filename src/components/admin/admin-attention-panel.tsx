@@ -69,7 +69,7 @@ export function AdminAttentionPanel() {
       {items.length === 0 ? (
         <div className="flex items-center gap-3 px-4 py-6">
           <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-          <p className="text-sm text-zinc-500">All caught up — nothing pending right now.</p>
+          <p className="text-sm text-zinc-500">All caught up. Nothing pending right now.</p>
         </div>
       ) : (
         <ul className="divide-y divide-zinc-100">
@@ -101,7 +101,7 @@ export function AdminAttentionPanel() {
         >
           <span className="flex items-center gap-1.5">
             <BadgeCheck className="h-3.5 w-3.5" />
-            Quick resolve — start with {items[0].label.toLowerCase()}
+            Quick resolve: start with {items[0].label.toLowerCase()}
           </span>
           <ChevronRight className="h-3.5 w-3.5" />
         </Link>

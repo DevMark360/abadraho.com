@@ -55,7 +55,7 @@ const TX_TYPE_LABELS: Record<string, string> = {
   topup_bank_transfer: "Bank transfer top-up",
   topup_jazzcash: "JazzCash top-up",
   whatsapp_package_purchase: "WhatsApp card package",
-  refund_undelivered: "Refund — undelivered impressions",
+  refund_undelivered: "Refund: undelivered impressions",
   spend: "Ad spend",
   adjustment: "Adjustment",
 };
@@ -119,7 +119,7 @@ function WalletPageContent() {
         return;
       }
       setFormSuccess(
-        "Payment submitted — an admin will check it and credit your wallet. You'll get a notification."
+        "Payment submitted. An admin will check it and credit your wallet. You'll get a notification."
       );
       setAmount("");
       setTransactionId("");
@@ -202,11 +202,11 @@ function WalletPageContent() {
           </section>
           {jazzcashReturnStatus === "confirmed" ? (
             <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              Payment confirmed — your wallet has been credited.
+              Payment confirmed. Your wallet has been credited.
             </div>
           ) : jazzcashReturnStatus === "rejected" ? (
             <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
-              Payment was not successful — no amount was deducted from your wallet.
+              Payment was not successful. No amount was deducted from your wallet.
             </div>
           ) : jazzcashReturnStatus === "error" ? (
             <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
@@ -218,7 +218,7 @@ function WalletPageContent() {
           <section className={cn(designTw.publicCard, "space-y-4 p-6")}>
             <h2 className="text-sm font-semibold text-zinc-900">Pay online (JazzCash)</h2>
             <p className="text-xs text-zinc-500">
-              Pay instantly via JazzCash mobile wallet — your balance is credited automatically as
+              Pay instantly via JazzCash mobile wallet. Your balance is credited automatically as
               soon as the payment is confirmed, no admin action needed.
             </p>
             <form onSubmit={handleJazzcashSubmit} className="space-y-4">
@@ -248,14 +248,14 @@ function WalletPageContent() {
                 <h2 className="text-sm font-semibold text-zinc-900">1. Send the payment</h2>
                 <p className="mt-1 text-xs text-zinc-500">
                   Transfer the amount you want to add to one of these accounts (bank transfer / IBFT,
-                  JazzCash or Easypaisa). Keep the receipt — you&apos;ll need its transaction ID and a
+                  JazzCash or Easypaisa). Keep the receipt. You&apos;ll need its transaction ID and a
                   screenshot.
                 </p>
               </div>
             </div>
             {paymentAccounts.length === 0 ? (
               <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                Payment account details aren&apos;t available right now — please contact support
+                Payment account details aren&apos;t available right now. Please contact support
                 before sending money.
               </p>
             ) : (
@@ -333,7 +333,7 @@ function WalletPageContent() {
                   required
                   className="mt-1.5 block w-full text-sm text-zinc-700 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-zinc-200"
                 />
-                <p className="mt-1 text-xs text-zinc-400">JPG, PNG, WebP or PDF — max 5MB.</p>
+                <p className="mt-1 text-xs text-zinc-400">JPG, PNG, WebP or PDF, max 5MB.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-700">

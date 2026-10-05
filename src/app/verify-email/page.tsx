@@ -53,7 +53,7 @@ function VerifyEmailContent() {
     if (json.verifyUrlDev) setDevLink(json.verifyUrlDev);
     setMsg(
       json.verifyUrlDev
-        ? "SMTP may be off — use this verification link:"
+        ? "SMTP may be off. Use this verification link:"
         : json.message ?? (res.ok ? "Email sent" : "Sign in to resend verification")
     );
   }

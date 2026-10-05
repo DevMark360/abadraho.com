@@ -163,7 +163,7 @@ export async function saveAdminEvent(
   if (isBuilderSession(session)) {
     const resolved = await resolveBuilderIdForUser(session.id);
     if (!resolved) {
-      return { error: "Builder profile missing — contact admin to link your account." };
+      return { error: "Builder profile missing. Contact admin to link your account." };
     }
     if (existing && existing.builderId !== resolved) {
       return { error: "Forbidden" };

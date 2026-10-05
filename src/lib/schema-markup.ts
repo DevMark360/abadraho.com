@@ -471,7 +471,7 @@ export function buildAreaSchema(area: {
   const localBusiness = pruneEmpty({
     "@type": "RealEstateAgent",
     "@id": `${pageUrl}#local-business`,
-    name: `${businessConfig.brandName} — ${area.name} Properties`,
+    name: `${businessConfig.brandName}: ${area.name} Properties`,
     description: area.description,
     url: pageUrl,
     image: absoluteUrl(siteConfig.defaultOgImage),
@@ -493,7 +493,7 @@ export function buildAreaSchema(area: {
   });
 
   const webpage = buildWebPageSchema({
-    name: `Off-plan Properties in ${area.name} — ${businessConfig.brandName}`,
+    name: `Off-plan Properties in ${area.name} | ${businessConfig.brandName}`,
     description: area.description,
     path: `/area/${area.slug}`,
     type: "CollectionPage",

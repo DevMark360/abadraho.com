@@ -119,7 +119,7 @@ export function PaymentScheduleSection({
           <h3 className="font-semibold">Payment schedule</h3>
         </div>
         <p className="mt-1 text-xs text-zinc-300">
-          Customize down payment & installments — saved to your account when logged in.
+          Customize down payment & installments, saved to your account when logged in.
         </p>
       </div>
 
@@ -134,7 +134,7 @@ export function PaymentScheduleSection({
             {units.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.title ?? `Unit ${u.id}`}
-                {u.price ? ` — ${formatPrice(u.price)}` : ""}
+                {u.price ? ` · ${formatPrice(u.price)}` : ""}
               </option>
             ))}
           </select>

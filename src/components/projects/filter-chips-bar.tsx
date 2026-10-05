@@ -530,7 +530,7 @@ export function FilterChipsBar() {
 
           {hasDraftChanges && (
             <p className="mt-2 px-4 text-sm text-amber-700 lg:px-6">
-              Filters selected — click Search to update results.
+              Filters selected. Click Search to update results.
             </p>
           )}
 

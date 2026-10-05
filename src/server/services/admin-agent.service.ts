@@ -617,7 +617,7 @@ export async function deleteAdminAgent(id: number): Promise<DeleteAgentResult> {
       return {
         ok: false,
         status: 409,
-        message: `This agent has ${n} commission record(s). Delete those under Commissions first — they are payment history.`,
+        message: `This agent has ${n} commission record(s). Delete those under Commissions first, because they are payment history.`,
       };
     }
   }

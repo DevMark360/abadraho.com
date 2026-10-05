@@ -75,7 +75,7 @@ export function SmartFeaturedSection({
           <p className="mt-2 max-w-2xl text-base leading-relaxed text-zinc-600">
             {isPersonalized
               ? reason
-                ? `Projects matching your interest — ${reason.toLowerCase()}`
+                ? `Projects matching your interest: ${reason.toLowerCase()}`
                 : "Projects that match your recent browsing history."
               : "Hand-picked developments with strong builder credentials across Karachi."}
           </p>

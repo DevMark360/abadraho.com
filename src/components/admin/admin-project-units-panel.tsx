@@ -42,7 +42,7 @@ export function AdminProjectUnitsPanel({ projectId }: { projectId: number }) {
   return (
     <AdminFormSection title="Project units">
       <p className="mb-3 text-sm text-zinc-500">
-        Add and edit units for this project. The main project form does not list units — use this
+        Add and edit units for this project. The main project form does not list units. Use this
         section or{" "}
         <Link href="/admin/units" className="font-medium text-zinc-800 underline">
           All units

@@ -215,7 +215,7 @@ function CampaignNewContent() {
                 layout="field"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Summer launch — Featured listing"
+                placeholder="e.g. Summer launch: Featured listing"
                 required
               />
             </div>
@@ -310,7 +310,7 @@ function CampaignNewContent() {
               <span>
                 <span className="block text-sm font-medium text-zinc-800">Show on home page</span>
                 <span className="block text-xs text-zinc-500">
-                  Skip targeting below — an untargeted campaign is eligible for the homepage&apos;s
+                  Skip targeting below. An untargeted campaign is eligible for the homepage&apos;s
                   broad placements. Target specific areas, property types, or tiers instead if you
                   want this campaign focused on matching listing pages only.
                 </span>
@@ -390,15 +390,15 @@ function CampaignNewContent() {
             <h2 className="text-sm font-semibold text-zinc-900">How campaigns work</h2>
             <ul className="space-y-3 text-sm leading-relaxed text-zinc-600">
               <li>
-                <span className="font-medium text-zinc-900">Max bid</span> — the most you pay each
+                <span className="font-medium text-zinc-900">Max bid:</span> the most you pay each
                 time your ad is shown 1,000 times.
               </li>
               <li>
-                <span className="font-medium text-zinc-900">Budget cap</span> — your total spend
+                <span className="font-medium text-zinc-900">Budget cap:</span> your total spend
                 limit. A daily budget spreads it across the campaign&apos;s days.
               </li>
               <li>
-                <span className="font-medium text-zinc-900">Wallet</span> — spend is deducted from
+                <span className="font-medium text-zinc-900">Wallet:</span> spend is deducted from
                 your ad wallet, so{" "}
                 <Link href="/advertising/wallet" className="font-medium text-brand-accent hover:underline">
                   top up first
@@ -406,7 +406,7 @@ function CampaignNewContent() {
                 .
               </li>
               <li>
-                <span className="font-medium text-zinc-900">Review</span> — our team checks new
+                <span className="font-medium text-zinc-900">Review:</span> our team checks new
                 campaigns before they go live.
               </li>
             </ul>

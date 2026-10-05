@@ -184,7 +184,7 @@ export function BrokerLeadsClient() {
     setActionMsg(null);
     try {
       await postLead({ id: lead.id, logContact: true });
-      setActionMsg("Contact logged — status updated to Contacted if it was New.");
+      setActionMsg("Contact logged. Status updated to Contacted if it was New.");
       await load();
       if (selected?.id === lead.id) {
         setEditStatus("contacted");

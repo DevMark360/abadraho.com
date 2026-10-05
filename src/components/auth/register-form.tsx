@@ -215,7 +215,7 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
             onClick={finish}
             className="block text-sm text-zinc-500 hover:underline"
           >
-            Skip for now — verify later from your profile
+            Skip for now and verify later from your profile
           </button>
         </div>
       )}

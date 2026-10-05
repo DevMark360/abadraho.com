@@ -245,7 +245,7 @@ function CompareUnitSelector({
         {project.units.map((u) => (
           <option key={u.id} value={u.id}>
             {u.title ?? `Unit ${u.id}`}
-            {u.price ? ` — ${formatPrice(u.price)}` : ""}
+            {u.price ? ` · ${formatPrice(u.price)}` : ""}
           </option>
         ))}
       </Select>
@@ -448,7 +448,7 @@ export function CompareView({
                 Compare projects
               </h1>
               <p className="mt-1 text-sm text-zinc-500">
-                Compare up to {MAX_COMPARE} projects side by side — pick a unit on each side.
+                Compare up to {MAX_COMPARE} projects side by side. Pick a unit on each side.
                 {isLoggedIn ? " Your list is saved to your account." : null}
               </p>
             </div>
@@ -461,7 +461,7 @@ export function CompareView({
                       const url = buildCompareShareUrl();
                       try {
                         await navigator.clipboard.writeText(url);
-                        setShareMsg("Link copied — share with clients or colleagues.");
+                        setShareMsg("Link copied. Share with clients or colleagues.");
                       } catch {
                         setShareMsg(url);
                       }
@@ -495,7 +495,7 @@ export function CompareView({
 
           {slots.length > 0 ? (
             <p className="mt-2 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              Maximum {MAX_COMPARE} projects — adding a third opens a swap dialog so you can
+              Maximum {MAX_COMPARE} projects. Adding a third opens a swap dialog so you can
               replace one.
             </p>
           ) : null}

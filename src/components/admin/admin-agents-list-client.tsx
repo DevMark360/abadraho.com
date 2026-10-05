@@ -115,7 +115,7 @@ export function AdminAgentsListClient() {
           <p className="mt-1">
             The <code className="rounded bg-amber-100 px-1">brokers</code> table is not in this
             database. Listing uses agent users (<code className="rounded bg-amber-100 px-1">user_type_id = -10027</code>
-            ). Company, deals, and area expertise need the brokers table — run{" "}
+            ). Company, deals, and area expertise need the brokers table. Run{" "}
             <code className="rounded bg-amber-100 px-1">scripts/create-brokers-table.sql</code> on MySQL
             for full broker company and deal fields.
           </p>

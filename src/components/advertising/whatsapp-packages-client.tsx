@@ -153,7 +153,7 @@ function WhatsappPackagesContent() {
       <h1 className="text-xl font-semibold text-zinc-900">WhatsApp ad card packages</h1>
       <p className="text-sm text-zinc-500">
         Buy a flat-fee package of shareable WhatsApp cards for a project. Each generated card
-        draws down your package&apos;s remaining credit — this is a pre-paid package, not an
+        draws down your package&apos;s remaining credit. This is a pre-paid package, not an
         auction campaign.
       </p>
 
@@ -186,7 +186,7 @@ function WhatsappPackagesContent() {
                 <Select layout="field" value={cards} onChange={(e) => setCards(Number(e.target.value))}>
                   {catalog.map((c) => (
                     <option key={c.cards} value={c.cards}>
-                      {c.cards} cards — Rs. {c.price.toLocaleString()}
+                      {c.cards} cards for Rs. {c.price.toLocaleString()}
                     </option>
                   ))}
                 </Select>
@@ -199,7 +199,7 @@ function WhatsappPackagesContent() {
 
           {lastShareUrl ? (
             <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              Card generated —{" "}
+              Card generated:{" "}
               <a href={lastShareUrl} target="_blank" rel="noopener noreferrer" className="underline">
                 share on WhatsApp
               </a>

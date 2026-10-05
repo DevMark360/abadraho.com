@@ -82,7 +82,7 @@ export async function initiateJazzCashTopup(
     return {
       success: false,
       error:
-        "Online payment is not set up yet — JazzCash sandbox credentials haven't been configured. Use bank transfer instead.",
+        "Online payment is not set up yet. JazzCash sandbox credentials haven't been configured. Use bank transfer instead.",
     };
   }
 
@@ -148,7 +148,7 @@ export async function handleJazzCashCallback(
   const expectedHash = Buffer.from(buildSecureHash(fields, config.integritySalt).toLowerCase());
   const givenHash = Buffer.from(receivedHash.trim().toLowerCase());
   if (expectedHash.length !== givenHash.length || !timingSafeEqual(expectedHash, givenHash)) {
-    return { success: false, error: "Hash verification failed — possible tampering" };
+    return { success: false, error: "Hash verification failed (possible tampering)" };
   }
 
   const txnRefNo = fields.pp_TxnRefNo;

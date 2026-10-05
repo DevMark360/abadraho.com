@@ -35,7 +35,7 @@ export default function AboutUsPage() {
         data={buildWebPageSchema({
           name: "About AbadRaho",
           description:
-            "Learn about AbadRaho and Mark Properties — Pakistan's trusted team for off-plan real estate investment and buyer support.",
+            "Learn about AbadRaho and Mark Properties, Pakistan's trusted team for off-plan real estate investment and buyer support.",
           path: "/about-us",
           type: "AboutPage",
         })}
@@ -79,7 +79,7 @@ export default function AboutUsPage() {
           <div className="relative aspect-[4/5] overflow-hidden rounded-clay-lg shadow-clay-sm lg:col-span-2">
             <Image
               src={aboutContent.bannerImage}
-              alt="Mark Properties — AbadRaho real estate advisory team"
+              alt="Mark Properties, the AbadRaho real estate advisory team"
               fill
               className="object-cover"
               unoptimized

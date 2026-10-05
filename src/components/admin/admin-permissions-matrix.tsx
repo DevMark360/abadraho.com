@@ -92,7 +92,7 @@ export function AdminPermissionsMatrix({ value, onChange, disabled }: Props) {
                               allOn
                                 ? "All actions selected"
                                 : someOn
-                                  ? "Some actions selected — not the same as All"
+                                  ? "Some actions selected (not the same as All)"
                                   : "No actions selected"
                             }
                           />

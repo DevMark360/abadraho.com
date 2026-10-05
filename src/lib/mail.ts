@@ -53,7 +53,7 @@ export async function sendAuthEmail(opts: {
 }): Promise<{ sent: boolean; previewUrl?: string }> {
   const cfg = smtpConfig();
   if (!cfg?.auth.user || !cfg.auth.pass) {
-    console.error("[mail] SMTP not configured — set MAIL_HOST, MAIL_USERNAME, MAIL_PASSWORD");
+    console.error("[mail] SMTP not configured. Set MAIL_HOST, MAIL_USERNAME, MAIL_PASSWORD");
     if (process.env.NODE_ENV !== "production") {
       console.info("[mail:dev]", opts.subject, "→", opts.to, opts.text ?? opts.html.slice(0, 200));
     }

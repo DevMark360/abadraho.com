@@ -359,7 +359,7 @@ export function AdminProfileClient() {
                   </div>
                 </ProfileBlock>
 
-                <ProfileBlock title="About" description="Optional — a short note about your role.">
+                <ProfileBlock title="About" description="Optional. A short note about your role.">
                   <ProfileField id={aboutId} label="Bio">
                     <Textarea
                       id={aboutId}

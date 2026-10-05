@@ -11,7 +11,7 @@ export const metadata = buildPageMetadata({
 
 export default function LoginPage() {
   return (
-    <AuthPageShell panelDescription="Sign in or create an account. Your role decides where you land — listings, agent portal, or workspace.">
+    <AuthPageShell panelDescription="Sign in or create an account. Your role decides where you land: listings, agent portal, or workspace.">
       <UnifiedAuthPage />
     </AuthPageShell>
   );

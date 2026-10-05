@@ -92,7 +92,7 @@ export function WishlistPageClient() {
             </h1>
             <p className="mt-1 text-sm text-zinc-600">
               {signedIn
-                ? "Projects you saved — synced to your account across devices."
+                ? "Projects you saved, synced to your account across devices."
                 : localOnly
                   ? "Saved on this browser. Sign in to keep your list when you switch devices."
                   : "Save projects while browsing, then compare prices and payment plans later."}
@@ -170,7 +170,7 @@ export function WishlistPageClient() {
               {[
                 {
                   title: "Save while browsing",
-                  text: "Use the heart icon on listing cards — no need to open each project first.",
+                  text: "Use the heart icon on listing cards. No need to open each project first.",
                 },
                 {
                   title: "Compare later",

@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest) {
       {
         success: false,
         code,
-        message: "Database unavailable — using local compare",
+        message: "Database unavailable, using local compare",
         hint,
       },
       { status: 503 }

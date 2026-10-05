@@ -43,7 +43,7 @@ export async function requireAdvertisingApi(): Promise<
     return NextResponse.json(
       {
         success: false,
-        message: "Builder profile missing — contact admin to link your account.",
+        message: "Builder profile missing. Contact admin to link your account.",
         code: "NO_BUILDER_PROFILE",
       },
       { status: 404 }

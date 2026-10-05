@@ -128,7 +128,7 @@ export function AdminCommercialPanel() {
 
       <div className="rounded-clay border border-white/80 bg-clay-surface shadow-clay-sm p-4">
         <h3 className="text-xs font-semibold text-zinc-900">Ad spend, last 30 days</h3>
-        <p className="mt-0.5 text-[11px] text-zinc-400">Daily spend across all campaigns — hover for a day&apos;s value</p>
+        <p className="mt-0.5 text-[11px] text-zinc-400">Daily spend across all campaigns. Hover for a day&apos;s value</p>
         <div className="mt-2">
           {spendTrend === null ? (
             <div className="h-32 animate-pulse rounded bg-zinc-50" />

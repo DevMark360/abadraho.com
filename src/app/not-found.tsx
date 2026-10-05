@@ -24,7 +24,7 @@ export default function NotFound() {
         >
           <Illustration3D name="location-pin" size={128} priority />
           <p className="mt-6 text-sm font-semibold uppercase tracking-wider text-brand-accent">
-            404 — page not found
+            404: page not found
           </p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
             This address doesn&apos;t exist

@@ -3,7 +3,7 @@ import { BRAND_LOGO, BRAND_LOGO_ASPECT } from "@/config/brand";
 export const siteConfig = {
   name: process.env.NEXT_PUBLIC_APP_NAME ?? "AbadRaho",
   tagline: "Find your next off-plan property",
-  defaultTitle: "AbadRaho — Off-plan properties in Pakistan",
+  defaultTitle: "AbadRaho: Off-plan Properties in Pakistan",
   seoDescription:
     "Discover off-plan apartments, villas, and plots in Karachi and across Pakistan. Compare payment plans, explore projects on a map, and connect with trusted builders on AbadRaho.",
   defaultKeywords: [

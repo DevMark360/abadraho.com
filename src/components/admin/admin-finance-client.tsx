@@ -91,7 +91,7 @@ export function AdminFinanceClient() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-zinc-500">
-        The admin side of ad-wallet money movement — what came in, what went back out, what was earned, and
+        The admin side of ad-wallet money movement: what came in, what went back out, what was earned, and
         whether it all reconciles against the current wallet balances.
       </p>
 
@@ -104,7 +104,7 @@ export function AdminFinanceClient() {
         <span>
           {balanced ? (
             <>
-              Books match — collected minus refunded minus earned equals the current builder wallet balances (
+              Books match: collected minus refunded minus earned equals the current builder wallet balances (
               {formatPrice(summary.reconciliation.actualLiability)}).
             </>
           ) : (

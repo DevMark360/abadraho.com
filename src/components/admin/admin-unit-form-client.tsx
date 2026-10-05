@@ -358,7 +358,7 @@ export function AdminUnitFormClient({
           <AdminErrorAlert message={error} backHref="/admin/units" backLabel="Units" />
         ))}
       {metaEmpty && (
-        <AdminDbAlert message="Dropdown lists are empty — check database connection and run npx prisma generate, then restart npm run dev." />
+        <AdminDbAlert message="Dropdown lists are empty. Check database connection and run npx prisma generate, then restart npm run dev." />
       )}
 
       <form onSubmit={onSubmit} onKeyDown={preventImplicitFormSubmit} className="space-y-4">

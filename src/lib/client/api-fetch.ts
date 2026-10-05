@@ -66,7 +66,7 @@ export async function parseFetchJson<T extends JsonRecord = JsonRecord>(
   if (!text.trim()) {
     const fallback =
       res.status >= 500
-        ? `Server error (${res.status}). The upload may be too large for the server — try a smaller PDF or check hosting limits.`
+        ? `Server error (${res.status}). The upload may be too large for the server. Try a smaller PDF or check hosting limits.`
         : res.status === 413
           ? "Upload too large for the server."
           : `Empty response from server (${res.status}).`;

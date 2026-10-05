@@ -55,7 +55,7 @@ type CampaignSlotCompetition = {
 const PACING_LABELS: Record<CampaignPacing["status"], string> = {
   not_started: "Not started yet",
   on_track: "On track to deliver by end date",
-  under_delivering: "Under-delivering — may not fully spend by end date",
+  under_delivering: "Under-delivering: may not fully spend by end date",
   completed: "Schedule complete",
 };
 
@@ -127,7 +127,7 @@ function CampaignDetailContent({ campaignId }: { campaignId: number }) {
         setRaiseBidError(j.message ?? "Could not update bid");
         return;
       }
-      setRaiseBidMessage("Bid updated — takes effect on the next auction run, within 15 minutes.");
+      setRaiseBidMessage("Bid updated. It takes effect on the next auction run, within 15 minutes.");
       await load();
     } finally {
       setRaisingBid(false);
@@ -190,7 +190,7 @@ function CampaignDetailContent({ campaignId }: { campaignId: number }) {
         <div className="min-w-0 space-y-6">
           {campaign.isArchive ? (
             <div className="rounded-lg bg-zinc-100 px-4 py-3 text-sm text-zinc-700">
-              This campaign has been archived by an admin — it has stopped competing in auctions and
+              This campaign has been archived by an admin. It has stopped competing in auctions and
               is no longer serving, even though its underlying status is still &quot;{campaign.status}
               &quot;.
             </div>
@@ -362,7 +362,7 @@ function CampaignDetailContent({ campaignId }: { campaignId: number }) {
                   {slotCompetition.slotsAtFloorShare > 0 ? (
                     <p className="text-xs text-amber-700">
                       Getting a small share of airtime in {slotCompetition.slotsAtFloorShare} of your
-                      targeted slot(s) — other campaigns there have significantly more bidding/budget
+                      targeted slot(s): other campaigns there have significantly more bidding/budget
                       power.
                     </p>
                   ) : null}

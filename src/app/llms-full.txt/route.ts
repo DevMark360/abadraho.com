@@ -57,14 +57,14 @@ function projectLine(p: ProjectListItem): string {
 export async function GET() {
   const projects = await loadProjects();
   const facts = { projectCount: projects?.total ?? 0, areaCounts: {} };
-  const guide = homeGuide(facts);
+  const guide = homeGuide();
   const insights = projects ? homeInsights(projects.items, projects.total) : [];
   const [, ...cols] = guide.comparison.columns;
 
   const body = [
-    `# ${siteConfig.name} — full guide for AI systems`,
+    `# ${siteConfig.name}: full guide for AI systems`,
     "",
-    `> ${homeLead(facts)}`,
+    `> ${homeLead()}`,
     "",
     `Operator: ${businessConfig.legalName}, Karachi, Sindh, Pakistan. Website: ${absoluteUrl("/")}. Contact: ${businessConfig.email}. Short version: ${absoluteUrl("/llms.txt")}.`,
     "",
@@ -73,7 +73,7 @@ export async function GET() {
     "",
     `## ${homeHowTo.name}`,
     ...homeHowTo.steps.map(
-      (s, i) => `${i + 1}. **${s.name}** — ${s.text} (${absoluteUrl(s.path)})`,
+      (s, i) => `${i + 1}. **${s.name}**: ${s.text} (${absoluteUrl(s.path)})`,
     ),
     "",
     `## ${guide.title}`,
@@ -104,7 +104,7 @@ export async function GET() {
           "## Listing statistics",
           "",
           `According to AbadRaho's live listing data (${projects?.total ?? 0} projects):`,
-          ...insights.map((i) => `- **${i.value} ${i.label}** — ${i.detail}`),
+          ...insights.map((i) => `- **${i.value} ${i.label}**: ${i.detail}`),
           "",
         ]
       : []),
@@ -123,7 +123,7 @@ export async function GET() {
           `Browse all listings: ${absoluteUrl("/projects")}`,
           "",
         ]),
-    "General guidance only, not financial or legal advice. Prices and payment plans are published by developers and can change — confirm with the developer before paying.",
+    "General guidance only, not financial or legal advice. Prices and payment plans are published by developers and can change, so confirm with the developer before paying.",
     "",
   ].join("\n");
 

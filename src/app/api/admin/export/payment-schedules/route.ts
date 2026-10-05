@@ -49,7 +49,7 @@ export async function GET() {
     return csvAttachmentResponse(csv, `payment-schedules-${Date.now()}.csv`);
   } catch {
     return NextResponse.json(
-      { success: false, message: "Export failed — check database connection." },
+      { success: false, message: "Export failed. Check the database connection." },
       { status: 500 }
     );
   }
