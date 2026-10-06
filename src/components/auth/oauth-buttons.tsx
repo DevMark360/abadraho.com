@@ -17,8 +17,15 @@ export function OAuthButtons({ refPath }: { refPath?: string }) {
       </div>
       <Button asChild variant="outline" className="w-full">
         <a href={`/auth/google${oauthRef}`} className="gap-2.5">
-          {/* Decorative: the button text already says Google. 96px source, shown at 20px. */}
-          <Image src="/icons/brand/google.png" alt="" aria-hidden width={20} height={20} className="h-5 w-5 shrink-0" />
+          {/* Decorative (the text says Google). Circular crop hides the square tile's corners; 96px source shown at 24px. */}
+          <Image
+            src="/icons/brand/google.png"
+            alt=""
+            aria-hidden
+            width={24}
+            height={24}
+            className="h-6 w-6 shrink-0 rounded-full object-cover"
+          />
           Continue with Google
         </a>
       </Button>
