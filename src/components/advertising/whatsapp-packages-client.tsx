@@ -9,7 +9,9 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
 
-type CatalogEntry = { cards: number; price: number };
+/** Admin-managed package (id is null for built-in packages before the plans table exists). */
+type CatalogEntry = { id: number | null; name: string | null; cards: number; price: number };
+const entryKey = (c: CatalogEntry) => (c.id != null ? `plan-${c.id}` : `cards-${c.cards}`);
 type PackageRow = {
   id: number;
   projectId: number;
@@ -29,7 +31,7 @@ function WhatsappPackagesContent() {
   const [error, setError] = useState<string | null>(null);
 
   const [projectId, setProjectId] = useState<number | "">("");
-  const [cards, setCards] = useState<number | "">("");
+  const [selectedKey, setSelectedKey] = useState("");
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
 
@@ -53,7 +55,7 @@ function WhatsappPackagesContent() {
     if (pkgs.success) {
       setCatalog(pkgs.catalog);
       setPackages(pkgs.packages);
-      if (pkgs.catalog?.[0]) setCards(pkgs.catalog[0].cards);
+      setSelectedKey(pkgs.catalog?.[0] ? entryKey(pkgs.catalog[0]) : "");
     } else {
       setError(pkgs.message ?? "Could not load WhatsApp packages");
     }
@@ -66,7 +68,8 @@ function WhatsappPackagesContent() {
   async function handlePurchase(e: React.FormEvent) {
     e.preventDefault();
     setPurchaseError(null);
-    if (!projectId || !cards) {
+    const entry = catalog.find((c) => entryKey(c) === selectedKey);
+    if (!projectId || !entry) {
       setPurchaseError("Select a project and package size");
       return;
     }
@@ -76,7 +79,8 @@ function WhatsappPackagesContent() {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, cards }),
+        // Server prices the purchase from its own catalog; planId picks the package.
+        body: JSON.stringify({ projectId, planId: entry.id ?? undefined, cards: entry.cards }),
       });
       const j = await res.json().catch(() => ({}));
       if (!j.success) {
@@ -183,15 +187,25 @@ function WhatsappPackagesContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-700">Package size</label>
-                <Select layout="field" value={cards} onChange={(e) => setCards(Number(e.target.value))}>
-                  {catalog.map((c) => (
-                    <option key={c.cards} value={c.cards}>
-                      {c.cards} cards for Rs. {c.price.toLocaleString()}
-                    </option>
-                  ))}
+                <Select
+                  layout="field"
+                  value={selectedKey}
+                  onChange={(e) => setSelectedKey(e.target.value)}
+                  disabled={!catalog.length}
+                >
+                  {catalog.length ? (
+                    catalog.map((c) => (
+                      <option key={entryKey(c)} value={entryKey(c)}>
+                        {c.name ? `${c.name}: ` : ""}
+                        {c.cards} cards for Rs. {c.price.toLocaleString()}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No packages available right now</option>
+                  )}
                 </Select>
               </div>
-              <Button type="submit" className={designTw.btnPrimary} disabled={purchasing}>
+              <Button type="submit" className={designTw.btnPrimary} disabled={purchasing || !catalog.length}>
                 {purchasing ? "Purchasing…" : "Purchase package"}
               </Button>
             </form>

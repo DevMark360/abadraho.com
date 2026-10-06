@@ -1,4 +1,5 @@
 /** Staff admin panel permission registry — used by Roles UI and RBAC guards. */
+import { adminNavGroups, type AdminNavGroup, type AdminNavItem } from "@/config/admin-nav";
 
 export const PERMISSION_ACTIONS = [
   "view",
@@ -38,7 +39,8 @@ export type AdminPermissionGroup = {
   modules: AdminPermissionModule[];
 };
 
-export const ADMIN_PERMISSION_GROUPS: AdminPermissionGroup[] = [
+/** Hand-tuned modules (labels/actions). Menu links not listed here are added automatically. */
+const BASE_PERMISSION_GROUPS: AdminPermissionGroup[] = [
   {
     key: "dashboard",
     label: "Dashboard",
@@ -208,7 +210,7 @@ export const ADMIN_PERMISSION_GROUPS: AdminPermissionGroup[] = [
 ];
 
 /** Map /api/admin/[resource] ids → permission module keys (API guards + admin UI). */
-export const ADMIN_RESOURCE_ID_MODULE: Record<string, string> = {
+const BASE_RESOURCE_ID_MODULE: Record<string, string> = {
   projects: "projects",
   areas: "areas",
   amenities: "amenities",
@@ -275,7 +277,7 @@ export function isValidPermissionKey(key: string): boolean {
 }
 
 /** Map admin page first segment (+ special paths) → view permission module key. */
-export const ADMIN_PATH_VIEW_PERMISSION: Record<string, string> = {
+const BASE_PATH_VIEW_PERMISSION: Record<string, string> = {
   dashboard: "dashboard",
   projects: "projects",
   reviews: "reviews",
@@ -317,7 +319,7 @@ export const ADMIN_PATH_VIEW_PERMISSION: Record<string, string> = {
 };
 
 /** Nav href → view permission key (more specific paths first). */
-export const ADMIN_NAV_HREF_PERMISSION: Record<string, string> = {
+const BASE_NAV_HREF_PERMISSION: Record<string, string> = {
   "/admin/dashboard": "dashboard.view",
   "/admin/projects/pending": "projects_pending.view",
   "/admin/projects/active": "projects_active.view",
@@ -356,3 +358,102 @@ export const ADMIN_NAV_HREF_PERMISSION: Record<string, string> = {
   "/admin/favorites": "favorites.view",
   "/admin/roles": "roles.view",
 };
+
+// ---------------------------------------------------------------------------------------------
+// Automatic sync with the admin menu (src/config/admin-nav.ts is the single source of truth).
+// Adding a link to the menu automatically: lists it on the Roles screen, guards its page,
+// filters it from the menu for staff without access, and maps its /api/admin/<segment>.
+// The BASE_* entries above only override labels/actions and keep existing keys stable
+// (roles saved in the database reference keys like "projects.view").
+// ---------------------------------------------------------------------------------------------
+
+const DEFAULT_NAV_ACTIONS: readonly PermissionAction[] = ["view", "add", "edit", "delete"];
+
+function isAction(value: string): value is PermissionAction {
+  return (PERMISSION_ACTIONS as readonly string[]).includes(value);
+}
+
+/** /admin/ad-floor-prices → "ad_floor_prices"; /admin/projects/pending → "projects_pending". */
+export function navModuleKeyFromHref(href: string): string {
+  return href
+    .replace(/^\/admin\/?/, "")
+    .replace(/[^a-z0-9]+/gi, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
+}
+
+/** Module key for a menu link, or null when it needs no permission (downloads, own account). */
+function navItemModule(group: AdminNavGroup, item: AdminNavItem): string | null {
+  if (item.permission === false || item.download || group.id === "account") return null;
+  if (!item.href.startsWith("/admin/")) return null;
+  if (item.permission) return item.permission;
+  const base = BASE_NAV_HREF_PERMISSION[item.href];
+  return base ? base.split(".")[0] : navModuleKeyFromHref(item.href);
+}
+
+function buildPermissionGroups(): AdminPermissionGroup[] {
+  const groups = BASE_PERMISSION_GROUPS.map((g) => ({ ...g, modules: [...g.modules] }));
+  const known = new Set(groups.flatMap((g) => g.modules.map((m) => m.key)));
+
+  for (const navGroup of adminNavGroups) {
+    for (const item of navGroup.items) {
+      const key = navItemModule(navGroup, item);
+      if (!key || known.has(key)) continue;
+      // Put it in the permission group that already holds this menu group's modules, else by
+      // label, else a new group named after the menu group.
+      const siblingKeys = navGroup.items
+        .map((i) => navItemModule(navGroup, i))
+        .filter((k): k is string => Boolean(k) && known.has(k as string));
+      let target =
+        groups.find((g) => g.modules.some((m) => siblingKeys.includes(m.key))) ??
+        groups.find((g) => g.label.toLowerCase() === navGroup.label.toLowerCase());
+      if (!target) {
+        target = { key: navGroup.id, label: navGroup.label, modules: [] };
+        groups.push(target);
+      }
+      const actions = item.permissionActions?.filter(isAction);
+      target.modules.push({
+        key,
+        label: item.label,
+        actions: actions?.length ? actions : DEFAULT_NAV_ACTIONS,
+      });
+      known.add(key);
+    }
+  }
+  return groups;
+}
+
+function buildNavMaps() {
+  const navHref: Record<string, string> = {};
+  const pathView: Record<string, string> = {};
+  const resource: Record<string, string> = {};
+  for (const navGroup of adminNavGroups) {
+    for (const item of navGroup.items) {
+      const key = navItemModule(navGroup, item);
+      if (!key) continue;
+      navHref[item.href] = `${key}.view`;
+      const segment = item.href.replace(/^\/admin\/?/, "").split("/")[0];
+      if (segment && !(segment in pathView)) pathView[segment] = key;
+      if (segment && !(segment in resource)) resource[segment] = key;
+    }
+  }
+  // Hand-written entries win (they keep existing keys and special cases intact).
+  return {
+    navHref: { ...navHref, ...BASE_NAV_HREF_PERMISSION },
+    pathView: { ...pathView, ...BASE_PATH_VIEW_PERMISSION },
+    resource: { ...resource, ...BASE_RESOURCE_ID_MODULE },
+  };
+}
+
+const NAV_MAPS = buildNavMaps();
+
+export const ADMIN_PERMISSION_GROUPS: AdminPermissionGroup[] = buildPermissionGroups();
+
+/** Map /api/admin/[resource] ids → permission module keys (API guards + admin UI). */
+export const ADMIN_RESOURCE_ID_MODULE: Record<string, string> = NAV_MAPS.resource;
+
+/** Map admin page first segment (+ special paths) → view permission module key. */
+export const ADMIN_PATH_VIEW_PERMISSION: Record<string, string> = NAV_MAPS.pathView;
+
+/** Nav href → view permission key (more specific paths first). */
+export const ADMIN_NAV_HREF_PERMISSION: Record<string, string> = NAV_MAPS.navHref;

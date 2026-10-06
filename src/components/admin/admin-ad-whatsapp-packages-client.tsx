@@ -10,6 +10,7 @@ import {
   adminTableHead,
 } from "@/components/admin/admin-ui";
 import { cn } from "@/lib/utils";
+import { AdminWhatsappPlansManager } from "@/components/admin/admin-whatsapp-plans-manager";
 
 const PER_PAGE = 25;
 
@@ -65,7 +66,13 @@ export function AdminAdWhatsappPackagesClient() {
   }, [load]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
+      <AdminWhatsappPlansManager />
+      <div className="space-y-4">
+      <div>
+        <h2 className="text-base font-semibold text-zinc-900">Purchases</h2>
+        <p className="text-sm text-zinc-500">Packages builders have bought, with cards used so far.</p>
+      </div>
       <AdminPageToolbar total={total} />
 
       {error && <AdminDbAlert message={error} />}
@@ -128,6 +135,7 @@ export function AdminAdWhatsappPackagesClient() {
           onPrev={() => setPage((p) => Math.max(1, p - 1))}
           onNext={() => setPage((p) => p + 1)}
         />
+      </div>
       </div>
     </div>
   );

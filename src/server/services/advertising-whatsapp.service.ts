@@ -5,17 +5,150 @@ import { prisma } from "@/lib/prisma";
 import { isDatabaseEnabled } from "@/lib/db";
 import { resolveProjectImageUrls } from "@/lib/project-media";
 import { getSiteUrl } from "@/lib/app-url";
+import { tableExists } from "@/lib/db-table-exists";
 
 /**
- * Flat-fee packages, priced server-side from this fixed catalog — never trust a client-supplied
- * price for a real wallet deduction. Matches the PRD's "N generated/shareable ad cards" choice
- * (not real automated WhatsApp sending, see docs/ADVERTISING_PORTAL_PRD.md §15).
+ * Built-in packages, used only until the ad_whatsapp_plans table exists (see
+ * prisma/manual-migrations/2026-10-07-whatsapp-package-plans.sql, which seeds the same three).
+ * Matches the PRD's "N generated/shareable ad cards" choice (not real automated WhatsApp
+ * sending, see docs/ADVERTISING_PORTAL_PRD.md §15).
  */
 export const AD_WHATSAPP_PACKAGES = [
   { cards: 25, price: 2500 },
   { cards: 50, price: 4500 },
   { cards: 100, price: 8000 },
 ] as const;
+
+/** A package builders can buy. id is null for the built-in fallback packages. */
+export type AdWhatsappPlan = {
+  id: number | null;
+  name: string | null;
+  cards: number;
+  price: number;
+  isActive: boolean;
+  sortOrder: number;
+};
+
+const PLAN_LIMITS = { maxCards: 100_000, maxPrice: 100_000_000, nameLength: 100 };
+
+async function plansTableReady(): Promise<boolean> {
+  return isDatabaseEnabled() && (await tableExists("ad_whatsapp_plans"));
+}
+
+function fallbackPlans(): AdWhatsappPlan[] {
+  return AD_WHATSAPP_PACKAGES.map((p, i) => ({
+    id: null,
+    name: null,
+    cards: p.cards,
+    price: p.price,
+    isActive: true,
+    sortOrder: i + 1,
+  }));
+}
+
+/** Catalog from the database (admin-managed), or the built-in packages before the migration. */
+export async function listWhatsappPlans(opts: { activeOnly?: boolean } = {}): Promise<{
+  plans: AdWhatsappPlan[];
+  managed: boolean;
+}> {
+  if (!(await plansTableReady())) {
+    return { plans: fallbackPlans(), managed: false };
+  }
+  const rows = await prisma.adWhatsappPlan.findMany({
+    where: opts.activeOnly ? { isActive: true } : undefined,
+    orderBy: [{ sortOrder: "asc" }, { cards: "asc" }],
+  });
+  return {
+    managed: true,
+    plans: rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      cards: r.cards,
+      price: Number(r.price),
+      isActive: r.isActive,
+      sortOrder: r.sortOrder,
+    })),
+  };
+}
+
+export type WhatsappPlanInput = {
+  name?: unknown;
+  cards?: unknown;
+  price?: unknown;
+  isActive?: unknown;
+  sortOrder?: unknown;
+};
+
+function parsePlanInput(
+  input: WhatsappPlanInput,
+  partial: boolean
+): { ok: true; data: Partial<Omit<AdWhatsappPlan, "id">> } | { ok: false; error: string } {
+  const data: Partial<Omit<AdWhatsappPlan, "id">> = {};
+  if (input.name !== undefined) {
+    const name = String(input.name ?? "").trim();
+    if (name.length > PLAN_LIMITS.nameLength) return { ok: false, error: "Name is too long (max 100)" };
+    data.name = name || null;
+  }
+  if (input.cards !== undefined || !partial) {
+    const cards = Number(input.cards);
+    if (!Number.isInteger(cards) || cards < 1 || cards > PLAN_LIMITS.maxCards) {
+      return { ok: false, error: "Cards must be a whole number from 1 to 100,000" };
+    }
+    data.cards = cards;
+  }
+  if (input.price !== undefined || !partial) {
+    const price = Number(input.price);
+    if (!Number.isFinite(price) || price <= 0 || price > PLAN_LIMITS.maxPrice) {
+      return { ok: false, error: "Price must be more than 0" };
+    }
+    data.price = Math.round(price * 100) / 100;
+  }
+  if (input.isActive !== undefined) data.isActive = Boolean(input.isActive);
+  if (input.sortOrder !== undefined) {
+    const sortOrder = Number(input.sortOrder);
+    if (!Number.isInteger(sortOrder)) return { ok: false, error: "Order must be a whole number" };
+    data.sortOrder = sortOrder;
+  }
+  return { ok: true, data };
+}
+
+const PLANS_NOT_READY =
+  "Package editing needs the ad_whatsapp_plans table. Run prisma/manual-migrations/2026-10-07-whatsapp-package-plans.sql, then restart the app.";
+
+export async function createWhatsappPlan(input: WhatsappPlanInput) {
+  if (!(await plansTableReady())) return { success: false as const, error: PLANS_NOT_READY };
+  const parsed = parsePlanInput(input, false);
+  if (!parsed.ok) return { success: false as const, error: parsed.error };
+  const plan = await prisma.adWhatsappPlan.create({
+    data: {
+      name: parsed.data.name ?? null,
+      cards: parsed.data.cards!,
+      price: parsed.data.price!,
+      isActive: parsed.data.isActive ?? true,
+      sortOrder: parsed.data.sortOrder ?? 0,
+    },
+  });
+  return { success: true as const, id: plan.id };
+}
+
+export async function updateWhatsappPlan(id: number, input: WhatsappPlanInput) {
+  if (!(await plansTableReady())) return { success: false as const, error: PLANS_NOT_READY };
+  const parsed = parsePlanInput(input, true);
+  if (!parsed.ok) return { success: false as const, error: parsed.error };
+  const existing = await prisma.adWhatsappPlan.findUnique({ where: { id } });
+  if (!existing) return { success: false as const, error: "Package not found" };
+  await prisma.adWhatsappPlan.update({ where: { id }, data: parsed.data });
+  return { success: true as const };
+}
+
+/** Safe to delete: past purchases keep their own cards/price and are not linked to plans. */
+export async function deleteWhatsappPlan(id: number) {
+  if (!(await plansTableReady())) return { success: false as const, error: PLANS_NOT_READY };
+  const deleted = await prisma.adWhatsappPlan.deleteMany({ where: { id } });
+  return deleted.count
+    ? { success: true as const }
+    : { success: false as const, error: "Package not found" };
+}
 
 const CARD_DIR = path.join(process.cwd(), "public", "uploads", "ad_whatsapp_cards");
 
@@ -76,12 +209,17 @@ export async function listAdWhatsappPackagesForBuilder(
 
 export async function purchaseAdWhatsappPackage(
   builderId: number,
-  input: { projectId: number; cards: number }
+  input: { projectId: number; planId?: number; cards?: number }
 ): Promise<{ success: boolean; package?: AdWhatsappPackageRow; error?: string }> {
   if (!isDatabaseEnabled()) return { success: false, error: "Database disabled" };
 
-  const catalogEntry = AD_WHATSAPP_PACKAGES.find((p) => p.cards === input.cards);
-  if (!catalogEntry) return { success: false, error: "Invalid package size" };
+  // Priced server-side from the active catalog; never trust a client-supplied price.
+  // planId is preferred; cards is accepted for pages opened before the catalog change.
+  const { plans } = await listWhatsappPlans({ activeOnly: true });
+  const catalogEntry =
+    (input.planId ? plans.find((p) => p.id === input.planId) : undefined) ??
+    (input.cards ? plans.find((p) => p.cards === input.cards) : undefined);
+  if (!catalogEntry) return { success: false, error: "This package is no longer available" };
 
   const owns = await builderOwnsProjectDirectly(builderId, input.projectId);
   if (!owns) return { success: false, error: "You do not own this project" };

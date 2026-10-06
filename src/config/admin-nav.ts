@@ -8,6 +8,16 @@ export type AdminNavItem = {
   download?: boolean;
   /** Optional endpoint returning { pending: number } to render a count badge */
   badgeEndpoint?: string;
+  /**
+   * Access control is automatic: every link here becomes a permission module on the Roles
+   * screen and guards its page (see src/config/admin-permissions.ts). Only set these to
+   * override the defaults:
+   * - permission: module key (default: path after /admin/, e.g. /admin/ad-floor-prices →
+   *   "ad_floor_prices"), or false for links every staff member may open.
+   * - permissionActions: actions offered on the Roles screen (default view/add/edit/delete).
+   */
+  permission?: string | false;
+  permissionActions?: readonly string[];
 };
 
 /** Collapsible group — mirrors dev.abadraho.com admin sidebar */
@@ -65,7 +75,12 @@ const userManagement: AdminNavGroup = {
     { href: "/admin/housing-calc-search-history", label: "Housing calculator search" },
     { href: "/admin/customers", label: "Customers (website users)" },
     { href: "/admin/agents", label: "Agents / brokers" },
-    { href: "/admin/broker-assignment-requests", label: "Broker requests", badgeEndpoint: "/api/admin/broker-assignment-requests?count=pending" },
+    {
+      href: "/admin/broker-assignment-requests",
+      label: "Broker requests",
+      badgeEndpoint: "/api/admin/broker-assignment-requests?count=pending",
+      permissionActions: ["view", "approve", "reject", "delete"],
+    },
     { href: "/admin/commissions", label: "Commissions" },
   ],
 };
@@ -179,7 +194,7 @@ const advertising: AdminNavGroup = {
   items: [
     { href: "/admin/ad-campaigns", label: "Ad campaigns" },
     { href: "/admin/ad-wallet-transactions", label: "Wallet top-up requests" },
-    { href: "/admin/finance", label: "Finance overview" },
+    { href: "/admin/finance", label: "Finance overview", permissionActions: ["view", "export"] },
     { href: "/admin/ad-floor-prices", label: "Floor prices" },
     { href: "/admin/ad-whatsapp-packages", label: "WhatsApp packages" },
   ],
