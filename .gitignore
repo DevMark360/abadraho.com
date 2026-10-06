@@ -73,6 +73,8 @@ scripts/*.log
 !/public/icons/
 /public/icons/*
 !/public/icons/3d/
+# Small brand marks used in the UI (e.g. Google sign-in)
+!/public/icons/brand/
 
 # Misc
 *.pem
