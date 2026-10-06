@@ -48,10 +48,11 @@ h3 {
   padding-inline: var(--container-padding);
 }
 
-/* --- Media: prevent overflow --- */
-img:not(.brand-logo),
-video,
-iframe {
+/* --- Media: prevent overflow ---
+   :where() = zero specificity, so any explicit size class (h-full, h-8, …) wins. Without it this
+   rule (element + :not(.class)) beat Tailwind's h-full and forced images to their natural height:
+   the hero photo left an empty band and square partner logos overflowed their cards. */
+:where(img:not(.brand-logo), video, iframe) {
   max-width: 100%;
   height: auto;
 }

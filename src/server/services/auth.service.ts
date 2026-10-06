@@ -190,49 +190,6 @@ export async function authenticateUser(
   return result.ok ? result.value : null;
 }
 
-export type RegisterInput = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phoneNumber?: string;
-};
-
-export async function registerUser(
-  input: RegisterInput
-): Promise<{ user: SafeUser } | { error: string }> {
-  if (!isDatabaseEnabled()) {
-    return { error: "Database disabled" };
-  }
-
-  const email = input.email.trim().toLowerCase();
-  const existing = await findUserByEmail(email);
-  if (existing) return { error: "Email already registered" };
-
-  // Public signup is website users only — agent/builder roles are admin-assigned (sec-7).
-  const userTypeId = userTypeIds.websiteUser;
-
-  const hash = await hashPassword(input.password);
-  const now = new Date();
-  const user = await prisma.user.create({
-    data: {
-      firstName: input.firstName.trim(),
-      lastName: input.lastName.trim(),
-      email,
-      password: hash,
-      phoneNumber: input.phoneNumber?.replace(/\D/g, "") || null,
-      userTypeId,
-      provider: "WEBSITE",
-      // No code until the phone step actually sends one (submit-phone / resend).
-      phoneNoOtp: null,
-      createdAt: now,
-      updatedAt: now,
-    },
-  });
-
-  return { user: toSafeUser(user) };
-}
-
 export async function submitPhoneNumber(
   userId: number,
   phoneNumber: string
@@ -679,4 +636,184 @@ export async function updatePhoneForUser(
 export async function userExists(id: number): Promise<boolean> {
   const count = await prisma.user.count({ where: { id, isArchive: false } });
   return count > 0;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Signup with WhatsApp verification first: no account exists until the code is confirmed.
+// ---------------------------------------------------------------------------------------------
+
+type PendingSignup = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  passwordHash: string;
+  phone: string;
+  otpHash: string;
+  otpExpiresAt: number;
+  failures: number;
+  expiresAt: number;
+};
+
+/**
+ * In memory (single Passenger worker, like otpStates). Nothing touches the database until the
+ * code is verified, so an abandoned or restarted signup leaves no half-created account.
+ */
+const pendingSignups = new Map<string, PendingSignup>();
+const PENDING_SIGNUP_TTL_MS = 30 * 60 * 1000;
+
+function sweepPendingSignups() {
+  const now = Date.now();
+  for (const [token, p] of pendingSignups) if (now > p.expiresAt) pendingSignups.delete(token);
+}
+
+export type SignupOtpResult = {
+  success: boolean;
+  message: string;
+  token?: string;
+  phone?: string;
+  otpDev?: string;
+};
+
+async function emailOrPhoneTaken(email: string, phone: string): Promise<string | null> {
+  if (await findUserByEmail(email)) return "Email already registered";
+  const phoneOwner = await prisma.user.findFirst({
+    where: { phoneNumber: { in: phoneLookupVariants(phone) }, isArchive: false },
+    select: { id: true },
+  });
+  return phoneOwner ? "This WhatsApp number is already in use" : null;
+}
+
+/** Issue + send a fresh code for a pending signup (shared by start / resend / change number). */
+async function sendSignupCode(token: string, pending: PendingSignup): Promise<SignupOtpResult> {
+  const limit = checkRateLimit(`signup-otp-send:${token}`, OTP_SENDS_PER_WINDOW, OTP_SEND_WINDOW_MS);
+  if (!limit.allowed) {
+    return { success: false, message: `Too many codes requested. Retry in ${limit.retryAfterSec}s` };
+  }
+  const otp = generateOtp();
+  pending.otpHash = storeOtpHash(otp);
+  pending.otpExpiresAt = Date.now() + OTP_TTL_MS;
+  pending.failures = 0;
+
+  const { sent, error } = await sendPhoneOtpWhatsApp(pending.phone, otp);
+  if (!sent && !shouldExposeOtpDev()) {
+    return { success: false, message: whatsappFailureMessage(error) };
+  }
+  return {
+    success: true,
+    message: sent ? "We sent a 4-digit code to your WhatsApp." : "Code generated (WhatsApp not configured).",
+    token,
+    phone: pending.phone,
+    ...(!sent && shouldExposeOtpDev() ? { otpDev: otp } : {}),
+  };
+}
+
+/** Step 1: validate (done by the route) + hold the signup + send the WhatsApp code. */
+export async function startSignup(input: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone: string;
+}): Promise<SignupOtpResult> {
+  if (!isDatabaseEnabled()) return { success: false, message: "Database disabled" };
+  sweepPendingSignups();
+
+  const email = input.email.trim().toLowerCase();
+  const taken = await emailOrPhoneTaken(email, input.phone);
+  if (taken) return { success: false, message: taken };
+
+  const token = randomToken();
+  const pending: PendingSignup = {
+    firstName: input.firstName.trim(),
+    lastName: input.lastName.trim(),
+    email,
+    passwordHash: await hashPassword(input.password),
+    phone: input.phone,
+    otpHash: "",
+    otpExpiresAt: 0,
+    failures: 0,
+    expiresAt: Date.now() + PENDING_SIGNUP_TTL_MS,
+  };
+  pendingSignups.set(token, pending);
+  const result = await sendSignupCode(token, pending);
+  if (!result.success) pendingSignups.delete(token);
+  return result;
+}
+
+function getPendingSignup(token: string): PendingSignup | null {
+  sweepPendingSignups();
+  return token ? (pendingSignups.get(token) ?? null) : null;
+}
+
+const SIGNUP_EXPIRED = "Your signup session expired. Please submit the form again.";
+
+export async function resendSignupCode(token: string): Promise<SignupOtpResult> {
+  const pending = getPendingSignup(token);
+  if (!pending) return { success: false, message: SIGNUP_EXPIRED };
+  return sendSignupCode(token, pending);
+}
+
+/** "Wrong number?": switch the number inside the verification modal and send a new code. */
+export async function changeSignupPhone(token: string, phoneRaw: string): Promise<SignupOtpResult> {
+  const pending = getPendingSignup(token);
+  if (!pending) return { success: false, message: SIGNUP_EXPIRED };
+  const checked = checkStoredPhone(phoneRaw);
+  if (!checked.ok) return { success: false, message: checked.message };
+  const owner = await prisma.user.findFirst({
+    where: { phoneNumber: { in: phoneLookupVariants(checked.stored) }, isArchive: false },
+    select: { id: true },
+  });
+  if (owner) return { success: false, message: "This WhatsApp number is already in use" };
+  pending.phone = checked.stored;
+  return sendSignupCode(token, pending);
+}
+
+/** Step 2: correct code → create the (already phone-verified) account. */
+export async function verifySignupCode(
+  token: string,
+  otp: string
+): Promise<{ success: boolean; message: string; user?: SafeUser }> {
+  const pending = getPendingSignup(token);
+  if (!pending) return { success: false, message: SIGNUP_EXPIRED };
+  if (!pending.otpHash || Date.now() > pending.otpExpiresAt) {
+    return { success: false, message: "This code has expired. Tap Resend for a new one." };
+  }
+  if (!checkRateLimit(`signup-otp-verify:${token}`, OTP_DAILY_MAX_FAILURES, PENDING_SIGNUP_TTL_MS).allowed) {
+    return { success: false, message: "Too many incorrect codes. Please try again later." };
+  }
+  if (!verifyStoredSecret(otp, pending.otpHash)) {
+    pending.failures += 1;
+    if (pending.failures >= OTP_MAX_FAILURES) {
+      pending.otpHash = "";
+      return { success: false, message: "Too many incorrect codes. Tap Resend for a new one." };
+    }
+    return { success: false, message: "That code is not right. Check the latest WhatsApp message." };
+  }
+
+  // Re-check: someone may have registered the same email/number while this code was pending.
+  const taken = await emailOrPhoneTaken(pending.email, pending.phone);
+  if (taken) {
+    pendingSignups.delete(token);
+    return { success: false, message: taken };
+  }
+
+  const now = new Date();
+  const user = await prisma.user.create({
+    data: {
+      firstName: pending.firstName,
+      lastName: pending.lastName,
+      email: pending.email,
+      password: pending.passwordHash,
+      phoneNumber: pending.phone,
+      isPhoneNoVerified: true,
+      phoneNoOtp: null,
+      // Public signup is website users only — agent/builder roles are admin-assigned (sec-7).
+      userTypeId: userTypeIds.websiteUser,
+      provider: "WEBSITE",
+      createdAt: now,
+      updatedAt: now,
+    },
+  });
+  pendingSignups.delete(token);
+  return { success: true, message: "Account created", user: toSafeUser(user) };
 }
