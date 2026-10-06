@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LoadingState } from "@/components/ui/loading-state";
 import { cn } from "@/lib/utils";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 type Profile = {
   source: "admin" | "user";
@@ -322,17 +323,8 @@ export function AdminProfileClient() {
                   description="Shown on inquiries and when customers reach out to you."
                 >
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <ProfileField id={phoneId} label="Phone number" icon={Phone}>
-                      <Input
-                        id={phoneId}
-                        name="phone_number"
-                        type="tel"
-                        layout="inline"
-                        defaultValue={profile.phoneNumber ?? ""}
-                        autoComplete="tel"
-                        inputMode="tel"
-                        placeholder="+92 300 1234567"
-                      />
+                    <ProfileField id={phoneId} label="Phone number" icon={Phone} required>
+                      <PhoneInput id={phoneId} name="phone_number" defaultValue={profile.phoneNumber} />
                     </ProfileField>
                     <ProfileField id={cityId} label="City" icon={MapPin}>
                       <Input

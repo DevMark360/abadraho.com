@@ -12,6 +12,8 @@ import { contactFormDefaults } from "@/lib/form-user-defaults";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { EmailInput } from "@/components/ui/email-input";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 function Field({
   label,
@@ -82,28 +84,16 @@ export function ContactForm() {
           />
         </Field>
         <Field label="Email" htmlFor="contact-email">
-          <Input
+          <EmailInput
             id="contact-email"
             name="email"
-            type="email"
-            required
+            layout="field"
             maxLength={CONTACT_LIMITS.email}
             defaultValue={defaults.email}
-            autoComplete="email"
           />
         </Field>
         <Field label="Phone" htmlFor="contact-phone">
-          <Input
-            id="contact-phone"
-            name="phone"
-            type="tel"
-            required
-            maxLength={CONTACT_LIMITS.phone}
-            inputMode="tel"
-            placeholder="03XX XXXXXXX"
-            defaultValue={defaults.phone}
-            autoComplete="tel"
-          />
+          <PhoneInput id="contact-phone" name="phone" defaultValue={defaults.phone} className="mt-1" />
         </Field>
         <Field label="Subject" htmlFor="contact-subject">
           <Input

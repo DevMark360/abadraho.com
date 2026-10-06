@@ -202,4 +202,10 @@ export const rootMetadata: Metadata = {
   verification: {
     google: "rUK8s00Q50NHcuxhyjOJOQ4PYONmZySmuuyrK_Jd690",
   },
+  // WebMCP / agent discovery: point AI agents at the read-only tool manifest. Relative path so
+  // pre-rendered pages never bake in the build machine's domain. (<link rel="mcp"> is in layout.)
+  other: {
+    mcp: "/.well-known/mcp.json",
+    webmcp: "/.well-known/mcp.json",
+  },
 };

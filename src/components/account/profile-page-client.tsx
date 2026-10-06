@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LoadingState } from "@/components/ui/loading-state";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 type Profile = {
   email?: string | null;
@@ -179,19 +180,9 @@ export function ProfilePageClient() {
                 <AccountFormField
                   id={phoneId}
                   label="WhatsApp number"
-                  hint="Include country code if outside Pakistan."
                   required
                 >
-                  <Input
-                    id={phoneId}
-                    name="phoneNumber"
-                    type="tel"
-                    layout="inline"
-                    defaultValue={profile.phoneNumber ?? ""}
-                    autoComplete="tel"
-                    inputMode="tel"
-                    required
-                  />
+                  <PhoneInput id={phoneId} name="phoneNumber" defaultValue={profile.phoneNumber} />
                 </AccountFormField>
                 <AccountFormField id={addressId} label="Street address">
                   <Input

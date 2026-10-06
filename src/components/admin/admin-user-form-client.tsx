@@ -9,6 +9,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminFormSection, FieldLabel, inputClass, preventImplicitFormSubmit, selectClass } from "@/components/admin/admin-form-section";
 import { AdminBackLink, AdminErrorAlert, adminPanel } from "@/components/admin/admin-ui";
+import { EmailInput } from "@/components/ui/email-input";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 type FormState = {
   firstName: string;
@@ -37,6 +39,9 @@ export function AdminUserFormClient({
 }) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(defaultForm);
+  const [loadedPhone, setLoadedPhone] = useState("");
+  // New users start empty (invalid until filled); edits start valid until changed.
+  const [phoneValid, setPhoneValid] = useState(mode === "edit");
   const [userTypes, setUserTypes] = useState<{ value: string; label: string }[]>([]);
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
@@ -53,6 +58,7 @@ export function AdminUserFormClient({
           setLoading(false);
           return;
         }
+        setLoadedPhone(u.phoneNumber ?? "");
         setForm({
           firstName: u.firstName ?? "",
           lastName: u.lastName ?? "",
@@ -94,6 +100,10 @@ export function AdminUserFormClient({
   }, [mode]);
 
   async function save() {
+    if (!phoneValid) {
+      alert("Enter a valid phone number");
+      return;
+    }
     if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) {
       alert("First name, last name, and email are required");
       return;
@@ -151,19 +161,24 @@ export function AdminUserFormClient({
           </label>
           <label className="block md:col-span-2">
             <FieldLabel required>Email</FieldLabel>
-            <Input layout="field"
-              type="email"
+            <EmailInput
+              layout="field"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onValueChange={(email) => setForm((f) => ({ ...f, email }))}
             />
           </label>
-          <label className="block">
-            <FieldLabel>Phone</FieldLabel>
-            <Input layout="field"
-              value={form.phoneNumber}
-              onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+          {/* div, not label: a label would open the country picker when its text is clicked */}
+          <div className="block">
+            <FieldLabel required>Phone</FieldLabel>
+            <PhoneInput
+              defaultValue={loadedPhone}
+              className="mt-1"
+              onChange={(c) => {
+                setPhoneValid(c.ok);
+                setForm((f) => ({ ...f, phoneNumber: c.ok ? c.stored : c.national }));
+              }}
             />
-          </label>
+          </div>
           <label className="block">
             <FieldLabel required>User type</FieldLabel>
             <AdminSelect

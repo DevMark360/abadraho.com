@@ -3,7 +3,7 @@
 import "@/styles/leaflet-map.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Layers, Box, Plus, Minus, Radio } from "lucide-react";
-import type { ProjectListItem } from "@/types/project";
+import type { MapProject } from "@/lib/map-projects";
 import {
   KARACHI_CENTER,
   KARACHI_DEFAULT_ZOOM,
@@ -13,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface ProjectsMapPanelProps {
-  projects: ProjectListItem[];
+  projects: MapProject[];
   selectedId: number | null;
   onSelect: (id: number) => void;
   onRefreshMapData?: () => void;
@@ -44,7 +44,7 @@ function formatPrice(n: number | null | undefined, currency = "PKR"): string {
   return `${currency} ${n.toLocaleString()}`;
 }
 
-function pinHtml(project: ProjectListItem, selected: boolean, mobile: boolean): string {
+function pinHtml(project: MapProject, selected: boolean, mobile: boolean): string {
   const img =
     project.imageUrl ?? "/assets/images/home/northkarachi.jpg";
   const safeImg = escapeHtml(img);
@@ -53,7 +53,7 @@ function pinHtml(project: ProjectListItem, selected: boolean, mobile: boolean): 
   return `<div class="${cls}${mobileCls}"><img class="abadraho-map-pin-img" src="${safeImg}" alt="" loading="lazy" /></div>`;
 }
 
-function popupHtml(project: ProjectListItem): string {
+function popupHtml(project: MapProject): string {
   const img =
     project.imageUrl ?? "/assets/images/home/northkarachi.jpg";
   const price = formatPrice(project.minPrice);
@@ -68,8 +68,8 @@ function popupHtml(project: ProjectListItem): string {
   </a>`;
 }
 
-function withNormalizedCoords(projects: ProjectListItem[]) {
-  const out: (ProjectListItem & { latitude: number; longitude: number })[] = [];
+function withNormalizedCoords(projects: MapProject[]) {
+  const out: (MapProject & { latitude: number; longitude: number })[] = [];
   for (const p of projects) {
     const coords = normalizePakistanCoords(p.latitude, p.longitude);
     if (!coords) continue;
@@ -102,6 +102,9 @@ export function ProjectsMapPanel({
   const [mode3d, setMode3d] = useState(false);
 
   const withCoords = withNormalizedCoords(projects);
+  // Read inside the one-time "map ready" callback, which would otherwise see a stale count.
+  const coordsCountRef = useRef(withCoords.length);
+  coordsCountRef.current = withCoords.length;
 
   const isMapUsable = useCallback(() => {
     const map = mapRef.current;
@@ -271,7 +274,9 @@ export function ProjectsMapPanel({
         mapReadyRef.current = true;
         map.invalidateSize({ animate: false });
         syncMarkersRef.current(L, map, { fit: true });
-        initialFitDoneRef.current = true;
+        // Only count the first fit once there were pins to fit. The home map starts empty and
+        // loads pins afterwards; marking it done here would leave it on the default view.
+        initialFitDoneRef.current = coordsCountRef.current > 0;
       });
 
       resizeObserver = new ResizeObserver(() => {

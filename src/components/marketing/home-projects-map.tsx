@@ -2,29 +2,26 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ProjectsMapPanel } from "@/components/projects/projects-map-panel";
+import type { MapProject } from "@/lib/map-projects";
 import { homeCardClass } from "@/components/marketing/home-ui";
 import { cn } from "@/lib/utils";
-import type { ProjectListItem } from "@/types/project";
 
-export function HomeProjectsMap({ projects: initialProjects }: { projects: ProjectListItem[] }) {
+/** Pins load client-side from /api/v1/projects/map-data (kept out of the page HTML). */
+export function HomeProjectsMap() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [mapProjects, setMapProjects] = useState<ProjectListItem[]>(initialProjects);
+  const [mapProjects, setMapProjects] = useState<MapProject[]>([]);
 
   const refreshMapData = useCallback(() => {
     return fetch("/api/v1/projects/map-data", { credentials: "same-origin" })
       .then((r) => r.json())
       .then((json) => {
-        const mapItems = json?.data as ProjectListItem[] | undefined;
+        const mapItems = json?.data as MapProject[] | undefined;
         if (Array.isArray(mapItems) && mapItems.length) {
           setMapProjects(mapItems);
         }
       })
       .catch(() => undefined);
   }, []);
-
-  useEffect(() => {
-    setMapProjects(initialProjects);
-  }, [initialProjects]);
 
   useEffect(() => {
     void refreshMapData();

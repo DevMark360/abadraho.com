@@ -33,8 +33,9 @@ function FeaturedScrollerCard({
           <Image
             src={project.imageUrl}
             alt={project.name}
-            fill
-            className="object-cover"
+            width={112}
+            height={112}
+            className="absolute inset-0 h-full w-full object-cover"
             sizes="112px"
             unoptimized
           />

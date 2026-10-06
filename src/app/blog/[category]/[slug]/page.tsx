@@ -57,18 +57,23 @@ export default async function BlogArticlePage({ params }: PageProps) {
   const plainText = post.content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   const readingMinutes = estimateReadingTime(plainText);
 
+  const articleSchema = buildArticleSchema({
+    title: post.title,
+    description: plainText.slice(0, 160),
+    path: `/blog/${category}/${slug}`,
+    image: post.imageUrl,
+    datePublished: post.createdAt,
+    dateModified: post.updatedAt,
+    category: post.categoryName,
+    wordCount: plainText ? plainText.split(" ").length : undefined,
+  });
+  const blogPosting = articleSchema.find((node) => node["@type"] === "BlogPosting");
+
   return (
     <PublicPage>
-      <JsonLd
-        data={buildArticleSchema({
-          title: post.title,
-          description: plainText.slice(0, 160),
-          path: `/blog/${category}/${slug}`,
-          image: post.imageUrl,
-          dateModified: post.updatedAt,
-          category: post.categoryName,
-        })}
-      />
+      {/* BlogPosting in its own block (checkers often skip @graph); the rest stays together. */}
+      {blogPosting ? <JsonLd data={blogPosting} /> : null}
+      <JsonLd data={articleSchema.filter((node) => node !== blogPosting)} />
 
       <nav className="border-b border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-500">
         <div className="mx-auto max-w-4xl">

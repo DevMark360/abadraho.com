@@ -1,8 +1,6 @@
 import "@/styles/font-awesome-local.css";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  ArrowLeft,
   Banknote,
   Building2,
   CalendarClock,
@@ -41,6 +39,7 @@ import {
 } from "@/components/marketing/trust-signals";
 import { JsonLd } from "@/components/seo/json-ld";
 import { buildProductSchema, buildRealEstateListingSchema } from "@/lib/schema-markup";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo";
 
 /** Status pill colours by construction stage. */
@@ -170,13 +169,15 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       <ProjectViewTracker projectId={project.id} projectName={project.name} />
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-6xl px-4 py-6 lg:px-8">
-          <Link
-            href="/projects"
-            className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Off-plan
-          </Link>
+          <Breadcrumbs
+            className="mb-5"
+            crumbs={[
+              { label: "Home", href: "/" },
+              { label: "Off-plan projects", href: "/projects" },
+              { label: project.name },
+            ]}
+            currentPath={`/project/${project.slug}`}
+          />
 
           {/* grid-cols-1 + min-w-0: without them one long unbreakable string in project content
               (e.g. an attachment filename) widens the column past the phone screen. */}

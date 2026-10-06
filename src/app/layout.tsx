@@ -31,10 +31,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteSchema = buildSiteSchemaGraph();
+  const organization = siteSchema.find((node) => node["@type"] === "Organization");
+
   return (
     <html lang="en-PK" dir="ltr" className={`${inter.variable} ${inter.className}`}>
+      <head>
+        {/* Agent discovery (WebMCP): read-only tools manifest; meta tags come from rootMetadata. */}
+        <link rel="mcp" type="application/json" href="/.well-known/mcp.json" />
+      </head>
       <body className="overflow-hidden bg-white font-sans antialiased">
-        <JsonLd data={buildSiteSchemaGraph()} />
+        {/* Organization in its own block: some AI/SEO checkers only read a standalone
+            {"@type":"Organization"} and miss it inside @graph. Other nodes still reference it
+            by @id, which works across JSON-LD blocks on the same page. */}
+        {organization ? <JsonLd data={organization} /> : null}
+        <JsonLd data={siteSchema.filter((node) => node !== organization)} />
         <CsrfBootstrap />
         <AgentAttributionRoot />
         {children}

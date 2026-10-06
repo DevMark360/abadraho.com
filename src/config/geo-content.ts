@@ -26,7 +26,7 @@ export const geoContent = {
       {
         question: "What is AbadRaho?",
         answer:
-          "AbadRaho is an off-plan property search and comparison platform in Pakistan, backed by Mark Properties, helping buyers find and evaluate projects before possession.",
+          "AbadRaho is a search and comparison platform for off-plan property in Pakistan, backed by Mark Properties, helping buyers find and evaluate projects before possession.",
       },
       {
         question: "Which cities does AbadRaho cover?",

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireFullStaffAdmin } from "@/lib/admin-api-guard";
 import type { ProjectApprovalAction } from "@/config/project-status";
 import { setProjectApprovalStatus } from "@/server/services/admin-project.service";
+import { notifyProjectChanged } from "@/server/services/indexnow.service";
 
 const ACTIONS = new Set<ProjectApprovalAction>(["approve", "hold", "reject"]);
 
@@ -34,5 +35,6 @@ export async function PATCH(
       { status: 400 }
     );
   }
+  notifyProjectChanged(projectId);
   return NextResponse.json({ success: true });
 }

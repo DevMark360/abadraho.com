@@ -56,7 +56,6 @@ function projectLine(p: ProjectListItem): string {
 
 export async function GET() {
   const projects = await loadProjects();
-  const facts = { projectCount: projects?.total ?? 0, areaCounts: {} };
   const guide = homeGuide();
   const insights = projects ? homeInsights(projects.items, projects.total) : [];
   const [, ...cols] = guide.comparison.columns;
@@ -69,7 +68,7 @@ export async function GET() {
     `Operator: ${businessConfig.legalName}, Karachi, Sindh, Pakistan. Website: ${absoluteUrl("/")}. Contact: ${businessConfig.email}. Short version: ${absoluteUrl("/llms.txt")}.`,
     "",
     "## Frequently asked questions",
-    ...homeFaqs(facts).flatMap((f) => ["", `### ${f.question}`, f.answer]),
+    ...homeFaqs().flatMap((f) => ["", `### ${f.question}`, f.answer]),
     "",
     `## ${homeHowTo.name}`,
     ...homeHowTo.steps.map(

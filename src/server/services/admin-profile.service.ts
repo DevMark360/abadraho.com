@@ -6,6 +6,7 @@ import {
   profileImageUrl,
   saveAdminProfileImage,
 } from "@/server/services/admin-profile-upload.service";
+import { checkStoredPhone } from "@/lib/phone";
 
 export type ProfileUpdateInput = {
   firstName?: string;
@@ -136,6 +137,12 @@ export async function updateAdminProfile(
   session?: AdminSession;
 }> {
   if (!isDatabaseEnabled()) return { success: false, message: "Database disabled" };
+
+  if (data.phoneNumber !== undefined) {
+    const phoneCheck = checkStoredPhone(data.phoneNumber);
+    if (!phoneCheck.ok) return { success: false, message: phoneCheck.message };
+    data = { ...data, phoneNumber: phoneCheck.stored };
+  }
 
   if (session.source === "user") {
     const user = await prisma.user.findUnique({ where: { id: session.id } });

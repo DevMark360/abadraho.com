@@ -11,6 +11,7 @@ import {
   parseProjectListQuery,
   saveAdminProject,
 } from "@/server/services/admin-project.service";
+import { notifyProjectChanged } from "@/server/services/indexnow.service";
 
 export async function GET(request: NextRequest) {
   const session = await getAdminSession();
@@ -59,5 +60,6 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+  notifyProjectChanged(result.project.id);
   return NextResponse.json({ success: true, id: result.project.id });
 }

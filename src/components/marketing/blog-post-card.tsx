@@ -27,8 +27,9 @@ export function BlogPostCard({ post }: { post: BlogPostSummary }) {
             <Image
               src={imageUrl}
               alt={post.title}
-              fill
-              className="object-cover"
+              width={800}
+              height={500}
+              className="absolute inset-0 h-full w-full object-cover"
               unoptimized
             />
           ) : (

@@ -7,6 +7,7 @@ import {
   getAdminProjectDetail,
   saveAdminProject,
 } from "@/server/services/admin-project.service";
+import { notifyProjectChanged } from "@/server/services/indexnow.service";
 
 export async function GET(
   _request: NextRequest,
@@ -43,6 +44,7 @@ export async function PATCH(
   if (result.error) {
     return NextResponse.json({ success: false, message: result.error }, { status: 400 });
   }
+  notifyProjectChanged(projectId);
   return NextResponse.json({ success: true, id: result.project?.id });
 }
 
@@ -57,6 +59,7 @@ export async function DELETE(
 
   try {
     await archiveAdminProject(projectId);
+    notifyProjectChanged(projectId);
     return NextResponse.json({ success: true });
   } catch (e) {
     return NextResponse.json({ success: false, message: String(e) }, { status: 400 });

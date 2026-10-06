@@ -9,13 +9,15 @@ import {
   rateLimitedResponse,
 } from "@/lib/rate-limit";
 import { z } from "zod";
+import { checkStoredPhone } from "@/lib/phone";
+import { checkEmail } from "@/lib/email-check";
 
 const schema = z.object({
-  firstName: z.string().min(1).max(255),
-  lastName: z.string().min(1).max(255),
+  firstName: z.string().trim().min(1).max(255),
+  lastName: z.string().trim().min(1).max(255),
   email: z.string().email(),
   password: z.string().min(8),
-  phoneNumber: z.string().optional(),
+  phoneNumber: z.string().trim().min(1, "WhatsApp number is required"),
 });
 
 const BLOCKED_PUBLIC_ROLES = new Set(["agent", "builder", "admin", "staff"]);
@@ -60,7 +62,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = await registerUser(parsed.data);
+  // Same rules as the form: per-country phone validation (stored as international digits).
+  const email = checkEmail(parsed.data.email);
+  if (!email.ok) {
+    return NextResponse.json({ success: false, message: email.message }, { status: 422 });
+  }
+  const phone = checkStoredPhone(parsed.data.phoneNumber);
+  if (!phone.ok) {
+    return NextResponse.json({ success: false, message: phone.message }, { status: 422 });
+  }
+
+  const result = await registerUser({ ...parsed.data, phoneNumber: phone.stored });
   if ("error" in result) {
     return NextResponse.json({ success: false, message: result.error }, { status: 422 });
   }

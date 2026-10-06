@@ -6,6 +6,7 @@ import {
   listBlogCategories,
   saveAdminBlog,
 } from "@/server/services/admin-blog.service";
+import { notifyBlogChanged } from "@/server/services/indexnow.service";
 
 export async function GET(
   _request: NextRequest,
@@ -72,6 +73,7 @@ export async function PATCH(
     coverFile
   );
 
+  if (result.success) notifyBlogChanged(Number(id));
   return NextResponse.json(result, { status: result.success ? 200 : 422 });
 }
 
@@ -84,5 +86,6 @@ export async function DELETE(
 
   const { id } = await params;
   await archiveAdminBlog(Number(id));
+  notifyBlogChanged(Number(id));
   return NextResponse.json({ success: true });
 }

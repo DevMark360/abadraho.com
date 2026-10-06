@@ -7,14 +7,14 @@ import { assistanceSteps, popularPlaces } from "@/config/marketing";
 import { trustStats } from "@/config/trust-signals";
 import type { ProjectListItem } from "@/types/project";
 
-export type HomeFacts = {
-  /** Live published project count (0 when unknown — copy then omits the number). */
-  projectCount: number;
-  /** Project counts for the popular Karachi areas (see popularPlaces). */
-  areaCounts: Record<string, number>;
-};
-
 export type HomeFaq = { question: string; answer: string };
+
+/**
+ * Home page content dates for schema (freshness signals). Bump HOME_CONTENT_UPDATED whenever
+ * the home copy (hero, FAQ, guide) changes; the page also uses the newest blog post date.
+ */
+export const HOME_CONTENT_PUBLISHED = "2026-10-05";
+export const HOME_CONTENT_UPDATED = "2026-10-06";
 
 const yearsExperience =
   trustStats.find((s) => s.label === "Years experience")?.value ?? "15+";
@@ -27,30 +27,22 @@ const builderPartners =
  * re-renders (and in /llms-full.txt, which is generated per request).
  */
 
-/** Popular areas with at least one listed project, busiest first. */
-export function topAreas(areaCounts: Record<string, number>, limit = 4) {
-  return popularPlaces
-    .map((p) => ({ name: p.name, count: areaCounts[p.name] ?? 0 }))
-    .filter((a) => a.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, limit);
-}
-
 /** Opening paragraph — answers "what is this site" directly, with facts, in ~45 words. */
 export function homeLead(): string {
-  return `AbadRaho is an off-plan property platform for Pakistan, operated by Mark Properties in Karachi. Browse verified pre-launch and under-construction projects, compare down payments and monthly installments side by side, and get free help from advisors with ${yearsExperience} years in real estate.`;
+  return `AbadRaho is a property platform for buying off-plan homes in Pakistan, operated by Mark Properties in Karachi. Browse verified pre-launch and under-construction projects, compare down payments and monthly installments side by side, and get free help from advisors with ${yearsExperience} years in real estate.`;
 }
 
-export function homeFaqs(facts: HomeFacts): HomeFaq[] {
-  const areas = topAreas(facts.areaCounts);
-  const areaSentence = areas.length
-    ? ` Popular areas include ${areas.map((a) => a.name).join(", ")}.`
-    : "";
+export function homeFaqs(): HomeFaq[] {
+  // Static list (config), not live counts: no database work and nothing to go stale.
+  const areaSentence = ` Popular areas include ${popularPlaces
+    .slice(0, 4)
+    .map((p) => p.name)
+    .join(", ")}.`;
 
   return [
     {
       question: "What is AbadRaho?",
-      answer: `AbadRaho is an off-plan property search and comparison platform in Pakistan, operated by Mark Properties. It lists verified pre-launch and under-construction projects, mainly in Karachi, with prices, payment plans, and handover dates on every project page.`,
+      answer: `AbadRaho is a search and comparison platform for off-plan property in Pakistan, operated by Mark Properties. It lists verified pre-launch and under-construction projects, mainly in Karachi, with prices, payment plans, and handover dates on every project page.`,
     },
     {
       question: "Is AbadRaho free for buyers?",
@@ -129,11 +121,6 @@ export function homeGuide() {
           "Unit choice",
           "Wider choice of floors, views, and layouts early on",
           "Limited to what is on the market",
-        ],
-        [
-          "Main risk",
-          "Construction delays or changes to the plan",
-          "Fewer surprises, since you can inspect the unit",
         ],
       ],
     },

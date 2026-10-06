@@ -23,6 +23,7 @@ import { sendPhoneOtpWhatsApp } from "@/lib/whatsapp-otp";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import type { User } from "@prisma/client";
 import { randomInt } from "crypto";
+import { checkStoredPhone, phoneLookupVariants } from "@/lib/phone";
 
 export type SafeUser = {
   id: number;
@@ -96,7 +97,11 @@ async function phoneChangeData(userId: number, phoneNumber: string) {
     where: { id: userId },
     select: { phoneNumber: true },
   });
-  if ((current?.phoneNumber ?? "").replace(/\D/g, "") === digits) return {};
+  // Same number in another saved format (03xx… vs 9230…) is not a change: keep "verified".
+  const currentDigits = (current?.phoneNumber ?? "").replace(/\D/g, "");
+  if (currentDigits === digits || (digits && phoneLookupVariants(digits).includes(currentDigits))) {
+    return {};
+  }
   otpStates.delete(userId);
   return { phoneNumber: digits || null, isPhoneNoVerified: false, phoneNoOtp: null };
 }
@@ -232,13 +237,13 @@ export async function submitPhoneNumber(
   userId: number,
   phoneNumber: string
 ): Promise<{ success: boolean; message: string; otpDev?: string; whatsappSent?: boolean; smsSent?: boolean }> {
-  const phone = phoneNumber.replace(/\D/g, "");
-  if (phone.length < 10 || phone.length > 12) {
-    return { success: false, message: "WhatsApp number must be 10–12 digits" };
-  }
+  const checked = checkStoredPhone(phoneNumber);
+  if (!checked.ok) return { success: false, message: checked.message };
+  const phone = checked.stored;
 
+  // Match older rows saved as local Pakistani digits too (03xx… / 3xx…).
   const conflict = await prisma.user.findFirst({
-    where: { phoneNumber: phone, id: { not: userId }, isArchive: false },
+    where: { phoneNumber: { in: phoneLookupVariants(phone) }, id: { not: userId }, isArchive: false },
   });
   if (conflict) {
     return { success: false, message: "This WhatsApp number is already in use" };

@@ -25,7 +25,7 @@ export function GET() {
   const body = [
     `# ${siteConfig.name}`,
     "",
-    `> ${siteConfig.name} is an off-plan property search and comparison platform for Pakistan, operated by ${businessConfig.legalName} in Karachi, Sindh. Buyers browse verified pre-launch and under-construction projects, compare payment plans (down payment, installment length, monthly amounts), and get free advice from ${businessConfig.legalName} advisors.`,
+    `> ${siteConfig.name} is a search and comparison platform for off-plan property in Pakistan, operated by ${businessConfig.legalName} in Karachi, Sindh. Buyers browse verified pre-launch and under-construction projects, compare payment plans (down payment, installment length, monthly amounts), and get free advice from ${businessConfig.legalName} advisors.`,
     "",
     `Key facts: operator ${businessConfig.legalName}; market focus Karachi and Pakistan; ${stats}. Browsing, comparing, and sending inquiries are free for buyers. Prices and payment plans are published by each developer. The sale contract is between the buyer and the developer, not ${siteConfig.name}. Contact: ${businessConfig.email}.`,
     "",
@@ -88,6 +88,7 @@ export function GET() {
     ),
     link("Short version (llms-small.txt)", "/llms-small.txt"),
     link("AI crawler guidance (ai.txt)", "/.well-known/ai.txt"),
+    link("Agent tools, read-only (mcp.json)", "/.well-known/mcp.json"),
     link(
       "Sitemap",
       "/sitemap.xml",

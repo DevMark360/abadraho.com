@@ -29,6 +29,8 @@ export default async function BlogPage() {
       title: post.title,
       path: `/blog/${post.categorySlug}/${post.slug}`,
       image: post.imageUrl,
+      datePublished: post.createdAt,
+      description: post.excerpt,
     }));
 
   return (

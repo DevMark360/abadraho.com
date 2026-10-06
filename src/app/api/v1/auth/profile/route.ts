@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { findUserById, toSafeUser, updateProfile } from "@/server/services/auth.service";
 import { attachSessionCookie, toSessionUser } from "@/lib/auth";
 import { z } from "zod";
+import { checkStoredPhone } from "@/lib/phone";
 
 const schema = z.object({
   firstName: z.string().min(1).optional(),
@@ -44,7 +45,23 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: false, message: "Invalid data" }, { status: 422 });
   }
 
-  const user = await updateProfile(session.id, parsed.data);
+  // Name and WhatsApp number are required when sent (the profile form always sends them).
+  if (parsed.data.firstName !== undefined && !parsed.data.firstName.trim()) {
+    return NextResponse.json({ success: false, message: "First name is required." }, { status: 422 });
+  }
+  if (parsed.data.lastName !== undefined && !parsed.data.lastName.trim()) {
+    return NextResponse.json({ success: false, message: "Last name is required." }, { status: 422 });
+  }
+  let phoneNumber = parsed.data.phoneNumber;
+  if (phoneNumber !== undefined) {
+    const phone = checkStoredPhone(phoneNumber);
+    if (!phone.ok) {
+      return NextResponse.json({ success: false, message: phone.message }, { status: 422 });
+    }
+    phoneNumber = phone.stored;
+  }
+
+  const user = await updateProfile(session.id, { ...parsed.data, phoneNumber });
   if (!user) {
     return NextResponse.json({ success: false, message: "Update failed" }, { status: 500 });
   }

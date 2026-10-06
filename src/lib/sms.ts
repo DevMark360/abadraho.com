@@ -1,14 +1,16 @@
 import { siteConfig } from "@/config/site";
+import { splitStoredPhone } from "@/lib/phone";
 
 export type SmsSendResult = { sent: boolean; provider?: string; error?: string };
 
-/** Pakistani mobile → 923xxxxxxxxx (no +). */
+/**
+ * Recipient digits (international, no +). Legacy local Pakistani forms (03xx… / 3xx…) get 92;
+ * numbers already saved in international form (any country) are left as they are.
+ */
 export function normalizePkPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("92") && digits.length >= 12) return digits;
-  if (digits.startsWith("0") && digits.length === 11) return `92${digits.slice(1)}`;
-  if (digits.length === 10) return `92${digits}`;
-  return digits;
+  const { country, national } = splitStoredPhone(digits);
+  return country === "PK" && national ? `92${national}` : digits;
 }
 
 function otpMessage(otp: string): string {

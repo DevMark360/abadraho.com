@@ -5,6 +5,7 @@ import {
   listBlogCategories,
   saveAdminBlog,
 } from "@/server/services/admin-blog.service";
+import { notifyBlogChanged } from "@/server/services/indexnow.service";
 
 export async function GET(request: NextRequest) {
   const session = await getAdminSession();
@@ -68,5 +69,6 @@ export async function POST(request: NextRequest) {
     coverFile
   );
 
+  if (result.success && typeof result.id === "number") notifyBlogChanged(result.id);
   return NextResponse.json(result, { status: result.success ? 200 : 422 });
 }

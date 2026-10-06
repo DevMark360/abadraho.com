@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth/auth-provider";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 export function PhoneVerifyPanel({
   initialPhone = "",
@@ -82,13 +83,11 @@ export function PhoneVerifyPanel({
         Use the same mobile number you use on WhatsApp. We send the code via WhatsApp, not SMS.
       </p>
       <div className="space-y-2">
-        <input
-          name="phone_number"
-          required
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="WhatsApp number (e.g. 03201234567)"
-          className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+        <PhoneInput
+          defaultValue={initialPhone}
+          aria-label="WhatsApp number"
+          placeholder="WhatsApp number"
+          onChange={(c) => setPhone(c.ok ? c.stored : "")}
         />
         <Button
           type="button"

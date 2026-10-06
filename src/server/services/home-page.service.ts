@@ -3,6 +3,7 @@ import { queryRaw } from "@/lib/prisma-raw";
 import { popularPlaces } from "@/config/marketing";
 import { getTeamMemberProjectScope } from "@/server/services/admin-team.service";
 import { listProjects } from "@/server/services/project.service";
+import { listProjectsCached } from "@/server/services/project-list-cache.service";
 import type { ProjectFilters, ProjectListItem } from "@/types/project";
 
 function normalizeAreaToken(value: string): string {
@@ -176,30 +177,15 @@ export async function getAreaProjectCounts(
 
 export async function getHomePageData(viewerUserId?: number | null): Promise<{
   featured: ProjectListItem[];
-  areaCounts: Record<string, number>;
-  mapProjects: ProjectListItem[];
-  /** Total projects visible to this viewer (used for factual home copy). */
-  projectCount: number;
 }> {
   const scope = await resolveHomeScope(viewerUserId);
-  const listFilters = filtersFromScope(scope);
+  if (scope != null && !scope.length) return { featured: [] };
 
-  if (scope != null && !scope.length) {
-    return { featured: [], areaCounts: {}, mapProjects: [], projectCount: 0 };
-  }
-
-  const mapProjectsResult = await listProjects({
-    perPage: 200,
-    page: 1,
-    ...listFilters,
-  });
-  const featured = mapProjectsResult.items.slice(0, 8);
-  const areaCounts = await getAreaProjectCounts(viewerUserId, scope);
-
-  return {
-    featured,
-    areaCounts,
-    mapProjects: mapProjectsResult.items,
-    projectCount: mapProjectsResult.total,
-  };
+  // Only the 8 featured cards need project data here. The map loads its own pins from
+  // /api/v1/projects/map-data, so embedding a 200-project list only bloated the HTML (~290KB).
+  // Most visitors share the public list, so reuse the 2-minute listings cache (same as /projects);
+  // team members limited to a project scope keep a live, scoped query.
+  const query = { perPage: 8, page: 1, ...filtersFromScope(scope) };
+  const { items } = scope === undefined ? await listProjectsCached(query) : await listProjects(query);
+  return { featured: items };
 }

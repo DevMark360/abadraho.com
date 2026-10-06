@@ -9,6 +9,8 @@ import {
   userTypeIds,
   userTypeLabel,
 } from "@/config/site";
+import { checkEmail } from "@/lib/email-check";
+import { checkStoredPhone } from "@/lib/phone";
 
 export type UserListFilters = {
   page?: number;
@@ -300,12 +302,18 @@ export async function saveAdminUser(
   const lastName = String(body.lastName ?? "").trim();
   const email = String(body.email ?? "").trim();
   const userTypeId = Number(body.userTypeId);
-  const phoneNumber = body.phoneNumber != null ? String(body.phoneNumber) : null;
+  let phoneNumber = body.phoneNumber != null ? String(body.phoneNumber) : null;
   const password = body.password != null ? String(body.password) : "";
 
   if (!firstName || !lastName || !email || !Number.isFinite(userTypeId)) {
     return { user: null, error: "Name, email, and user type are required" };
   }
+  const emailCheck = checkEmail(email);
+  if (!emailCheck.ok) return { user: null, error: emailCheck.message };
+  // Phone is required (any country); stored as international digits (9230…).
+  const phoneCheck = checkStoredPhone(phoneNumber ?? "");
+  if (!phoneCheck.ok) return { user: null, error: phoneCheck.message };
+  phoneNumber = phoneCheck.stored;
 
   if (userTypeId === userTypeIds.superAdmin) {
     return { user: null, error: "Cannot assign Super Admin via this form" };

@@ -6,7 +6,12 @@ import { ChevronDown, Search } from "lucide-react";
 import { inputFieldClass, inputInlineClass } from "@/lib/form-styles";
 import { cn } from "@/lib/utils";
 
-export type AdminSelectOption = { value: string; label: string };
+export type AdminSelectOption = {
+  value: string;
+  label: string;
+  /** Extra text matched by the search box (e.g. a dial code), not shown. */
+  keywords?: string;
+};
 
 type PanelPos = { top?: number; bottom?: number; left: number; width: number; maxHeight: number };
 
@@ -26,6 +31,10 @@ export type AdminSelectProps = {
   id?: string;
   name?: string;
   "aria-label"?: string;
+  /** Custom content for the closed button (defaults to the selected label). */
+  renderValue?: (selected: AdminSelectOption | undefined) => React.ReactNode;
+  /** Minimum dropdown panel width in px (default 220). */
+  panelMinWidth?: number;
 };
 
 export function AdminSelect({
@@ -40,6 +49,8 @@ export function AdminSelect({
   id,
   name,
   "aria-label": ariaLabel,
+  renderValue,
+  panelMinWidth = 220,
 }: AdminSelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -54,7 +65,9 @@ export function AdminSelect({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return options;
-    return options.filter((o) => o.label.toLowerCase().includes(q));
+    return options.filter(
+      (o) => o.label.toLowerCase().includes(q) || o.keywords?.toLowerCase().includes(q)
+    );
   }, [options, query]);
 
   const updatePosition = useCallback(() => {
@@ -63,7 +76,7 @@ export function AdminSelect({
     const rect = el.getBoundingClientRect();
     const vw = document.documentElement.clientWidth;
     const vh = window.innerHeight;
-    const width = Math.min(Math.max(rect.width, 220), vw - VIEWPORT_GAP * 2);
+    const width = Math.min(Math.max(rect.width, panelMinWidth), vw - VIEWPORT_GAP * 2);
     // Keep the panel on screen: a trigger near the right edge opens the panel leftwards.
     const left = Math.max(VIEWPORT_GAP, Math.min(rect.left, vw - width - VIEWPORT_GAP));
     const below = vh - rect.bottom - VIEWPORT_GAP - 4;
@@ -74,7 +87,7 @@ export function AdminSelect({
     } else {
       setPanelPos({ top: rect.bottom + 4, left, width, maxHeight: below });
     }
-  }, []);
+  }, [panelMinWidth]);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -204,7 +217,9 @@ export function AdminSelect({
         aria-haspopup="listbox"
         aria-label={ariaLabel}
       >
-        <span className="truncate">{selected?.label ?? placeholder}</span>
+        <span className="truncate">
+          {renderValue ? renderValue(selected) : (selected?.label ?? placeholder)}
+        </span>
         <ChevronDown
           className={cn("h-4 w-4 shrink-0 text-zinc-400 transition-transform", open && "rotate-180")}
           aria-hidden

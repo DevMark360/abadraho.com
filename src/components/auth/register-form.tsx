@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { oauthErrorMessage } from "@/lib/oauth-errors";
 import { isSafeRelativePath } from "@/lib/post-login-redirect";
+import { EmailInput } from "@/components/ui/email-input";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
@@ -146,21 +148,13 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
                 autoComplete="family-name"
               />
             </div>
-            <Input
-              name="email"
-              type="email"
-              required
-              placeholder="Email"
-              aria-label="Email"
-              autoComplete="email"
-            />
-            <Input
+            <div>
+              <EmailInput id="register-email" name="email" placeholder="Email" aria-label="Email" />
+            </div>
+            <PhoneInput
               name="phone_number"
-              type="tel"
-              inputMode="tel"
-              placeholder="WhatsApp number (optional)"
-              aria-label="WhatsApp number (optional)"
-              autoComplete="tel"
+              aria-label="WhatsApp number"
+              placeholder="WhatsApp number"
             />
             <Input
               name="password"
@@ -184,12 +178,11 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
             Enter your WhatsApp mobile number. The verification code is sent on WhatsApp, not by SMS.
           </p>
           <form onSubmit={submitPhone} className="space-y-3">
-            <Input
+            <PhoneInput
               name="phone_number"
-              required
               defaultValue={signupPhone}
-              placeholder="WhatsApp number (e.g. 03201234567)"
-              autoComplete="tel"
+              aria-label="WhatsApp number"
+              placeholder="WhatsApp number"
             />
             <Button type="submit" variant="outline" className="w-full" disabled={loading}>
               Save number &amp; get WhatsApp OTP

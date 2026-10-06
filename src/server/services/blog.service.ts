@@ -78,6 +78,27 @@ const PUBLISHED_BLOG_SQL = `
     AND (b.is_active = 1 OR b.is_active IS NULL)
 `;
 
+/**
+ * Public URL path of a post (same rule as the blog pages: /blog/{category slug}/{slug}), whatever
+ * its publish state. Used to ping search engines after admin edits; null if not found.
+ */
+export async function getBlogPublicPath(id: number): Promise<string | null> {
+  if (!isDatabaseEnabled()) return null;
+  try {
+    const rows = await queryRaw<{ slug: string | null; category_title: string | null }[]>(
+      `SELECT b.slug, c.title AS category_title
+       FROM blog b LEFT JOIN blog_category c ON c.id = b.category_id
+       WHERE b.id = ? LIMIT 1`,
+      id
+    );
+    const row = rows[0];
+    if (!row?.category_title) return null;
+    return `/blog/${slugify(row.category_title)}/${row.slug ?? id}`;
+  } catch {
+    return null;
+  }
+}
+
 export async function listBlogPosts(limit = 50): Promise<BlogPostSummary[]> {
   if (!isDatabaseEnabled()) return DEMO_POSTS.slice(0, limit);
   try {
@@ -99,6 +120,7 @@ export async function getBlogPost(
   content: string;
   categoryName: string | null;
   imageUrl: string | null;
+  createdAt: Date | null;
   updatedAt: Date | null;
 } | null> {
   if (!isDatabaseEnabled()) {
@@ -111,6 +133,7 @@ export async function getBlogPost(
         content: `<p>${demo.excerpt}</p>`,
         categoryName: demo.categoryName,
         imageUrl: null,
+        createdAt: demo.createdAt,
         updatedAt: demo.createdAt,
       };
     }
@@ -133,6 +156,7 @@ export async function getBlogPost(
       content: row.description ?? "",
       categoryName: row.category_title,
       imageUrl: legacyBlogImageUrl(row.cover_img),
+      createdAt: row.created_at ?? null,
       updatedAt: row.updated_at ?? row.created_at,
     };
   } catch {

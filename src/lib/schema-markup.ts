@@ -97,6 +97,7 @@ export function buildSiteSchemaGraph(): JsonLdNode[] {
     email: businessConfig.email,
     ...(businessConfig.phone ? { telephone: businessConfig.phone } : {}),
     address: postalAddress(),
+    ...(businessConfig.mapUrl ? { hasMap: businessConfig.mapUrl } : {}),
     ...(businessConfig.geo
       ? {
           geo: {
@@ -122,6 +123,9 @@ export function buildWebPageSchema(input: {
   description?: string;
   path: string;
   type?: "WebPage" | "AboutPage" | "ContactPage" | "CollectionPage";
+  /** Freshness signals: only pass real dates (content first published / last changed). */
+  datePublished?: string | Date | null;
+  dateModified?: string | Date | null;
 }): JsonLdNode {
   const pageUrl = absoluteUrl(input.path);
   return pruneEmpty({
@@ -130,6 +134,8 @@ export function buildWebPageSchema(input: {
     url: pageUrl,
     name: input.name,
     description: input.description ?? siteConfig.seoDescription,
+    datePublished: toIsoDate(input.datePublished ?? input.dateModified),
+    dateModified: toIsoDate(input.dateModified ?? input.datePublished),
     isPartOf: { "@id": entityId("website") },
     about: { "@id": entityId("local-business") },
     inLanguage: "en-PK",
@@ -140,10 +146,10 @@ export function buildBreadcrumbSchema(
   items: Array<{ name: string; path?: string }>
 ): JsonLdNode {
   const last = items[items.length - 1];
-  const pagePath = last?.path ?? "/";
   return pruneEmpty({
     "@type": "BreadcrumbList",
-    "@id": `${absoluteUrl(pagePath)}#breadcrumb`,
+    // Only when the current page URL is known (otherwise it would clash with the home page id).
+    ...(last?.path ? { "@id": `${absoluteUrl(last.path)}#breadcrumb` } : {}),
     itemListElement: items.map((item, index) =>
       pruneEmpty({
         "@type": "ListItem",
@@ -163,14 +169,16 @@ export function buildArticleSchema(input: {
   datePublished?: string | Date | null;
   dateModified?: string | Date | null;
   category?: string | null;
+  wordCount?: number;
 }): JsonLdNode[] {
   const pageUrl = absoluteUrl(input.path);
   const published = toIsoDate(input.datePublished ?? input.dateModified);
   const modified = toIsoDate(input.dateModified ?? input.datePublished);
   const images = input.image ? [absoluteUrl(input.image)] : [absoluteUrl(siteConfig.defaultOgImage)];
 
+  // BlogPosting (a more specific Article) is what AI/SEO checkers look for on blog pages.
   const article = pruneEmpty({
-    "@type": "Article",
+    "@type": "BlogPosting",
     "@id": `${pageUrl}#article`,
     headline: input.title,
     description: input.description,
@@ -192,6 +200,7 @@ export function buildArticleSchema(input: {
     },
     inLanguage: "en-PK",
     ...(input.category ? { articleSection: input.category } : {}),
+    ...(input.wordCount ? { wordCount: input.wordCount } : {}),
     isPartOf: { "@id": entityId("website") },
   });
 
@@ -211,9 +220,45 @@ export function buildArticleSchema(input: {
   return [webpage, article, breadcrumb];
 }
 
-export function buildBlogListSchema(
-  posts: Array<{ title: string; path: string; image?: string | null }>
-): JsonLdNode[] {
+export type BlogSchemaPost = {
+  title: string;
+  path: string;
+  image?: string | null;
+  datePublished?: string | Date | null;
+  description?: string | null;
+};
+
+/**
+ * Blog node listing posts as BlogPosting. Used on /blog and on the home page "Buyer guides"
+ * section, so editorial content is identifiable wherever the posts are shown.
+ */
+export function buildBlogSchema(posts: BlogSchemaPost[]): JsonLdNode {
+  const blogUrl = absoluteUrl("/blog");
+  return pruneEmpty({
+    "@type": "Blog",
+    "@id": `${blogUrl}#blog`,
+    name: `${businessConfig.brandName} Blog`,
+    description:
+      "Guides, market updates, and investment tips for off-plan property buyers in Pakistan.",
+    url: blogUrl,
+    inLanguage: "en-PK",
+    publisher: { "@id": entityId("organization") },
+    blogPost: posts.map((post) =>
+      pruneEmpty({
+        "@type": "BlogPosting",
+        "@id": `${absoluteUrl(post.path)}#article`,
+        headline: post.title,
+        url: absoluteUrl(post.path),
+        description: post.description?.trim() || undefined,
+        image: post.image ? absoluteUrl(post.image) : undefined,
+        datePublished: toIsoDate(post.datePublished),
+        author: { "@id": entityId("organization") },
+      })
+    ),
+  });
+}
+
+export function buildBlogListSchema(posts: BlogSchemaPost[]): JsonLdNode[] {
   const collection = buildWebPageSchema({
     name: "AbadRaho Blog",
     description:
@@ -238,12 +283,8 @@ export function buildBlogListSchema(
     ),
   });
 
-  const breadcrumb = buildBreadcrumbSchema([
-    { name: "Home", path: "/" },
-    { name: "Blog", path: "/blog" },
-  ]);
-
-  return [collection, itemList, breadcrumb];
+  // BreadcrumbList comes from the page header crumbs (<Breadcrumbs>).
+  return [collection, buildBlogSchema(posts), itemList];
 }
 
 export function buildRealEstateListingSchema(project: {
@@ -354,12 +395,8 @@ export function buildRealEstateListingSchema(project: {
     path: `/project/${project.slug}`,
   });
 
-  const breadcrumb = buildBreadcrumbSchema([
-    { name: "Off-plan properties", path: "/projects" },
-    { name: project.name, path: `/project/${project.slug}` },
-  ]);
-
-  return [webpage, listing, breadcrumb];
+  // BreadcrumbList comes from the visible <Breadcrumbs> on the project page.
+  return [webpage, listing];
 }
 
 /**

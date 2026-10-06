@@ -68,6 +68,9 @@ export const popularPlaces = [
     query: "North Karachi",
     href: "/projects?q=North+Karachi",
     image: legacyStaticUrl("/assets/images/home/northkarachi.jpg"),
+    // Intrinsic size: width/height attributes reserve space (no layout shift).
+    imageWidth: 360,
+    imageHeight: 380,
     large: false,
   },
   {
@@ -75,6 +78,9 @@ export const popularPlaces = [
     query: "Scheme 33",
     href: "/projects?q=Scheme+33",
     image: legacyStaticUrl("/assets/images/home/scheme33.jpg"),
+    // Intrinsic size: width/height attributes reserve space (no layout shift).
+    imageWidth: 750,
+    imageHeight: 380,
     large: true,
   },
   {
@@ -82,6 +88,9 @@ export const popularPlaces = [
     query: "Jinnah Avenue",
     href: "/projects?q=Jinnah+Avenue",
     image: legacyStaticUrl("/assets/images/home/jinnah_avenue.jpg"),
+    // Intrinsic size: width/height attributes reserve space (no layout shift).
+    imageWidth: 750,
+    imageHeight: 380,
     large: true,
   },
   {
@@ -89,6 +98,9 @@ export const popularPlaces = [
     query: "Gulshan Maymaar",
     href: "/projects?q=Gulshan+Maymaar",
     image: legacyStaticUrl("/assets/images/home/maymaar.jpg"),
+    // Intrinsic size: width/height attributes reserve space (no layout shift).
+    imageWidth: 360,
+    imageHeight: 380,
     large: false,
   },
 ];

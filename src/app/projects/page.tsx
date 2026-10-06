@@ -8,7 +8,7 @@ import { listProjectsCached } from "@/server/services/project-list-cache.service
 import { listProjects } from "@/server/services/project.service";
 import { getTeamMemberProjectScope } from "@/server/services/admin-team.service";
 import { JsonLd } from "@/components/seo/json-ld";
-import { buildWebPageSchema } from "@/lib/schema-markup";
+import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/schema-markup";
 import { buildPageMetadata } from "@/lib/seo";
 import { getSlotRotation } from "@/server/services/ad-serving.service";
 
@@ -80,12 +80,19 @@ export default async function ProjectsPage({ searchParams }: PageProps) {
   return (
     <AppShell>
       <JsonLd
-        data={buildWebPageSchema({
-          name: "Off-plan properties in Pakistan",
-          description:
-            "Browse off-plan apartments, villas, and plots in Karachi and Pakistan. Filter by area, budget, payment plan, and handover date.",
-          path: "/projects",
-        })}
+        data={[
+          buildWebPageSchema({
+            name: "Off-plan properties in Pakistan",
+            description:
+              "Browse off-plan apartments, villas, and plots in Karachi and Pakistan. Filter by area, budget, payment plan, and handover date.",
+            path: "/projects",
+          }),
+          // Schema only: a visible trail would push the filters down on this tool-like page.
+          buildBreadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Off-plan projects", path: "/projects" },
+          ]),
+        ]}
       />
       <ListingsPageShell
         filterKey={filterQueryString}

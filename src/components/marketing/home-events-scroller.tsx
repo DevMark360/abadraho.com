@@ -27,10 +27,11 @@ function EventPosterTile({ event }: { event: PublicEventSummary }) {
         <Image
           src={event.coverImage}
           alt={event.title}
-          fill
+          width={540}
+          height={800}
           unoptimized
           sizes="(max-width: 640px) 240px, 270px"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       ) : (
         <div className="flex h-full items-center justify-center bg-gradient-to-br from-zinc-700 to-zinc-900">

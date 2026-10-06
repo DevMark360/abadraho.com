@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const action = body.action as string;
 
   if (action === "submit-phone") {
-    const parsed = z.object({ phoneNumber: z.string().min(10) }).safeParse(body);
+    const parsed = z.object({ phoneNumber: z.string().trim().min(1) }).safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: "Valid phone required" }, { status: 422 });
     }

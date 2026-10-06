@@ -5,6 +5,7 @@ import { siteConfig } from "@/config/site";
 import { markPropertiesLabel, trustStats } from "@/config/trust-signals";
 import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
+import { SocialLinks } from "@/components/marketing/social-links";
 
 export function MarkPropertiesBadge({
   size = "sm",
@@ -112,6 +113,8 @@ export function SiteTrustFooter() {
               <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden />
               Karachi &amp; Pakistan off-plan property platform
             </p>
+            {/* -ml-2.5: the 40px tap targets are wider than the icons; align icons with the text above */}
+            <SocialLinks className="-ml-2.5" />
           </div>
           <nav
             aria-label="Footer"

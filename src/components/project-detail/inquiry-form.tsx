@@ -12,6 +12,8 @@ import { trackActivity } from "@/lib/client/activity-log";
 import { HONEYPOT_FIELD, rateLimitUserMessage } from "@/lib/form-spam";
 import { authFormDefaults } from "@/lib/form-user-defaults";
 import type { ProjectUnit } from "@/types/project-detail";
+import { EmailInput } from "@/components/ui/email-input";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 function Field({
   label,
@@ -171,30 +173,23 @@ export function InquiryForm({ projectId, units }: InquiryFormProps) {
           autoComplete="name"
         />
       </Field>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-        <Field label="Phone" htmlFor={`inq-phone-${projectId}`}>
-          <Input
-            id={`inq-phone-${projectId}`}
-            name="phone_number"
-            type="tel"
-            inputMode="tel"
-            required
-            placeholder="03XX XXXXXXX"
-            defaultValue={defaults.phone}
-            autoComplete="tel"
-          />
-        </Field>
-        <Field label="Email" htmlFor={`inq-email-${projectId}`}>
-          <Input
-            id={`inq-email-${projectId}`}
-            name="email"
-            type="email"
-            required
-            defaultValue={defaults.email}
-            autoComplete="email"
-          />
-        </Field>
-      </div>
+      {/* Full-width rows: the country-code picker needs room in this narrow sidebar form. */}
+      <Field label="Phone" htmlFor={`inq-phone-${projectId}`}>
+        <PhoneInput
+          id={`inq-phone-${projectId}`}
+          name="phone_number"
+          defaultValue={defaults.phone}
+          className="mt-1"
+        />
+      </Field>
+      <Field label="Email" htmlFor={`inq-email-${projectId}`}>
+        <EmailInput
+          id={`inq-email-${projectId}`}
+          name="email"
+          layout="field"
+          defaultValue={defaults.email}
+        />
+      </Field>
       <Field label="City / address" htmlFor={`inq-address-${projectId}`}>
         <Input
           id={`inq-address-${projectId}`}

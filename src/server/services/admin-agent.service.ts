@@ -6,6 +6,8 @@ import { tableExists } from "@/lib/db-table-exists";
 import { jsonNum } from "@/lib/prisma-json";
 import { userTypeIds } from "@/config/site";
 import { formatAgentCode } from "@/config/broker-agent";
+import { checkEmail } from "@/lib/email-check";
+import { checkStoredPhone } from "@/lib/phone";
 
 export type AgentStorageMode = "brokers" | "users";
 
@@ -311,13 +313,18 @@ async function saveAgentUserOnly(
   body: Record<string, unknown>
 ): Promise<{ agent: { id: number } | null; error?: string }> {
   const contactPersonName = String(body.contactPersonName ?? "").trim();
-  const contactNumber = String(body.contactNumber ?? "").trim();
+  let contactNumber = String(body.contactNumber ?? "").trim();
   const contactEmail = String(body.contactEmail ?? "").trim();
   const password = body.password != null ? String(body.password) : "";
 
   if (!contactPersonName || !contactNumber || !contactEmail) {
     return { agent: null, error: "Contact name, phone, and email are required" };
   }
+  const emailCheck = checkEmail(contactEmail);
+  if (!emailCheck.ok) return { agent: null, error: emailCheck.message };
+  const phoneCheck = checkStoredPhone(contactNumber);
+  if (!phoneCheck.ok) return { agent: null, error: phoneCheck.message };
+  contactNumber = phoneCheck.stored;
 
   const nameParts = contactPersonName.split(/\s+/);
   const firstName = nameParts[0] ?? "";
@@ -404,7 +411,7 @@ export async function saveAdminAgent(
   }
 
   const contactPersonName = String(body.contactPersonName ?? "").trim();
-  const contactNumber = String(body.contactNumber ?? "").trim();
+  let contactNumber = String(body.contactNumber ?? "").trim();
   const contactEmail = String(body.contactEmail ?? "").trim();
   const companyName = body.companyName != null ? String(body.companyName) : null;
   const companyAddress = body.companyAddress != null ? String(body.companyAddress) : null;
@@ -450,6 +457,11 @@ export async function saveAdminAgent(
   if (!contactPersonName || !contactNumber || !contactEmail) {
     return { agent: null, error: "Contact name, phone, and email are required" };
   }
+  const emailCheck = checkEmail(contactEmail);
+  if (!emailCheck.ok) return { agent: null, error: emailCheck.message };
+  const phoneCheck = checkStoredPhone(contactNumber);
+  if (!phoneCheck.ok) return { agent: null, error: phoneCheck.message };
+  contactNumber = phoneCheck.stored;
 
   const nameParts = contactPersonName.split(/\s+/);
   const firstName = nameParts[0] ?? "";

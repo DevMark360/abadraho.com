@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { checkEmail } from "@/lib/email-check";
+import { checkStoredPhone } from "@/lib/phone";
 
 export const CONTACT_LIMITS = {
   name: 100,
@@ -24,15 +26,12 @@ function cleanText(value: string, maxLen: number): string {
     .slice(0, maxLen);
 }
 
-/** Pakistan mobile/landline — digits only, 10–12 digits after normalization. */
+/** Any country: validated with the phone rules (stored as international digits, e.g. 9230…). */
 export function normalizeContactPhone(
   raw: string
 ): { ok: true; phone: string } | { ok: false; message: string } {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length < 10 || digits.length > 12) {
-    return { ok: false, message: "Phone must be 10–12 digits" };
-  }
-  return { ok: true, phone: digits };
+  const checked = checkStoredPhone(raw);
+  return checked.ok ? { ok: true, phone: checked.stored } : { ok: false, message: checked.message };
 }
 
 /** Safe Reply-To for nodemailer — blocks header injection and invalid addresses. */
@@ -77,6 +76,11 @@ export function parseContactForm(
   const phone = normalizeContactPhone(parsed.data.phone);
   if (!phone.ok) {
     return { success: false, message: phone.message };
+  }
+
+  const emailCheck = checkEmail(parsed.data.email);
+  if (!emailCheck.ok) {
+    return { success: false, message: emailCheck.message };
   }
 
   const replyTo = sanitizeReplyToEmail(parsed.data.email);

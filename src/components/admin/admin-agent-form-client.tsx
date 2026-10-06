@@ -11,6 +11,8 @@ import { AdminMultiSelect } from "@/components/admin/admin-multi-select";
 import { AdminSelect } from "@/components/admin/admin-select";
 import { AdminFormSection, FieldLabel, preventImplicitFormSubmit } from "@/components/admin/admin-form-section";
 import { AdminBackLink, AdminErrorAlert, adminPanel } from "@/components/admin/admin-ui";
+import { EmailInput } from "@/components/ui/email-input";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 export function AdminAgentFormClient({
   agentId,
@@ -22,6 +24,7 @@ export function AdminAgentFormClient({
   const router = useRouter();
   const [contactPersonName, setContactPersonName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
+  const [loadedPhone, setLoadedPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [companyAddress, setCompanyAddress] = useState("");
@@ -66,6 +69,7 @@ export function AdminAgentFormClient({
         }
         setContactPersonName(a.contactPersonName ?? "");
         setContactNumber(a.contactNumber ?? "");
+        setLoadedPhone(a.contactNumber ?? "");
         setContactEmail(a.contactEmail ?? "");
         setCompanyName(a.companyName ?? "");
         setCompanyAddress(a.companyAddress ?? "");
@@ -163,20 +167,18 @@ export function AdminAgentFormClient({
               onChange={(e) => setContactPersonName(e.target.value)}
             />
           </label>
-          <label className="block">
+          {/* div, not label: a label would open the country picker when its text is clicked */}
+          <div className="block">
             <FieldLabel required>Phone</FieldLabel>
-            <Input layout="field"
-              value={contactNumber}
-              onChange={(e) => setContactNumber(e.target.value)}
+            <PhoneInput
+              defaultValue={loadedPhone}
+              className="mt-1"
+              onChange={(c) => setContactNumber(c.ok ? c.stored : c.national)}
             />
-          </label>
+          </div>
           <label className="block">
             <FieldLabel required>Email</FieldLabel>
-            <Input layout="field"
-              type="email"
-              value={contactEmail}
-              onChange={(e) => setContactEmail(e.target.value)}
-            />
+            <EmailInput layout="field" value={contactEmail} onValueChange={setContactEmail} />
           </label>
           <label className="block md:col-span-2">
             <FieldLabel required={mode === "create"} hint={mode === "edit" ? "Leave blank to keep" : "Min 8 chars"}>

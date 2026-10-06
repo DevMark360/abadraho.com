@@ -152,10 +152,11 @@ export function HomeHero({ lead }: { lead: string }) {
               <Image
                 src={homeHeroImage}
                 alt="Off-plan property in Karachi"
-                fill
+                width={800}
+                height={600}
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
+                className="absolute inset-0 h-full w-full object-cover"
                 unoptimized
               />
             </div>
@@ -196,11 +197,7 @@ export function HomeValuePropsSection() {
   return null;
 }
 
-export function HomeInsightsSection({
-  mapProjects,
-}: {
-  mapProjects: ProjectListItem[];
-}) {
+export function HomeInsightsSection() {
   return (
     <section className={section}>
       <div className={container}>
@@ -210,7 +207,8 @@ export function HomeInsightsSection({
           subtitle="Every listed project on one map, plus the steps AbadRaho takes you through from search to booking."
         />
         <div className="grid gap-6 lg:grid-cols-2">
-          <HomeProjectsMap projects={mapProjects} />
+          {/* The map fetches its own pins after load; embedding them made the home HTML ~290KB. */}
+          <HomeProjectsMap />
           <HomePlatformTimeline />
         </div>
       </div>
@@ -332,13 +330,14 @@ export function PopularPlacesSection() {
                   <Image
                     src={place.image}
                     alt={place.name}
-                    fill
+                    width={place.imageWidth}
+                    height={place.imageHeight}
                     sizes={
                       place.large
                         ? "(max-width: 768px) 100vw, 66vw"
                         : "(max-width: 768px) 100vw, 33vw"
                     }
-                    className="object-cover transition duration-300 group-hover:scale-105"
+                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
                     unoptimized
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/10" />
@@ -470,8 +469,9 @@ export function WhatIsAbadRahoSection({ answer }: { answer: string }) {
             <Image
               src={legacyStaticUrl("/assets/images/home/mobile-view1.png")}
               alt="AbadRaho on mobile"
-              fill
-              className="object-contain p-4"
+              width={460}
+              height={480}
+              className="absolute inset-0 h-full w-full object-contain p-4"
               unoptimized
             />
           </div>

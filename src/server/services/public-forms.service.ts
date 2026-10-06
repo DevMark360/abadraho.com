@@ -17,6 +17,8 @@ import {
   resolveBrokerByAgentCode,
   saveBrokerLead,
 } from "@/server/services/broker-agent-ops.service";
+import { checkEmail } from "@/lib/email-check";
+import { checkStoredPhone } from "@/lib/phone";
 
 function str(v: unknown): string {
   return String(v ?? "").trim();
@@ -88,19 +90,23 @@ export async function createPropertyInquiry(
   const name = str(body.name);
   const email = str(body.email);
   const address = str(body.address) || "N/A";
-  const phoneNumber = str(body.phone_number ?? body.phone);
+  const rawPhone = str(body.phone_number ?? body.phone);
   const message = str(body.message);
   const unitId = num(body.unit_id);
 
-  if (!name || !email || !address || !phoneNumber || !message || !unitId) {
+  if (!name || !email || !address || !rawPhone || !message || !unitId) {
     return { success: false as const, message: "All fields are required" };
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { success: false as const, message: "Enter a valid email address" };
+  const emailCheck = checkEmail(email);
+  if (!emailCheck.ok) {
+    return { success: false as const, message: emailCheck.message };
   }
-  if (phoneNumber.replace(/\D/g, "").length < 11) {
-    return { success: false as const, message: "Phone number must be at least 11 digits" };
+  // Any country, per-country length/format rules; stored as international digits (9230…).
+  const phoneCheck = checkStoredPhone(rawPhone);
+  if (!phoneCheck.ok) {
+    return { success: false as const, message: phoneCheck.message };
   }
+  const phoneNumber = phoneCheck.stored;
 
   const unit = await prisma.unit.findUnique({
     where: { id: unitId },

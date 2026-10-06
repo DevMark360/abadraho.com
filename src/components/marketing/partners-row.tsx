@@ -7,7 +7,15 @@ function PartnerLogo({ src, name }: PartnerLogoData) {
   return (
     <div className="flex h-24 w-44 shrink-0 items-center justify-center rounded-clay border border-white/80 bg-clay-surface p-5 shadow-clay-sm transition-shadow hover:shadow-clay sm:h-28 sm:w-52">
       <div className="relative h-full w-full opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0">
-        <Image src={src} alt={`${name} logo`} fill className="object-contain" unoptimized />
+        {/* width/height = intrinsic size (all logos are 834×834): reserves space, no layout shift */}
+        <Image
+          src={src}
+          alt={`${name} logo`}
+          width={834}
+          height={834}
+          className="absolute inset-0 h-full w-full object-contain"
+          unoptimized
+        />
       </div>
     </div>
   );

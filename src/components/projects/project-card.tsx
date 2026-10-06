@@ -62,8 +62,9 @@ export function ProjectCard({
             <Image
               src={project.imageUrl}
               alt={project.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              width={640}
+              height={360}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
               unoptimized
             />
