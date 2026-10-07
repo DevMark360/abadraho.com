@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
@@ -8,9 +8,10 @@ import { AuthFormMessage } from "@/components/auth/auth-form-message";
 import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LoadingState } from "@/components/ui/loading-state";
 import { isLikelyEmail, recallLoginEmail, rememberLoginEmail } from "@/lib/client/last-login-email";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const [msg, setMsg] = useState("");
@@ -109,5 +110,14 @@ export default function ResetPasswordPage() {
         </Link>
       </div>
     </AppShell>
+  );
+}
+
+/** useSearchParams needs a Suspense boundary, or the static build of this page fails. */
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<LoadingState fullHeight className="py-16" />}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
