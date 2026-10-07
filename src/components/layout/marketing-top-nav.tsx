@@ -98,7 +98,13 @@ export function MarketingTopNav() {
           "mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 bg-clay-surface/90 px-3 backdrop-blur-md sm:h-16 sm:px-5"
         )}
       >
-        <AbadrahoLogo href="/" height={36} className="!w-auto shrink-0" />
+        {/* 40px in the 56px phone bar, 48px in the 64px bar from sm up. */}
+        <AbadrahoLogo
+          href="/"
+          height={48}
+          className="!w-auto shrink-0"
+          imgClassName="!h-10 sm:!h-12"
+        />
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {links.map((link) => (

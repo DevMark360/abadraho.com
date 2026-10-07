@@ -19,6 +19,7 @@ export function LoginForm({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
+  const resetDone = searchParams.get("reset") === "1";
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
 
@@ -83,6 +84,9 @@ export function LoginForm({ embedded = false }: { embedded?: boolean }) {
     <>
       {!embedded && <AuthTabs active="signin" />}
       <form onSubmit={onSubmit} className="space-y-4">
+        {resetDone && !error ? (
+          <AuthFormMessage variant="success">Password updated. Sign in with your new password.</AuthFormMessage>
+        ) : null}
         <SignInFields email={email} onEmailChange={setEmail} />
         {error ? <AuthFormMessage variant="error">{error}</AuthFormMessage> : null}
         <Button type="submit" className="w-full" disabled={loading}>

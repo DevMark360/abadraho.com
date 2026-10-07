@@ -12,6 +12,8 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import {
   emailVerifyEmailHtml,
   passwordResetEmailHtml,
+  passwordResetEmailText,
+  PASSWORD_RESET_TTL_MINUTES,
   sendAuthEmail,
 } from "@/lib/mail";
 import {
@@ -21,6 +23,7 @@ import {
 } from "@/lib/otp-dev";
 import { sendPhoneOtpWhatsApp } from "@/lib/whatsapp-otp";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { passwordProblem } from "@/lib/password-policy";
 import type { User } from "@prisma/client";
 import { randomInt } from "crypto";
 import { checkStoredPhone, phoneLookupVariants } from "@/lib/phone";
@@ -422,9 +425,9 @@ export async function requestPasswordReset(
   const resetUrl = `${base}/change-password/${token}`;
   const mail = await sendAuthEmail({
     to: account.email,
-    subject: "Reset your password",
+    subject: `Reset your ${siteConfig.name} password`,
     html: passwordResetEmailHtml(resetUrl),
-    text: resetUrl,
+    text: passwordResetEmailText(resetUrl),
   });
 
   if (!mail.sent) {
@@ -457,9 +460,9 @@ export async function resetPasswordWithToken(
   token: string,
   password: string
 ): Promise<{ success: boolean; message: string }> {
-  if (password.length < 8) {
-    return { success: false, message: "Password must be at least 8 characters" };
-  }
+  // Same rules as signup (the reset form checks them live too).
+  const weak = passwordProblem(password);
+  if (weak) return { success: false, message: weak };
 
   const row = await findPasswordResetByToken(token);
   if (!row) {
@@ -470,7 +473,7 @@ export async function resetPasswordWithToken(
   }
 
   const created = row.createdAt?.getTime() ?? 0;
-  if (Date.now() - created > 60 * 60 * 1000) {
+  if (Date.now() - created > PASSWORD_RESET_TTL_MINUTES * 60 * 1000) {
     await prisma.passwordReset.deleteMany({ where: { token: row.token } });
     return {
       success: false,

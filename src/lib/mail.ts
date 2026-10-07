@@ -85,8 +85,52 @@ export async function sendAuthEmail(opts: {
   }
 }
 
+/** Reset links expire after this many minutes (enforced in resetPasswordWithToken). */
+export const PASSWORD_RESET_TTL_MINUTES = 60;
+
+/**
+ * Branded reset email with a button and the plain link. A real layout plus a text part is
+ * less likely to be filtered as spam than a bare link.
+ */
 export function passwordResetEmailHtml(resetUrl: string): string {
-  return `<p>Reset your ${siteConfig.name} password:</p><p><a href="${resetUrl}">${resetUrl}</a></p>`;
+  const name = escapeHtml(siteConfig.name);
+  const url = escapeHtml(resetUrl);
+  return `
+    <div style="background:#f4f4f5;padding:24px 12px;font-family:Arial,Helvetica,sans-serif;color:#18181b">
+      <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px 28px;border:1px solid #e4e4e7">
+        <p style="margin:0 0 20px;font-size:20px;font-weight:700;color:#dc2626">${name}</p>
+        <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3">Reset your password</h1>
+        <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3f3f46">
+          We received a request to reset the password for your ${name} account. Click the button below to choose a new one.
+        </p>
+        <p style="margin:0 0 24px">
+          <a href="${url}" style="background:#dc2626;color:#ffffff;padding:13px 24px;border-radius:999px;text-decoration:none;display:inline-block;font-weight:700;font-size:15px">
+            Reset password
+          </a>
+        </p>
+        <p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#71717a">
+          This link expires in ${PASSWORD_RESET_TTL_MINUTES} minutes and can be used once. If you did not ask for a reset, you can ignore this email; your password stays the same.
+        </p>
+        <p style="margin:16px 0 0;font-size:12px;line-height:1.6;color:#a1a1aa;word-break:break-all">
+          Button not working? Copy this link into your browser:<br/><a href="${url}" style="color:#71717a">${url}</a>
+        </p>
+      </div>
+      <p style="max-width:520px;margin:16px auto 0;text-align:center;font-size:12px;color:#a1a1aa">
+        ${name} by Mark Properties, Karachi
+      </p>
+    </div>`;
+}
+
+export function passwordResetEmailText(resetUrl: string): string {
+  return [
+    `Reset your ${siteConfig.name} password`,
+    "",
+    "We received a request to reset the password for your account. Open this link to choose a new one:",
+    resetUrl,
+    "",
+    `The link expires in ${PASSWORD_RESET_TTL_MINUTES} minutes and can be used once.`,
+    "If you did not ask for a reset, ignore this email; your password stays the same.",
+  ].join("\n");
 }
 
 const DEFAULT_CONTACT_NOTIFY_TO = "info@abadraho.com";
