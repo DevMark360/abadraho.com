@@ -118,6 +118,16 @@ export function buildSiteSchemaGraph(): JsonLdNode[] {
   return [organization, website, localBusiness];
 }
 
+/** Named author (not a bare @id) so parsers that read only this node still find a name. */
+function authorRef(): JsonLdNode {
+  return {
+    "@type": "Organization",
+    "@id": entityId("organization"),
+    name: businessConfig.brandName,
+    legalName: businessConfig.legalName,
+  };
+}
+
 export function buildWebPageSchema(input: {
   name: string;
   description?: string;
@@ -138,6 +148,7 @@ export function buildWebPageSchema(input: {
     dateModified: toIsoDate(input.dateModified ?? input.datePublished),
     isPartOf: { "@id": entityId("website") },
     about: { "@id": entityId("local-business") },
+    author: authorRef(),
     inLanguage: "en-PK",
   });
 }
@@ -252,7 +263,7 @@ export function buildBlogSchema(posts: BlogSchemaPost[]): JsonLdNode {
         description: post.description?.trim() || undefined,
         image: post.image ? absoluteUrl(post.image) : undefined,
         datePublished: toIsoDate(post.datePublished),
-        author: { "@id": entityId("organization") },
+        author: authorRef(),
       })
     ),
   });

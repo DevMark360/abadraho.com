@@ -6,6 +6,7 @@
 import { assistanceSteps, popularPlaces } from "@/config/marketing";
 import { trustStats } from "@/config/trust-signals";
 import type { ProjectListItem } from "@/types/project";
+import type { HomeListingStats } from "@/server/services/home-stats.service";
 
 export type HomeFaq = { question: string; answer: string };
 
@@ -27,9 +28,13 @@ const builderPartners =
  * re-renders (and in /llms-full.txt, which is generated per request).
  */
 
-/** Opening paragraph — answers "what is this site" directly, with facts, in ~45 words. */
+/**
+ * Opening paragraph, right under the H1 ("Pakistan's platform for off-plan property"). The first
+ * sentence answers the H1 on its own using the same words; the whole paragraph stays at ~50 words
+ * (answer engines quote the first 40-60 words).
+ */
 export function homeLead(): string {
-  return `AbadRaho is a property platform for buying off-plan homes in Pakistan, operated by Mark Properties in Karachi. Browse verified pre-launch and under-construction projects, compare down payments and monthly installments side by side, and get free help from advisors with ${yearsExperience} years in real estate.`;
+  return `AbadRaho is Pakistan's platform for buying off-plan property, operated by Mark Properties in Karachi. It lists verified pre-launch and under-construction projects with prices, down payments, monthly installments, and handover dates, so you can compare them side by side and get free advice from experts with ${yearsExperience} years in real estate.`;
 }
 
 export function homeFaqs(): HomeFaq[] {
@@ -140,6 +145,45 @@ export function homeGuide() {
       paragraph:
         "After booking you receive a booking or allotment document and follow the installment schedule until handover. Keep every receipt, track construction progress, and contact the developer (or your Mark Properties advisor) if milestones slip. At possession, check the unit against the agreed specifications before taking the keys.",
     },
+  };
+}
+
+/**
+ * "By the numbers" paragraphs for the buyer's guide, from live listing data. Percentages and
+ * medians only, so the copy never states a project count. Returns [] when there is too little data.
+ */
+export function homeListingInsights(stats: HomeListingStats): {
+  question: string;
+  paragraphs: string[];
+} {
+  const paragraphs: string[] = [];
+  if (stats.medianDownPaymentPct != null) {
+    paragraphs.push(
+      `Based on AbadRaho listing data, the median down payment is ${stats.medianDownPaymentPct}% of the unit price. That means a buyer of a PKR 1 crore apartment would typically pay around ${formatPkrShort(stats.medianDownPaymentPct * 100_000)} at booking, with the rest spread over installments.`,
+    );
+  }
+  if (stats.medianPlanMonths != null) {
+    const years = Math.round((stats.medianPlanMonths / 12) * 2) / 2;
+    const longShare =
+      stats.longPlanSharePct != null
+        ? ` ${stats.longPlanSharePct}% of published plans run 3 years or longer, which keeps monthly installments lower.`
+        : "";
+    paragraphs.push(
+      `The median installment plan on AbadRaho runs ${stats.medianPlanMonths} months, or about ${years} years, according to the payment plans developers have published.${longShare}`,
+    );
+  }
+  if (stats.offPlanSharePct != null) {
+    paragraphs.push(
+      `${stats.offPlanSharePct}% of the projects listed on AbadRaho are still at pre-launch or under construction; the rest are ready for possession.${
+        stats.offPlanSharePct >= 50
+          ? " In other words, most homes listed on AbadRaho are bought off-plan, so comparing payment plans matters as much as comparing prices."
+          : ""
+      }`,
+    );
+  }
+  return {
+    question: "What does AbadRaho's listing data show?",
+    paragraphs,
   };
 }
 

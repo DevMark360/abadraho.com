@@ -12,8 +12,8 @@ const adminMediaBodyLimit = ADMIN_MAX_MEDIA_REQUEST_BYTES;
 
 /**
  * Crawlers that get fully-rendered metadata in <head> (no metadata streaming). Besides better
- * crawling, this lets notFound() in generateMetadata send a real 404 status to them — with the
- * root loading.tsx, a streamed page always answers 200. Next.js default list + Google + AI
+ * crawling, this lets notFound() in generateMetadata send a real 404 status to them (a page
+ * that streams its metadata has already answered 200). Next.js default list + Google + AI
  * crawlers + generic bot / fetch-library user agents.
  */
 const CRAWLER_UA =

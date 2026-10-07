@@ -17,6 +17,7 @@ import {
 } from "@/components/marketing/home-sections";
 import { SiteTrustFooter } from "@/components/marketing/trust-signals";
 import { getHomePageData } from "@/server/services/home-page.service";
+import { getHomeListingStats } from "@/server/services/home-stats.service";
 import { listPublicEvents } from "@/server/services/event.service";
 import { getSession } from "@/lib/session";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -33,6 +34,7 @@ import {
   HOME_CONTENT_UPDATED,
   homeFaqs,
   homeGuide,
+  homeListingInsights,
   homeHowTo,
   homeLead,
 } from "@/config/home-aeo";
@@ -55,7 +57,15 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const session = await getSession();
-  const [{ featured }, featuredRotation, bannerRotation, contentRotation, upcomingEvents, latestPosts] =
+  const [
+    { featured },
+    featuredRotation,
+    bannerRotation,
+    contentRotation,
+    upcomingEvents,
+    latestPosts,
+    listingStats,
+  ] =
     await Promise.all([
       getHomePageData(session?.id),
       getSlotRotation("featured_listing", null, null),
@@ -63,6 +73,7 @@ export default async function HomePage() {
       getSlotRotation("sponsored_content", null, null),
       listPublicEvents(12),
       listBlogPosts(3),
+      getHomeListingStats(),
     ]);
   // Same posts as the visible "Buyer guides" cards (posts need a category for their URL).
   const blogPosts = latestPosts.filter((post) => post.categorySlug);
@@ -123,7 +134,7 @@ export default async function HomePage() {
       <HomeEventsSection events={upcomingEvents} />
       <BuilderPartnerSection />
       <WhatIsAbadRahoSection answer={whatIs.answer} />
-      <HomeBuyerGuideSection guide={homeGuide()} />
+      <HomeBuyerGuideSection guide={homeGuide()} insights={homeListingInsights(listingStats)} />
       {blogPosts.length ? <LatestBlogSection posts={blogPosts} /> : null}
       <HomeFaqSection faqs={moreFaqs} />
       <HomePartnersSection />

@@ -41,7 +41,7 @@ import {
   popularPlaces,
   partnerLogos,
 } from "@/config/marketing";
-import { homeSources, type HomeFaq, type homeGuide } from "@/config/home-aeo";
+import { homeSources, type HomeFaq, type homeGuide, type homeListingInsights } from "@/config/home-aeo";
 import { MarkPropertiesBadge } from "@/components/marketing/trust-signals";
 import { legacyStaticUrl } from "@/lib/legacy-url";
 import { cn } from "@/lib/utils";
@@ -521,7 +521,14 @@ export function LatestBlogSection({ posts }: { posts: BlogPostSummary[] }) {
 }
 
 /** Buyer's guide — long-form answers, a comparison table, and a checklist (server-rendered for AEO). */
-export function HomeBuyerGuideSection({ guide }: { guide: ReturnType<typeof homeGuide> }) {
+export function HomeBuyerGuideSection({
+  guide,
+  insights,
+}: {
+  guide: ReturnType<typeof homeGuide>;
+  /** Live listing figures (percentages/medians); hidden when there is too little data. */
+  insights?: ReturnType<typeof homeListingInsights>;
+}) {
   const { comparison } = guide;
   return (
     <section className={section} aria-labelledby="home-guide-title">
@@ -560,6 +567,21 @@ export function HomeBuyerGuideSection({ guide }: { guide: ReturnType<typeof home
             </ul>
           </article>
         </div>
+
+        {insights?.paragraphs.length ? (
+          <article className={cn(homeCardClass, "mt-6 min-w-0 p-6 sm:p-7")}>
+            <h3 className="text-lg font-semibold text-zinc-900">{insights.question}</h3>
+            {insights.paragraphs.map((p) => (
+              <p key={p.slice(0, 24)} className="mt-3 text-sm leading-relaxed text-zinc-600 sm:text-base">
+                {p}
+              </p>
+            ))}
+            <p className="mt-4 text-xs leading-relaxed text-zinc-500">
+              Figures are medians and shares across projects currently listed on AbadRaho, updated
+              automatically as developers publish prices and payment plans.
+            </p>
+          </article>
+        ) : null}
 
         <div className={cn(designTw.publicCard, "mt-6 min-w-0 p-6 sm:p-8")}>
           <h3 className="text-lg font-semibold text-zinc-900 sm:text-xl">{comparison.question}</h3>

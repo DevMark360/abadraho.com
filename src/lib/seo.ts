@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { brandAssets, siteConfig } from "@/config/site";
+import { businessConfig } from "@/config/business";
 
 const SITE_LOCALE = "en_PK";
 
@@ -147,6 +148,8 @@ export const rootMetadata: Metadata = {
   description: siteConfig.seoDescription,
   keywords: [...siteConfig.defaultKeywords],
   applicationName: siteConfig.name,
+  // <meta name="author"> + <link rel="author"> on every page (content is written by Mark Properties).
+  authors: [{ name: businessConfig.legalName, url: absoluteUrl("/about-us") }],
   creator: siteConfig.name,
   publisher: siteConfig.name,
   formatDetection: {
