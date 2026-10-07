@@ -1,6 +1,7 @@
 import { isDatabaseEnabled } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
+import { planMismatch, planTotals } from "@/lib/payment-plan";
 
 function parseAmount(value: unknown): number | null {
   if (value == null || value === "") return null;
@@ -24,6 +25,11 @@ export interface PaymentScheduleInput {
   plinth?: number | null;
   colour?: number | null;
   startOfWork?: number | null;
+  /** Down payment split into parts (the down payment is then their sum). */
+  splitDownPayment?: boolean;
+  booking?: number | null;
+  allocation?: number | null;
+  confirmation?: number | null;
 }
 
 export interface PaymentScheduleSummary {
@@ -55,28 +61,87 @@ export async function createPaymentSchedule(
     return { success: false, message: "Unit not found." };
   }
 
-  const downPayment =
-    parseAmount(input.downPayment) ?? (unit.downPayment != null ? Number(unit.downPayment) : 0);
-  const monthlyInstallment =
-    parseAmount(input.monthlyInstallment) ??
-    (unit.monthlyInstallment != null ? Number(unit.monthlyInstallment) : null);
-  const totalPrice = unit.price != null ? Number(unit.price) : 0;
-  const remainingAmount = Math.max(0, totalPrice - downPayment);
+  const split = Boolean(input.splitDownPayment);
+  const parts = {
+    booking: split ? parseAmount(input.booking) : null,
+    allocation: split ? parseAmount(input.allocation) : null,
+    confirmation: split ? parseAmount(input.confirmation) : null,
+    startOfWork: parseAmount(input.startOfWork),
+  };
+  const monthlyInstallment = parseAmount(input.monthlyInstallment);
+  const quarterlyInstallment = parseAmount(input.quarterlyInstallment);
+  const halfYearlyInstallment = parseAmount(input.halfYearlyInstallment);
+  const yearlyInstallment = parseAmount(input.yearlyInstallment);
+  const possession = parseAmount(input.possession);
+  const amounts = [
+    parseAmount(input.downPayment),
+    ...Object.values(parts),
+    monthlyInstallment,
+    quarterlyInstallment,
+    halfYearlyInstallment,
+    yearlyInstallment,
+    possession,
+  ];
+  if (amounts.some((a) => a != null && (a < 0 || !Number.isFinite(a)))) {
+    return { success: false, message: "Amounts can't be negative." };
+  }
+
   const durationMonths = parseAmount(input.duration);
+  if (
+    !durationMonths &&
+    [monthlyInstallment, quarterlyInstallment, halfYearlyInstallment, yearlyInstallment].some((a) => a)
+  ) {
+    return { success: false, message: "Select a duration for your installments." };
+  }
+
+  // Same rule as the form: the plan must add up to the unit price.
+  const totals = planTotals({
+    durationMonths: durationMonths ?? 0,
+    downPayment: parseAmount(input.downPayment) ?? 0,
+    split: split
+      ? {
+          booking: parts.booking ?? 0,
+          allocation: parts.allocation ?? 0,
+          confirmation: parts.confirmation ?? 0,
+          startOfWork: parts.startOfWork ?? 0,
+        }
+      : null,
+    payments: {
+      ...(monthlyInstallment != null ? { monthly: monthlyInstallment } : {}),
+      ...(quarterlyInstallment != null ? { quarterly: quarterlyInstallment } : {}),
+      ...(halfYearlyInstallment != null ? { halfYearly: halfYearlyInstallment } : {}),
+      ...(yearlyInstallment != null ? { yearly: yearlyInstallment } : {}),
+      ...(possession != null ? { possession } : {}),
+    },
+  });
+  if (totals.total <= 0) {
+    return { success: false, message: "Enter a down payment or add at least one payment." };
+  }
+  const totalPrice = unit.price != null ? Number(unit.price) : 0;
+  const mismatch = planMismatch(totals.total, totalPrice);
+  if (mismatch) return { success: false, message: mismatch };
+
+  const downPayment = totals.downPayment;
+  const remainingAmount = Math.max(0, totalPrice - downPayment);
 
   const payload = {
     duration: durationMonths,
     down_payment: downPayment,
+    split_down_payment: split,
+    booking: parts.booking,
+    allocation: parts.allocation,
+    confirmation: parts.confirmation,
     monthly_installment: monthlyInstallment,
-    quarterly_installment: parseAmount(input.quarterlyInstallment),
-    half_yearly_installment: parseAmount(input.halfYearlyInstallment),
-    yearly_installment: parseAmount(input.yearlyInstallment),
-    possession: parseAmount(input.possession),
+    quarterly_installment: quarterlyInstallment,
+    half_yearly_installment: halfYearlyInstallment,
+    yearly_installment: yearlyInstallment,
+    possession,
+    plan_total: totals.total,
     loan_amount: parseAmount(input.loanAmount),
     slab_casting: parseAmount(input.slabCasting),
     plinth: parseAmount(input.plinth),
     colour: parseAmount(input.colour),
-    start_of_work: parseAmount(input.startOfWork),
+    start_of_work: parts.startOfWork,
   };
 
   await prisma.paymentSchedule.create({

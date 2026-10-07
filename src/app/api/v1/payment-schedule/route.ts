@@ -32,6 +32,10 @@ export async function POST(request: NextRequest) {
     plinth: body.plinth,
     colour: body.colour,
     startOfWork: body.start_of_work,
+    splitDownPayment: body.split_down_payment === true,
+    booking: body.booking,
+    allocation: body.allocation,
+    confirmation: body.confirmation,
   });
 
   if (!result.success) {
