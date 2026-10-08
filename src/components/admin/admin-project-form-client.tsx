@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FileText, RotateCcw, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/auth/auth-provider";
 import { userTypeIds } from "@/config/site";
 import { PROJECT_STATUS_LABELS } from "@/config/project-status";
@@ -150,7 +152,9 @@ export function AdminProjectFormClient({
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [docFiles, setDocFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [existingDocs, setExistingDocs] = useState<{ label: string; url: string }[]>([]);
+  const [existingDocs, setExistingDocs] = useState<{ entry: string; label: string; url: string }[]>([]);
+  /** Saved documents marked for removal; detached from the project on Save. */
+  const [removedDocs, setRemovedDocs] = useState<string[]>([]);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [recordDates, setRecordDates] = useState<{
     createdAt: string | null;
@@ -323,6 +327,20 @@ export function AdminProjectFormClient({
     }
 
     const id = saved.data?.id ?? projectId;
+    // Remove first so freed slots count toward the 10-document limit for new uploads.
+    if (id && removedDocs.length) {
+      const del = await fetch(`/api/admin/projects/${id}/media`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ docs: removedDocs }),
+      });
+      const removed = await parseFetchJson<{ success?: boolean; message?: string }>(del);
+      if (!removed.ok) {
+        setSaving(false);
+        alert(removed.message || removed.data?.message || "Project saved but documents could not be removed");
+        return;
+      }
+    }
     if (id && (coverFile || galleryFiles.length || docFiles.length)) {
       const fd = new FormData();
       if (coverFile) fd.append("cover", coverFile);
@@ -562,25 +580,76 @@ export function AdminProjectFormClient({
                 e.target.value = "";
               }}
             />
-            {docFiles.length > 0 && (
-              <ul className="mt-2 space-y-1 text-xs text-zinc-600">
-                {docFiles.map((f) => (
-                  <li key={`${f.name}-${f.lastModified}`}>{f.name}</li>
-                ))}
-              </ul>
-            )}
-            {existingDocs.length > 0 && (
-              <ul className="mt-2 space-y-1 text-xs text-zinc-600">
-                {existingDocs.map((d) => (
-                  <li key={d.url}>
-                    <a
-                      href={d.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium text-zinc-700 hover:underline"
+            {(docFiles.length > 0 || existingDocs.length > 0) && (
+              <ul className="mt-3 space-y-1.5 text-xs">
+                {existingDocs.map((d) => {
+                  const removed = removedDocs.includes(d.entry);
+                  return (
+                    <li
+                      key={d.entry}
+                      className={cn(
+                        "flex items-center gap-2 rounded-lg border px-2.5 py-1.5",
+                        removed ? "border-red-200 bg-red-50/60" : "border-zinc-200 bg-white"
+                      )}
                     >
-                      {d.label}
-                    </a>
+                      <FileText className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                      <a
+                        href={d.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={cn(
+                          "min-w-0 flex-1 truncate font-medium hover:underline",
+                          removed ? "text-zinc-400 line-through" : "text-zinc-700"
+                        )}
+                        title={d.label}
+                      >
+                        {d.label}
+                      </a>
+                      {removed ? (
+                        <>
+                          <span className="shrink-0 text-red-600">Removed on save</span>
+                          <button
+                            type="button"
+                            onClick={() => setRemovedDocs((prev) => prev.filter((e) => e !== d.entry))}
+                            className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+                            Undo
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setRemovedDocs((prev) => [...prev, d.entry])}
+                          className="shrink-0 rounded-md p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600"
+                          aria-label={`Remove ${d.label}`}
+                          title="Remove document"
+                        >
+                          <X className="h-4 w-4" aria-hidden />
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+                {docFiles.map((f) => (
+                  <li
+                    key={`${f.name}-${f.lastModified}`}
+                    className="flex items-center gap-2 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-2.5 py-1.5"
+                  >
+                    <FileText className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden />
+                    <span className="min-w-0 flex-1 truncate text-zinc-700" title={f.name}>
+                      {f.name}
+                    </span>
+                    <span className="shrink-0 text-zinc-500">New</span>
+                    <button
+                      type="button"
+                      onClick={() => setDocFiles((prev) => prev.filter((x) => x !== f))}
+                      className="shrink-0 rounded-md p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600"
+                      aria-label={`Remove ${f.name}`}
+                      title="Remove file"
+                    >
+                      <X className="h-4 w-4" aria-hidden />
+                    </button>
                   </li>
                 ))}
               </ul>

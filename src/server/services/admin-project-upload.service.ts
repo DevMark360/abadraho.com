@@ -111,3 +111,31 @@ export async function uploadProjectMedia(
     return { error: String(e) };
   }
 }
+
+/**
+ * Detach documents from a project (removes them from projects.project_doc).
+ * The PDF files stay in public/uploads so a removal can be undone by re-adding the path.
+ */
+export async function removeProjectDocs(
+  projectId: number,
+  entries: string[]
+): Promise<{ error?: string; remaining?: number }> {
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { projectDoc: true },
+    });
+    if (!project) return { error: "Project not found" };
+
+    const drop = new Set(entries.map((e) => e.trim()).filter(Boolean));
+    const kept = parsePipePaths(project.projectDoc).filter((p) => !drop.has(p));
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { projectDoc: kept.length ? kept.join("|") : null },
+    });
+    return { remaining: kept.length };
+  } catch (e) {
+    return { error: String(e) };
+  }
+}

@@ -26,10 +26,12 @@ export function listProjectImageUrls(
 export function listProjectDocUrls(
   projectId: number,
   projectDoc: string | null | undefined
-): { label: string; url: string }[] {
+): { entry: string; label: string; url: string }[] {
   return parsePipePaths(projectDoc).map((entry) => {
     const name = decodeURIComponent(entry.split("/").pop() ?? entry);
     return {
+      /** Raw path as stored in projects.project_doc (used to remove it). */
+      entry,
       label: name.replace(/^\d+_/, "").replace(/_/g, " "),
       url: adminProjectDocUrl(projectId, entry),
     };

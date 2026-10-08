@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminProjectAccess } from "@/lib/admin-api-guard";
 import { ADMIN_PDF_MAX_LABEL } from "@/lib/admin-upload-limits";
-import { uploadProjectMedia } from "@/server/services/admin-project-upload.service";
+import {
+  removeProjectDocs,
+  uploadProjectMedia,
+} from "@/server/services/admin-project-upload.service";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -60,4 +63,34 @@ export async function POST(
       { status: 500 }
     );
   }
+}
+
+/** Remove project documents. Body: `{ docs: string[] }` (raw project_doc entries). */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const projectId = Number(id);
+  if (!Number.isFinite(projectId) || projectId <= 0) {
+    return NextResponse.json({ success: false, message: "Invalid project ID" }, { status: 400 });
+  }
+
+  const auth = await requireAdminProjectAccess(projectId);
+  if (auth instanceof NextResponse) return auth;
+
+  const body = (await request.json().catch(() => null)) as { docs?: unknown } | null;
+  const docs = Array.isArray(body?.docs)
+    ? body.docs.filter((d): d is string => typeof d === "string")
+    : [];
+  if (!docs.length) {
+    return NextResponse.json({ success: false, message: "No documents to remove" }, { status: 400 });
+  }
+
+  const result = await removeProjectDocs(projectId, docs);
+  if (result.error) {
+    console.error("[admin/projects/media DELETE]", result.error);
+    return NextResponse.json({ success: false, message: "Could not remove documents" }, { status: 500 });
+  }
+  return NextResponse.json({ success: true, remaining: result.remaining });
 }
