@@ -16,6 +16,8 @@ export interface ProjectUnit {
   price: number | null;
   downPayment: number | null;
   monthlyInstallment: number | null;
+  /** Unit's own installment length in months (admin unit form); falls back to the project's. */
+  installmentMonths?: number | null;
   /** @deprecated Use grossArea — kept for legacy consumers */
   size: number | null;
   grossArea: number | null;

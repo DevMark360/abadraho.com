@@ -27,13 +27,15 @@ function defaultSubTab(unit: ProjectUnit): SubTab {
 }
 
 function UnitSpecs({ unit, installmentMonths }: { unit: ProjectUnit; installmentMonths?: number | null }) {
+  // The unit's own length (set on the admin unit form) wins over the project-wide one.
+  const months = unit.installmentMonths || installmentMonths;
   const rows: { label: string; value: string }[] = [
     { label: "Project type", value: unit.unitType ?? "—" },
     { label: "Gross area", value: unit.grossArea ? `${unit.grossArea} sq.ft` : "—" },
     { label: "Net area", value: unit.netArea ? `${unit.netArea} sq.ft` : "—" },
     {
       label: "Installment length",
-      value: installmentMonths ? `${installmentMonths} months` : "—",
+      value: months ? `${months} months` : "—",
     },
     { label: "Down payment", value: unit.downPayment ? formatPrice(unit.downPayment) : "—" },
   ];
@@ -122,8 +124,11 @@ function UnitPanel({
 
   if (!hasPayment && !hasFloor && !hasRooms) {
     return (
-      <div className="py-8 text-center text-sm text-zinc-500">
-        No plans or room details for this unit.
+      <div>
+        <UnitSpecs unit={unit} installmentMonths={installmentMonths} />
+        <p className="py-4 text-center text-sm text-zinc-500">
+          No plans or room details for this unit.
+        </p>
       </div>
     );
   }
