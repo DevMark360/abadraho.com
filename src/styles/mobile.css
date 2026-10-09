@@ -299,6 +299,28 @@ video {
   }
 }
 
+/* "Expand map": desktop hides the project list so the map takes the whole width. */
+@media (min-width: 768px) {
+  .listings-split-view--map-expanded .listings-split-view__list,
+  .listings-split-view--map-expanded .listings-split-view__divider,
+  .listings-split-view--map-expanded .listings-split-view__expand {
+    display: none;
+  }
+}
+
+/* Phones: the expanded map is a full-screen layer above the header (below modals, z 1199+).
+   The list stays in place underneath, so closing the map keeps the scroll position. */
+@media (max-width: 767px) {
+  .listings-split-view--map-expanded .listings-split-view__map {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    flex: none;
+    height: 100dvh;
+    max-height: none;
+  }
+}
+
 /* --- Filter chips bar --- */
 .filter-chips-bar__controls {
   display: flex;

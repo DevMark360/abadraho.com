@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutList, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ListingsInfiniteGrid } from "@/components/projects/listings-infinite-grid";
 import { ProjectsMapPanel } from "@/components/projects/projects-map-panel";
@@ -37,7 +37,18 @@ export function ListingsSplitView({
     projects[0]?.id ?? null
   );
   const [mapCollapsed, setMapCollapsed] = useState(false);
+  /** Map fills the view and the project list is hidden (full screen on phones). */
+  const [mapExpanded, setMapExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (!mapExpanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMapExpanded(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mapExpanded]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -80,7 +91,8 @@ export function ListingsSplitView({
     <div
       className={cn(
         "listings-split-view",
-        mapCollapsed && "listings-split-view--collapsed"
+        mapCollapsed && "listings-split-view--collapsed",
+        mapExpanded && "listings-split-view--map-expanded"
       )}
     >
       <div className="listings-split-view__list">
@@ -144,15 +156,58 @@ export function ListingsSplitView({
                 ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
             }}
           />
-          <button
-            type="button"
-            onClick={closeMap}
-            className="absolute left-2 top-2 z-[1000] rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-sm hover:bg-zinc-50 sm:left-3 sm:top-3 sm:min-h-[44px] sm:px-3 sm:py-2 sm:text-sm"
-          >
-            List only
-          </button>
+          {/* Phones: the small map is a preview; the first tap opens it full screen. */}
+          {isMobile && !mapExpanded ? (
+            <button
+              type="button"
+              onClick={() => setMapExpanded(true)}
+              className="absolute inset-0 z-[1001] flex items-end justify-center pb-3"
+              aria-label="Expand map"
+            >
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900/85 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">
+                <Maximize2 className="h-3.5 w-3.5" aria-hidden />
+                Tap to expand map
+              </span>
+            </button>
+          ) : null}
+
+          <div className="absolute left-2 top-2 z-[1002] flex gap-2 sm:left-3 sm:top-3">
+            {mapExpanded ? (
+              <button
+                type="button"
+                onClick={() => setMapExpanded(false)}
+                className={mapButtonClass("bg-zinc-900 text-white hover:bg-zinc-800 border-zinc-900")}
+              >
+                <LayoutList className="h-4 w-4" aria-hidden />
+                Show projects
+              </button>
+            ) : (
+              <>
+                <button type="button" onClick={closeMap} className={mapButtonClass()}>
+                  List only
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMapExpanded(true)}
+                  className={mapButtonClass()}
+                  title="Expand map"
+                >
+                  <Maximize2 className="h-4 w-4" aria-hidden />
+                  Expand map
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+function mapButtonClass(tone = "bg-white text-zinc-800 hover:bg-zinc-50 border-zinc-200") {
+  return cn(
+    "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold shadow-sm",
+    "sm:min-h-[44px] sm:px-3 sm:py-2 sm:text-sm",
+    tone
   );
 }

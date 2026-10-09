@@ -7,7 +7,10 @@ import {
 } from "@/lib/builder-public-assets";
 import { prisma } from "@/lib/prisma";
 import { listProjects } from "@/server/services/project.service";
-import type { BuilderRatingDistribution } from "@/lib/builder-rating";
+import {
+  EMPTY_BUILDER_RATING_DISTRIBUTION,
+  type BuilderRatingDistribution,
+} from "@/lib/builder-rating";
 import {
   getBuilderRatingDistribution,
   getBuilderRatingStats,
@@ -205,9 +208,19 @@ export async function getBuilderPageData(
         perPage: 100,
         viewerUserId: viewerUserId ?? undefined,
       }),
-      getBuilderRatingStats(builderId),
-      getBuilderRatingDistribution(builderId),
-      listBuilderReviews(builderId),
+      // Ratings and reviews are extras: if they fail, show the page without them instead of a 404.
+      getBuilderRatingStats(builderId).catch((e) => {
+        console.error("[builder-page] rating stats", normalizedSlug, e);
+        return { average: 0, count: 0 };
+      }),
+      getBuilderRatingDistribution(builderId).catch((e) => {
+        console.error("[builder-page] rating distribution", normalizedSlug, e);
+        return EMPTY_BUILDER_RATING_DISTRIBUTION;
+      }),
+      listBuilderReviews(builderId).catch((e) => {
+        console.error("[builder-page] reviews", normalizedSlug, e);
+        return [] as BuilderReviewItem[];
+      }),
     ]);
 
     const description =
@@ -227,7 +240,9 @@ export async function getBuilderPageData(
       description,
       progressFilterOptions: buildProgressFilterOptions(items),
     };
-  } catch {
+  } catch (e) {
+    // Shows as a 404 to visitors; log so a broken builder page is diagnosable from the server log.
+    console.error("[builder-page] failed to load", normalizedSlug, e);
     return null;
   }
 }

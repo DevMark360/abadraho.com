@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { FittedImage } from "@/components/ui/fitted-image";
 import { BedDouble, Building2, MapPin, Maximize2 } from "lucide-react";
 import { VerifiedListingBadge } from "@/components/marketing/trust-signals";
 import {
@@ -59,14 +59,11 @@ export function ProjectCard({
       <Link href={`/project/${project.slug}`} className="flex flex-1 flex-col">
         <div className="relative aspect-video overflow-hidden bg-zinc-100">
           {project.imageUrl ? (
-            <Image
+            <FittedImage
               src={project.imageUrl}
               alt={project.name}
-              width={640}
-              height={360}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              className="transition-transform duration-300 group-hover:scale-[1.02]"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
-              unoptimized
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200">

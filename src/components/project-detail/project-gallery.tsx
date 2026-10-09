@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Building2 } from "lucide-react";
 import { useState } from "react";
+import { FittedImage } from "@/components/ui/fitted-image";
 
 export function ProjectGallery({
   images,
@@ -26,12 +27,11 @@ export function ProjectGallery({
   return (
     <div className="space-y-2">
       <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-zinc-100">
-        <Image
+        <FittedImage
+          key={active}
           src={safe[active] ?? safe[0]}
           alt={`${projectName}, photo ${active + 1} of ${safe.length}`}
-          fill
-          className="object-cover"
-          unoptimized
+          sizes="(max-width: 1024px) 100vw, 66vw"
           priority
         />
       </div>

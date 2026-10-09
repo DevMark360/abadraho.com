@@ -42,21 +42,37 @@ async function liveProjectIdsForBuilder(builderId: number): Promise<number[]> {
   return [...new Set(rows.map((r) => r.projectId))];
 }
 
+/**
+ * Reviewer names, loaded separately instead of `include: { user: true }`: a review whose user row
+ * was deleted made the include throw ("Field user is required"), which took down the whole page.
+ */
+async function reviewAuthorNames(userIds: number[]): Promise<Map<number, string | null>> {
+  const ids = [...new Set(userIds)];
+  if (!ids.length) return new Map();
+  const users = await prisma.user.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, firstName: true, lastName: true },
+  });
+  return new Map(
+    users.map((u) => [u.id, [u.firstName, u.lastName].filter(Boolean).join(" ") || null])
+  );
+}
+
 export async function listProjectReviews(projectId: number): Promise<ReviewDto[]> {
   if (!isDatabaseEnabled()) return [];
   const rows = await prisma.review.findMany({
     where: { projectId, ...approvedReviewWhere },
     orderBy: { createdAt: "desc" },
-    include: { user: true },
     take: 50,
   });
+  const names = await reviewAuthorNames(rows.map((r) => r.userId));
   return rows.map((r) => ({
     id: r.id,
     projectId: r.projectId,
     userId: r.userId,
     rating: r.rating,
     comment: r.comment,
-    authorName: [r.user.firstName, r.user.lastName].filter(Boolean).join(" ") || null,
+    authorName: names.get(r.userId) ?? null,
     createdAt: r.createdAt,
   }));
 }
@@ -195,10 +211,10 @@ export async function listBuilderReviews(
     orderBy: { createdAt: "desc" },
     take,
     include: {
-      user: true,
       project: { select: { name: true, slug: true } },
     },
   });
+  const names = await reviewAuthorNames(rows.map((r) => r.userId));
 
   return rows.map((r) => ({
     id: r.id,
@@ -206,7 +222,7 @@ export async function listBuilderReviews(
     userId: r.userId,
     rating: r.rating,
     comment: r.comment,
-    authorName: [r.user.firstName, r.user.lastName].filter(Boolean).join(" ") || null,
+    authorName: names.get(r.userId) ?? null,
     createdAt: r.createdAt,
     projectName: r.project.name,
     projectSlug: r.project.slug,
