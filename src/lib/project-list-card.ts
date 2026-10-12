@@ -2,6 +2,7 @@ import { resolveProjectImageUrls } from "@/lib/project-media";
 
 export type ListingUnitRow = {
   price?: unknown;
+  totalUnitAmount?: unknown;
   downPayment?: unknown;
   monthlyInstallment?: unknown;
   rooms?: string | null;
@@ -36,6 +37,14 @@ export function formatBedroomLabel(counts: number[]): string | null {
   return `${min}–${max} beds`;
 }
 
+/**
+ * What a buyer pays in total for a unit: the total amount (price plus installment loan) when the
+ * admin entered one, otherwise the unit price. Used for every "Price from" / "Starting from".
+ */
+export function unitStartPrice(unit: Pick<ListingUnitRow, "price" | "totalUnitAmount">): number | null {
+  return toPositiveNumber(unit.totalUnitAmount) ?? toPositiveNumber(unit.price);
+}
+
 export function summarizeListingUnits(units: ListingUnitRow[] = []) {
   const prices: number[] = [];
   const installments: number[] = [];
@@ -43,7 +52,7 @@ export function summarizeListingUnits(units: ListingUnitRow[] = []) {
   const bedCounts: number[] = [];
 
   for (const unit of units) {
-    const price = toPositiveNumber(unit.price);
+    const price = unitStartPrice(unit);
     if (price != null) prices.push(price);
 
     const monthly = toPositiveNumber(unit.monthlyInstallment);

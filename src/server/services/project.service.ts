@@ -5,6 +5,7 @@ import { approvedReviewWhere } from "@/lib/review-status";
 import {
   resolveListingImageUrl,
   summarizeListingUnits,
+  unitStartPrice,
   type ListingUnitRow,
 } from "@/lib/project-list-card";
 import { prisma } from "@/lib/prisma";
@@ -72,8 +73,8 @@ function mapDbProject(
 ): ProjectListItem {
   const unitSummary = summarizeListingUnits(p.units ?? []);
   const prices = (p.units ?? [])
-    .map((u) => Number(u.price))
-    .filter((n) => !Number.isNaN(n) && n > 0);
+    .map((u) => unitStartPrice(u))
+    .filter((n): n is number => n != null);
   const progressName = p.progress?.name ?? p.progressLabel ?? null;
   const months = p.installmentLength;
   return {
@@ -180,6 +181,7 @@ export async function listProjects(
         where: { isArchive: false },
         select: {
           price: true,
+          totalUnitAmount: true,
           downPayment: true,
           monthlyInstallment: true,
           rooms: true,
@@ -307,6 +309,7 @@ export async function listProjectsByIds(
           where: { isArchive: false },
           select: {
             price: true,
+            totalUnitAmount: true,
             downPayment: true,
             monthlyInstallment: true,
             rooms: true,

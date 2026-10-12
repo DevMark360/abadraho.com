@@ -141,9 +141,9 @@ export function mapDbProjectToListItem(
   areaNames?: string | null
 ): ProjectListItem {
   const mappedUnits = units ?? p.units.map((u) => mapDbUnit(u, p.id));
-  const unitSummary = summarizeListingUnits(p.units);
+  const unitSummary = summarizeListingUnits(p.units.filter((u) => !u.isArchive));
   const prices = mappedUnits
-    .map((u) => u.price)
+    .map((u) => u.totalUnitAmount || u.price)
     .filter((n): n is number => n != null && n > 0);
 
   return {

@@ -3,6 +3,7 @@ import { normalizePakistanCoords } from "@/lib/map-karachi";
 
 import { v2ProjectAssetUrl } from "@/lib/project-media";
 
+import { summarizeListingUnits, type ListingUnitRow } from "@/lib/project-list-card";
 import { prisma } from "@/lib/prisma";
 import { builderLogoUrl } from "@/server/builder-logos";
 
@@ -68,15 +69,20 @@ function mapDbMapItem(p: {
 
   owners?: { builder: { id: number; fullName: string } | null }[];
 
+  units?: ListingUnitRow[];
+
 }): MapProject {
 
   const normalized = normalizePakistanCoords(coord(p.latitude), coord(p.longitude));
   const lat = normalized?.lat ?? null;
   const lng = normalized?.lng ?? null;
 
+  // Same "Starting from" as the cards: the cheapest unit's total amount, else the project price.
   const minPrice =
 
-    Number(p.minPrice) > 0
+    summarizeListingUnits(p.units ?? []).minPrice ??
+
+    (Number(p.minPrice) > 0
 
       ? Number(p.minPrice)
 
@@ -84,7 +90,7 @@ function mapDbMapItem(p: {
 
         ? Number(p.discountPrice)
 
-        : null;
+        : null);
 
 
 
@@ -177,6 +183,8 @@ async function fetchMapProjectsFromDb(
       location: { select: { name: true } },
 
       owners: { take: 1, select: { builder: { select: { id: true, fullName: true } } } },
+
+      units: { where: { isArchive: false }, select: { price: true, totalUnitAmount: true } },
 
     },
 

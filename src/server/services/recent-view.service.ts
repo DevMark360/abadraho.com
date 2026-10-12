@@ -2,6 +2,7 @@ import { authCookieOptions } from "@/lib/cookie-options";
 import { builderLogoUrl } from "@/server/builder-logos";
 import { isDatabaseEnabled } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
+import { summarizeListingUnits } from "@/lib/project-list-card";
 import { parseSignedJsonCookie, signJsonCookie } from "@/lib/signed-cookie";
 import type { ProjectListItem } from "@/types/project";
 import { uniqueNumericIds } from "@/lib/unique-by-id";
@@ -92,7 +93,16 @@ export async function getUserRecentViews(
     },
     orderBy: { updatedAt: "desc" },
     take: limit,
-    include: { project: { include: { location: true, progress: true, owners: { include: { builder: true } } } } },
+    include: {
+      project: {
+        include: {
+          location: true,
+          progress: true,
+          owners: { include: { builder: true } },
+          units: { where: { isArchive: false }, select: { price: true, totalUnitAmount: true } },
+        },
+      },
+    },
   });
 
   const all = await listProjects({ perPage: 200 });
@@ -115,7 +125,8 @@ export async function getUserRecentViews(
       area: p.location?.name ?? null,
       address: p.address,
       imageUrl: null,
-      minPrice: p.minPrice != null ? Number(p.minPrice) : null,
+      minPrice:
+        summarizeListingUnits(p.units).minPrice ?? (p.minPrice != null ? Number(p.minPrice) : null),
       maxPrice: null,
       progressName: p.progress?.name ?? null,
       builderName: p.owners[0]?.builder?.fullName ?? null,
