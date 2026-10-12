@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminFormSection, FieldLabel, inputClass, preventImplicitFormSubmit, selectClass } from "@/components/admin/admin-form-section";
 import { AdminBackLink, AdminErrorAlert, adminPanel } from "@/components/admin/admin-ui";
+import { AdminBuilderLogoField } from "@/components/admin/admin-builder-logo-field";
 
 export function AdminBuilderFormClient({
   builderId,
@@ -26,6 +27,8 @@ export function AdminBuilderFormClient({
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Create mode: logo chosen before the builder exists, uploaded right after saving. */
+  const [pendingLogo, setPendingLogo] = useState<File | null>(null);
 
   useEffect(() => {
     const loadMeta = fetch("/api/admin/builders").then((r) => r.json());
@@ -61,11 +64,21 @@ export function AdminBuilderFormClient({
       body: JSON.stringify({ fullName, contactPersonName, userId, contactPersonPhone }),
     });
     const json = await res.json();
-    setSaving(false);
     if (!json.success) {
+      setSaving(false);
       alert(json.message ?? "Save failed");
       return;
     }
+    if (mode === "create" && pendingLogo && json.id) {
+      const fd = new FormData();
+      fd.append("logo", pendingLogo);
+      const up = await fetch(`/api/admin/builders/${json.id}/logo`, { method: "POST", body: fd });
+      const upJson = (await up.json().catch(() => ({}))) as { success?: boolean; message?: string };
+      if (!upJson.success) {
+        alert(`Builder saved, but the logo was not: ${upJson.message ?? "upload failed"}. Add it from Edit.`);
+      }
+    }
+    setSaving(false);
     router.push("/admin/builders");
     router.refresh();
   }
@@ -85,6 +98,11 @@ export function AdminBuilderFormClient({
       <AdminBackLink href="/admin/builders">Builders</AdminBackLink>
 
       <AdminFormSection title="Builder information">
+        <AdminBuilderLogoField
+          builderId={mode === "edit" ? builderId : undefined}
+          pendingFile={pendingLogo}
+          onPendingFile={setPendingLogo}
+        />
         <label className="block">
           <FieldLabel required>Builder name</FieldLabel>
           <Input layout="field" value={fullName} onChange={(e) => setFullName(e.target.value)} />

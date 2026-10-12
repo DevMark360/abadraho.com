@@ -1,4 +1,5 @@
 import { clampIdList, LISTINGS_PAGE_SIZE } from "@/lib/pagination";
+import { builderLogoUrl } from "@/server/builder-logos";
 import { isDatabaseEnabled } from "@/lib/db";
 import { approvedReviewWhere } from "@/lib/review-status";
 import {
@@ -64,7 +65,7 @@ function mapDbProject(
     progressLabel?: string | null;
     location?: { name: string } | null;
     progress?: { name: string } | null;
-    owners?: { builder: { fullName: string } }[];
+    owners?: { builder: { id?: number; fullName: string } }[];
     units?: ListingUnitRow[];
   },
   areaLabel?: string | null
@@ -89,6 +90,7 @@ function mapDbProject(
     maxPrice: unitSummary.maxPrice ?? (prices.length ? Math.max(...prices) : null),
     progressName,
     builderName: p.owners?.[0]?.builder?.fullName ?? null,
+    builderLogoUrl: builderLogoUrl(p.owners?.[0]?.builder?.fullName, p.owners?.[0]?.builder?.id),
     handoverLabel: formatInstallmentPlanBadge(months),
     installmentMonths: months,
     views: p.views,

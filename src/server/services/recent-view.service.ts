@@ -1,4 +1,5 @@
 import { authCookieOptions } from "@/lib/cookie-options";
+import { builderLogoUrl } from "@/server/builder-logos";
 import { isDatabaseEnabled } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { parseSignedJsonCookie, signJsonCookie } from "@/lib/signed-cookie";
@@ -118,6 +119,7 @@ export async function getUserRecentViews(
       maxPrice: null,
       progressName: p.progress?.name ?? null,
       builderName: p.owners[0]?.builder?.fullName ?? null,
+      builderLogoUrl: builderLogoUrl(p.owners[0]?.builder?.fullName, p.owners[0]?.builder?.id),
       handoverLabel: null,
       installmentMonths: p.installmentLength,
       views: p.views,
@@ -129,7 +131,6 @@ export async function getUserRecentViews(
       paymentPlan: null,
       saleBadge: null,
       advised: false,
-      builderLogoUrl: null,
     });
   }
 

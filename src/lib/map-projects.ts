@@ -6,5 +6,15 @@ import type { ProjectListItem } from "@/types/project";
  */
 export type MapProject = Pick<
   ProjectListItem,
-  "id" | "name" | "slug" | "area" | "imageUrl" | "minPrice" | "latitude" | "longitude"
+  | "id"
+  | "name"
+  | "slug"
+  | "area"
+  | "imageUrl"
+  | "minPrice"
+  | "latitude"
+  | "longitude"
+  | "builderName"
+  | "builderLogoUrl"
+  | "progressName"
 >;

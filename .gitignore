@@ -75,6 +75,8 @@ scripts/*.log
 !/public/icons/3d/
 # Small brand marks used in the UI (e.g. Google sign-in)
 !/public/icons/brand/
+# Builder logos (map pins, builder pages), named by builder slug: roomi-builders.jpg
+!/public/builders-logos/
 
 # Misc
 *.pem

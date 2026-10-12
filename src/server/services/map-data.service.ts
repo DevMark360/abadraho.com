@@ -4,6 +4,7 @@ import { normalizePakistanCoords } from "@/lib/map-karachi";
 import { v2ProjectAssetUrl } from "@/lib/project-media";
 
 import { prisma } from "@/lib/prisma";
+import { builderLogoUrl } from "@/server/builder-logos";
 
 import {
 
@@ -65,6 +66,8 @@ function mapDbMapItem(p: {
 
   location?: { name: string } | null;
 
+  owners?: { builder: { id: number; fullName: string } | null }[];
+
 }): MapProject {
 
   const normalized = normalizePakistanCoords(coord(p.latitude), coord(p.longitude));
@@ -107,7 +110,9 @@ function mapDbMapItem(p: {
 
     progressName: p.progress?.name ?? null,
 
-    builderName: null,
+    builderName: p.owners?.[0]?.builder?.fullName ?? null,
+
+    builderLogoUrl: builderLogoUrl(p.owners?.[0]?.builder?.fullName, p.owners?.[0]?.builder?.id),
 
     handoverLabel: p.installmentLength
 
@@ -170,6 +175,8 @@ async function fetchMapProjectsFromDb(
       progress: { select: { name: true } },
 
       location: { select: { name: true } },
+
+      owners: { take: 1, select: { builder: { select: { id: true, fullName: true } } } },
 
     },
 

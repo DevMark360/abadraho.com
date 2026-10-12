@@ -133,8 +133,11 @@ export function BuilderProfileHero({
                     alt={profile.fullName}
                     fill
                     priority
-                    className="object-cover"
+                    // Builder logos: show the whole mark inside the circle, never cropped.
+                    className="object-contain p-2"
                     sizes="112px"
+                    // Small files; uploaded logos carry ?v= which the optimizer rejects.
+                    unoptimized
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-zinc-100">

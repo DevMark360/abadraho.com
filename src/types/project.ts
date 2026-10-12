@@ -69,6 +69,7 @@ export interface ProjectListItem {
   paymentPlan?: string | null;
   saleBadge?: string | null;
   advised?: boolean;
+  /** /builders-logos/… file for the builder, when one exists (map pins, builder pages). */
   builderLogoUrl?: string | null;
   /** Set when filters are active */
   matchScore?: number;

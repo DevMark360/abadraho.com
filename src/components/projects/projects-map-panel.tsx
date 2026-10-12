@@ -44,26 +44,60 @@ function formatPrice(n: number | null | undefined, currency = "PKR"): string {
   return `${currency} ${n.toLocaleString()}`;
 }
 
+const FALLBACK_PROJECT_IMAGE = "/assets/images/home/northkarachi.jpg";
+
+/** Pin = the builder's logo; projects whose builder has no logo yet keep the project photo. */
 function pinHtml(project: MapProject, selected: boolean, mobile: boolean): string {
-  const img =
-    project.imageUrl ?? "/assets/images/home/northkarachi.jpg";
-  const safeImg = escapeHtml(img);
-  const cls = selected ? "abadraho-map-pin is-selected" : "abadraho-map-pin";
-  const mobileCls = mobile ? " is-mobile" : "";
-  return `<div class="${cls}${mobileCls}"><img class="abadraho-map-pin-img" src="${safeImg}" alt="" loading="lazy" /></div>`;
+  const logo = project.builderLogoUrl;
+  const img = logo ?? project.imageUrl ?? FALLBACK_PROJECT_IMAGE;
+  const cls = [
+    "abadraho-map-pin",
+    logo ? "is-logo" : "is-photo",
+    selected ? "is-selected" : "",
+    mobile ? "is-mobile" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return `<div class="${cls}"><img class="abadraho-map-pin-img" src="${escapeHtml(img)}" alt="" loading="lazy" /></div>`;
 }
 
+const PIN_ICON_SVG =
+  '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+const ARROW_ICON_SVG =
+  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+
+/** Card shown when a pin is selected: whole photo (blurred fill), builder, area, price, CTA. */
 function popupHtml(project: MapProject): string {
-  const img =
-    project.imageUrl ?? "/assets/images/home/northkarachi.jpg";
+  const img = escapeHtml(project.imageUrl ?? FALLBACK_PROJECT_IMAGE);
   const price = formatPrice(project.minPrice);
   const area = project.area ? escapeHtml(project.area) : "";
+  const status = project.progressName ? escapeHtml(project.progressName) : "";
+  const builder = project.builderName ? escapeHtml(project.builderName) : "";
+  const logo = project.builderLogoUrl ? escapeHtml(project.builderLogoUrl) : "";
   return `<a href="/project/${escapeHtml(project.slug)}" class="abadraho-map-popup">
-    <img src="${escapeHtml(img)}" alt="" />
+    <div class="abadraho-map-popup-media">
+      <div class="abadraho-map-popup-media-fill" style="background-image:url('${img.replace(/'/g, "%27")}')"></div>
+      <img src="${img}" alt="" loading="lazy" />
+      ${status ? `<span class="abadraho-map-popup-status">${status}</span>` : ""}
+    </div>
     <div class="abadraho-map-popup-body">
+      ${
+        builder
+          ? `<span class="abadraho-map-popup-builder">${
+              logo ? `<img src="${logo}" alt="" loading="lazy" />` : ""
+            }<span>${builder}</span></span>`
+          : ""
+      }
       <strong>${escapeHtml(project.name)}</strong>
-      ${price ? `<span class="abadraho-map-popup-price">${escapeHtml(price)}</span>` : ""}
-      ${area ? `<span class="abadraho-map-popup-area">${area}</span>` : ""}
+      ${area ? `<span class="abadraho-map-popup-area">${PIN_ICON_SVG}<span>${area}</span></span>` : ""}
+      <span class="abadraho-map-popup-footer">
+        ${
+          price
+            ? `<span class="abadraho-map-popup-price"><small>Starting from</small>${escapeHtml(price)}</span>`
+            : `<span class="abadraho-map-popup-price"><small>Price</small>On request</span>`
+        }
+        <span class="abadraho-map-popup-cta">View ${ARROW_ICON_SVG}</span>
+      </span>
     </div>
   </a>`;
 }
@@ -190,7 +224,8 @@ export function ProjectsMapPanel({
         const marker = L.marker(pos, { icon })
           .addTo(map)
           .bindPopup(popupHtml(p), {
-            maxWidth: 260,
+            maxWidth: 280,
+            minWidth: 260,
             className: "abadraho-leaflet-popup",
           })
           .on("click", () => onSelectRef.current(p.id));

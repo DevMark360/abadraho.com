@@ -6,6 +6,7 @@ import {
   resolveBuilderPublicAssets,
 } from "@/lib/builder-public-assets";
 import { prisma } from "@/lib/prisma";
+import { builderLogoUrl } from "@/server/builder-logos";
 import { listProjects } from "@/server/services/project.service";
 import {
   EMPTY_BUILDER_RATING_DISTRIBUTION,
@@ -198,8 +199,15 @@ export async function getBuilderPageData(
     const assets = resolveBuilderPublicAssets(normalizedSlug);
     const displayName = media?.displayName?.trim() || profile.fullName;
 
+    // The builder's logo (public/builders-logos/) is the profile picture; older per-page images
+    // are only a fallback for builders without one.
+    profile.imageUrl =
+      builderLogoUrl(profile.fullName, profile.id) ??
+      builderLogoUrl(displayName) ??
+      media?.profileImageUrl ??
+      assets.profileImageUrl ??
+      null;
     profile.fullName = displayName;
-    profile.imageUrl = media?.profileImageUrl ?? assets.profileImageUrl ?? null;
 
     const [{ items, total }, stats, distribution, reviews] = await Promise.all([
       listProjects({

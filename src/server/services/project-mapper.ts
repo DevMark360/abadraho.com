@@ -1,3 +1,4 @@
+import { builderLogoUrl } from "@/server/builder-logos";
 import {
   resolveListingImageUrl,
   summarizeListingUnits,
@@ -162,6 +163,7 @@ export function mapDbProjectToListItem(
     maxPrice: unitSummary.maxPrice ?? (prices.length ? Math.max(...prices) : null),
     progressName: p.progress?.name ?? null,
     builderName: p.owners[0]?.builder?.fullName ?? null,
+    builderLogoUrl: builderLogoUrl(p.owners[0]?.builder?.fullName, p.owners[0]?.builder?.id),
     handoverLabel: formatInstallmentPlanBadge(p.installmentLength),
     installmentMonths: p.installmentLength,
     views: p.views,
@@ -172,7 +174,6 @@ export function mapDbProjectToListItem(
     paymentPlan: formatPaymentPlanLabel(p.installmentLength),
     saleBadge: null,
     advised: false,
-    builderLogoUrl: null,
     minMonthlyInstallment: unitSummary.minMonthlyInstallment,
     bedroomLabel: unitSummary.bedroomLabel,
     minAreaSqFt: unitSummary.minAreaSqFt,
