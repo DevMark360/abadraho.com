@@ -123,7 +123,7 @@ export function MarketingTopNav() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {user && <NotificationBell className="hidden sm:inline-flex" />}
+          {user && <NotificationBell />}
 
           {!mounted || loading ? (
             <div className="hidden h-10 w-24 animate-pulse rounded-2xl bg-clay-well sm:block" />

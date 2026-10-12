@@ -5,10 +5,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { GitCompare } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
-import { designTw } from "@/config/design-tokens";
 import { cn } from "@/lib/utils";
 import type { ProjectUnit } from "@/types/project-detail";
-import { RoomTypeIcon } from "@/lib/room-type-icon";
+import { unitInstallmentMonths, unitPricePerSqFt } from "@/lib/unit-metrics";
+import { UnitRoomsTable } from "@/components/project-detail/unit-rooms-table";
 import { PlanImageViewer } from "@/components/project-detail/plan-image-viewer";
 import { Button } from "@/components/ui/button";
 import { requestAddCompareWithUnit } from "@/lib/client/compare-actions";
@@ -27,8 +27,8 @@ function defaultSubTab(unit: ProjectUnit): SubTab {
 }
 
 function UnitSpecs({ unit, installmentMonths }: { unit: ProjectUnit; installmentMonths?: number | null }) {
-  // The unit's own length (set on the admin unit form) wins over the project-wide one.
-  const months = unit.installmentMonths || installmentMonths;
+  const months = unitInstallmentMonths(unit, installmentMonths);
+  const perSqFt = unitPricePerSqFt(unit);
   const rows: { label: string; value: string }[] = [
     { label: "Project type", value: unit.unitType ?? "—" },
     { label: "Gross area", value: unit.grossArea ? `${unit.grossArea} sq.ft` : "—" },
@@ -49,6 +49,9 @@ function UnitSpecs({ unit, installmentMonths }: { unit: ProjectUnit; installment
   if (unit.totalUnitAmount) {
     rows.push({ label: "Total amount", value: formatPrice(unit.totalUnitAmount) });
   }
+  if (perSqFt != null) {
+    rows.push({ label: "Price per sq.ft", value: formatPrice(perSqFt) });
+  }
 
   return (
     <div className="mb-6 grid gap-4 sm:grid-cols-2">
@@ -68,40 +71,6 @@ function UnitSpecs({ unit, installmentMonths }: { unit: ProjectUnit; installment
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function UnitRoomsTable({ unit }: { unit: ProjectUnit }) {
-  if (!unit.roomBreakdown.length) {
-    return <p className="py-8 text-center text-sm text-zinc-500">No unit room details.</p>;
-  }
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr>
-            <th className={designTw.tableHead}>Name</th>
-            <th className={designTw.tableHead}>Width × Length</th>
-            <th className={designTw.tableHead}>Covered area</th>
-          </tr>
-        </thead>
-        <tbody>
-          {unit.roomBreakdown.map((r, i) => (
-            <tr key={i} className="border-b border-zinc-100">
-              <td className="px-4 py-3 font-medium text-zinc-900">
-                <RoomTypeIcon icon={r.icon} className="mr-2 text-zinc-600" />
-                {r.roomTypeName}
-                {r.count ? ` (${r.count})` : ""}
-              </td>
-              <td className="px-4 py-3 text-zinc-700">{r.dimensions ?? "—"}</td>
-              <td className="px-4 py-3 text-zinc-700">
-                {r.coveredArea != null ? `${r.coveredArea} sq.ft` : "—"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }

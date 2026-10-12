@@ -1,7 +1,7 @@
 /** Subset of Font Awesome 4 glyphs used for room-type icons — avoids bundling the full icon catalog. */
 export const ROOM_TYPE_FA_ICONS: Record<string, number> = {
   "fa-bed": 0xf236,
-  "fa-bath": 0xf207,
+  "fa-bath": 0xf2cd,
   "fa-shower": 0xf2cc,
   "fa-home": 0xf015,
   "fa-building": 0xf1ad,
@@ -58,4 +58,16 @@ export const ROOM_TYPE_FA_ICONS: Record<string, number> = {
   "fa-check": 0xf00c,
   "fa-plus": 0xf067,
   "fa-minus": 0xf068,
+  "fa-file": 0xf15b,
+  "fa-street-view": 0xf21d,
+  "fa-th": 0xf00a,
+  "fa-th-large": 0xf009,
+  "fa-th-list": 0xf00b,
+  "fa-table": 0xf0ce,
+  "fa-list-alt": 0xf022,
+  "fa-connectdevelop": 0xf20e,
+  "fa-windows": 0xf17a,
+  "fa-shopping-basket": 0xf291,
+  "fa-crosshairs": 0xf05b,
+  "fa-pencil": 0xf040,
 };

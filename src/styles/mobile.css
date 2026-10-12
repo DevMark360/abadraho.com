@@ -575,7 +575,24 @@ video {
   display: flex;
   width: max-content;
   gap: var(--marquee-gap, 1rem);
+  /* Trailing gap makes -50% exactly one group plus one gap, so the loop has no seam. */
+  padding-right: var(--marquee-gap, 1rem);
   animation: marquee-scroll var(--marquee-duration, 30s) linear infinite;
+}
+
+.marquee-viewport--manual {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.marquee-viewport--manual::-webkit-scrollbar {
+  display: none;
+}
+
+.marquee-viewport--manual .marquee-track {
+  animation: none;
 }
 
 .marquee-track--pausable:hover {

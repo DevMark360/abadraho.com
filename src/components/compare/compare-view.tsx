@@ -2,11 +2,11 @@
 import "@/styles/font-awesome-local.css";
 import { LoadingState } from "@/components/ui/loading-state";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Building2, GitCompare, Link2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, GitCompare, Link2, X } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CompareInquiryPanel } from "@/components/compare/compare-inquiry-panel";
@@ -28,9 +28,14 @@ import {
   MAX_COMPARE,
 } from "@/lib/client/compare-store";
 import { CompareHelpPanel } from "@/components/marketing/compare-help-panel";
-import { designTw } from "@/config/design-tokens";
-import { RoomTypeIcon } from "@/lib/room-type-icon";
-import { formatPrice } from "@/lib/utils";
+import { UnitRoomsTable } from "@/components/project-detail/unit-rooms-table";
+import {
+  formatSqFt,
+  unitInstallmentMonths,
+  unitPricePerSqFt,
+  unitTotalCoveredArea,
+} from "@/lib/unit-metrics";
+import { cn, formatPrice } from "@/lib/utils";
 import type { CompareProjectPayload } from "@/types/compare";
 import type { ProjectUnit } from "@/types/project-detail";
 
@@ -41,7 +46,7 @@ type ProjectRow = {
 
 type UnitRow = {
   label: string;
-  getValue: (u: ProjectUnit) => string;
+  getValue: (u: ProjectUnit, p: CompareProjectPayload | null) => string;
 };
 
 const PROJECT_ROWS: ProjectRow[] = [
@@ -86,6 +91,13 @@ const UNIT_ROWS: UnitRow[] = [
       u.monthlyInstallment ? formatPrice(u.monthlyInstallment) : "—",
   },
   {
+    label: "Installment length",
+    getValue: (u, p) => {
+      const months = unitInstallmentMonths(u, p?.installmentMonths);
+      return months ? `${months} months` : "—";
+    },
+  },
+  {
     label: "Total amount",
     getValue: (u) =>
       u.totalUnitAmount ? formatPrice(u.totalUnitAmount) : "—",
@@ -93,6 +105,20 @@ const UNIT_ROWS: UnitRow[] = [
   {
     label: "Loan amount",
     getValue: (u) => (u.loanAmount ? formatPrice(u.loanAmount) : "—"),
+  },
+  {
+    label: "Total area",
+    getValue: (u) => {
+      const area = unitTotalCoveredArea(u);
+      return area != null ? formatSqFt(area) : "—";
+    },
+  },
+  {
+    label: "Price per sq.ft",
+    getValue: (u) => {
+      const rate = unitPricePerSqFt(u);
+      return rate != null ? formatPrice(rate) : "—";
+    },
   },
   {
     label: "Room types",
@@ -123,13 +149,35 @@ function resolveUnit(
   return project.units[0];
 }
 
+/** Full-width content inside the sideways-scrolling compare table: pinned to the visible area on mobile. */
+function ViewportPane({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn("sticky left-0 w-[100cqw] sm:w-auto", className)}>{children}</div>;
+}
+
 function CompareSectionHeader({ label }: { label: string }) {
   return (
-    <div className="border-b border-zinc-200 bg-zinc-900 px-4 py-2.5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-white">
-        {label}
-      </p>
+    <div className="border-b border-zinc-200 bg-zinc-900">
+      <ViewportPane className="px-4 py-2.5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-white">
+          {label}
+        </p>
+      </ViewportPane>
     </div>
+  );
+}
+
+function CompareNotice({ children, tone = "muted" }: { children: ReactNode; tone?: "muted" | "faint" }) {
+  return (
+    <ViewportPane>
+      <p
+        className={cn(
+          "px-4 py-6 text-center text-sm",
+          tone === "faint" ? "text-zinc-400" : "text-zinc-500"
+        )}
+      >
+        {children}
+      </p>
+    </ViewportPane>
   );
 }
 
@@ -169,41 +217,7 @@ function CompareUnitRoomsTable({ unit }: { unit: ProjectUnit | null }) {
   if (!unit) {
     return <p className="text-sm text-zinc-400">—</p>;
   }
-
-  if (!unit.roomBreakdown.length) {
-    return (
-      <p className="py-4 text-center text-sm text-zinc-500">No unit room details.</p>
-    );
-  }
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr>
-            <th className={designTw.tableHead}>Name</th>
-            <th className={designTw.tableHead}>Width × Length</th>
-            <th className={designTw.tableHead}>Covered area</th>
-          </tr>
-        </thead>
-        <tbody>
-          {unit.roomBreakdown.map((r, i) => (
-            <tr key={i} className="border-b border-zinc-100">
-              <td className="px-3 py-2.5 font-medium text-zinc-900">
-                <RoomTypeIcon icon={r.icon} className="mr-1.5 text-zinc-600" />
-                {r.roomTypeName}
-                {r.count ? ` (${r.count})` : ""}
-              </td>
-              <td className="px-3 py-2.5 text-zinc-700">{r.dimensions ?? "—"}</td>
-              <td className="px-3 py-2.5 text-zinc-700">
-                {r.coveredArea != null ? `${r.coveredArea} sq.ft` : "—"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+  return <UnitRoomsTable unit={unit} compact />;
 }
 
 function CompareUnitSelector({
@@ -265,12 +279,14 @@ function CompareGatedSection({
   return (
     <div className="border-t border-zinc-200">
       <CompareSectionHeader label={label} />
-      <AuthGatePrompt
-        variant="inline"
-        title={title}
-        description={description}
-        returnPath="/compare"
-      />
+      <ViewportPane>
+        <AuthGatePrompt
+          variant="inline"
+          title={title}
+          description={description}
+          returnPath="/compare"
+        />
+      </ViewportPane>
     </div>
   );
 }
@@ -286,13 +302,7 @@ function CompareSpecGrid({
 }) {
   return (
     <div>
-      {sectionLabel && (
-        <div className="border-b border-zinc-200 bg-zinc-900 px-4 py-2.5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white">
-            {sectionLabel}
-          </p>
-        </div>
-      )}
+      {sectionLabel && <CompareSectionHeader label={sectionLabel} />}
       <div className="divide-y divide-zinc-100">
         {rows.map((row, i) => {
           const [v0, v1] = values[i];
@@ -301,21 +311,20 @@ function CompareSpecGrid({
           return (
             <div
               key={row.label}
-              className="grid grid-cols-1 sm:grid-cols-[160px_1fr_1fr]"
+              className="grid grid-cols-[112px_1fr_1fr] sm:grid-cols-[160px_1fr_1fr]"
             >
-              <div className="hidden bg-zinc-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-zinc-500 sm:flex sm:items-center">
+              <div className="sticky left-0 z-[1] flex items-center border-r border-zinc-100 bg-zinc-50 px-3 py-3 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 shadow-[4px_0_8px_-6px_rgba(0,0,0,0.15)] sm:border-r-0 sm:px-4 sm:text-xs sm:shadow-none">
                 {row.label}
               </div>
               {[0, 1].map((col) => (
                 <div
                   key={col}
-                  className={`px-4 py-3 sm:py-3.5 ${
-                    col === 0 ? "sm:border-r sm:border-zinc-100" : ""
-                  } ${differs ? "bg-amber-50/70" : ""}`}
+                  className={cn(
+                    "px-4 py-3 sm:py-3.5",
+                    col === 0 && "border-r border-zinc-100",
+                    differs && "bg-amber-50/70"
+                  )}
                 >
-                  <p className="text-xs font-medium text-zinc-400 sm:hidden">
-                    {row.label}
-                  </p>
                   <p className="text-sm font-medium text-zinc-900">
                     {values[i][col] ?? "—"}
                   </p>
@@ -425,8 +434,8 @@ export function CompareView({
   ] as [string | null, string | null]);
 
   const unitValues = UNIT_ROWS.map((row) => [
-    selectedUnits[0] ? row.getValue(selectedUnits[0]) : null,
-    selectedUnits[1] ? row.getValue(selectedUnits[1]) : null,
+    selectedUnits[0] ? row.getValue(selectedUnits[0], projects[0] ?? null) : null,
+    selectedUnits[1] ? row.getValue(selectedUnits[1], projects[1] ?? null) : null,
   ] as [string | null, string | null]);
 
   return (
@@ -517,231 +526,240 @@ export function CompareView({
 
           {slots.length > 0 && (
             <div className="mt-8 overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
-              <div className="grid grid-cols-1 border-b border-zinc-200 sm:grid-cols-2">
-                {[0, 1].map((col) => {
-                  const entry = slots[col];
-                  const project = projects[col];
-                  return (
-                    <div
-                      key={col}
-                      className={`relative p-5 ${col === 0 ? "sm:border-r sm:border-zinc-200" : ""}`}
-                    >
-                      {entry && project ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => void requestRemoveFromCompare(project.id)}
-                            className="absolute right-3 top-3 rounded-full bg-zinc-100 p-1.5 text-zinc-600 hover:bg-zinc-200"
-                            aria-label="Remove from compare"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                          <Link href={`/project/${project.slug}`} className="block">
-                            <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-xl bg-zinc-100">
-                              {project.imageUrl ? (
-                                <Image
-                                  src={project.imageUrl}
-                                  alt={project.name}
-                                  fill
-                                  className="object-cover"
-                                  unoptimized
-                                />
-                              ) : (
-                                <div className="flex h-full items-center justify-center text-zinc-300">
-                                  <Building2 className="h-14 w-14" />
-                                </div>
-                              )}
-                            </div>
-                            <h2 className="pr-8 text-lg font-semibold text-zinc-900 hover:underline">
-                              {project.name}
-                            </h2>
-                            <p className="mt-1 text-sm text-zinc-500">{project.area}</p>
-                          </Link>
-                        </>
-                      ) : entry && !project ? (
-                        <div className="flex min-h-[280px] items-center justify-center">
-                          <LoadingState size="sm" label="Loading project…" />
-                        </div>
-                      ) : (
-                        <CompareProjectPicker slotLabel={`Project ${col + 1}`} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {filled.length > 0 && (
-                <>
-                  <CompareSpecGrid
-                    rows={PROJECT_ROWS}
-                    values={projectValues}
-                    sectionLabel="Project overview"
-                  />
-
-                  <div className="border-t border-zinc-200">
-                    <CompareSectionHeader label="Unit to compare" />
-                    <div className="grid grid-cols-1 sm:grid-cols-2">
-                      {[0, 1].map((col) => (
+              <p className="flex items-center justify-center gap-1.5 border-b border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-medium text-zinc-500 sm:hidden">
+                Swipe sideways to see both projects
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+              </p>
+              <div className="overflow-x-auto overscroll-x-contain [container-type:inline-size]">
+                <div className="min-w-[640px] sm:min-w-0">
+                  <div className="grid grid-cols-2 border-b border-zinc-200">
+                    {[0, 1].map((col) => {
+                      const entry = slots[col];
+                      const project = projects[col];
+                      return (
                         <div
                           key={col}
-                          className={`p-4 ${col === 0 ? "sm:border-r sm:border-zinc-100" : ""}`}
+                          className={cn("relative p-3 sm:p-5", col === 0 && "border-r border-zinc-200")}
                         >
-                          <CompareUnitSelector
-                            project={projects[col]}
-                            unit={selectedUnits[col]}
-                            isLoggedIn={isLoggedIn}
-                          />
+                          {entry && project ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => void requestRemoveFromCompare(project.id)}
+                                className="absolute right-3 top-3 rounded-full bg-zinc-100 p-1.5 text-zinc-600 hover:bg-zinc-200"
+                                aria-label="Remove from compare"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                              <Link href={`/project/${project.slug}`} className="block">
+                                <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-xl bg-zinc-100">
+                                  {project.imageUrl ? (
+                                    <Image
+                                      src={project.imageUrl}
+                                      alt={project.name}
+                                      fill
+                                      className="object-cover"
+                                      unoptimized
+                                    />
+                                  ) : (
+                                    <div className="flex h-full items-center justify-center text-zinc-300">
+                                      <Building2 className="h-14 w-14" />
+                                    </div>
+                                  )}
+                                </div>
+                                <h2 className="pr-8 text-lg font-semibold text-zinc-900 hover:underline">
+                                  {project.name}
+                                </h2>
+                                <p className="mt-1 text-sm text-zinc-500">{project.area}</p>
+                              </Link>
+                            </>
+                          ) : entry && !project ? (
+                            <div className="flex min-h-[280px] items-center justify-center">
+                              <LoadingState size="sm" label="Loading project…" />
+                            </div>
+                          ) : (
+                            <CompareProjectPicker slotLabel={`Project ${col + 1}`} />
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
 
-                  {showUnitPricingGate ? (
-                    <CompareGatedSection
-                      label="Unit & pricing"
-                      title="Register or sign in to view this"
-                      description="Compare unit prices, areas, installments, and room details side by side."
-                    />
-                  ) : anyProjectHasUnits ? (
-                    hasSelectedUnits ? (
+                  {filled.length > 0 && (
+                    <>
                       <CompareSpecGrid
-                        rows={UNIT_ROWS}
-                        values={unitValues}
-                        sectionLabel="Unit & pricing"
+                        rows={PROJECT_ROWS}
+                        values={projectValues}
+                        sectionLabel="Project overview"
                       />
-                    ) : (
-                      <div className="border-t border-zinc-200">
-                        <CompareSectionHeader label="Unit & pricing" />
-                        <p className="px-4 py-6 text-center text-sm text-zinc-500">
-                          {unitsLoaded ? "Select a unit to compare pricing." : "Loading unit details…"}
-                        </p>
-                      </div>
-                    )
-                  ) : null}
 
-                  {showUnitDetailsGate ? (
-                    <CompareGatedSection
-                      label="Unit Details"
-                      title="Register or sign in to view this"
-                      description="Compare room-by-room dimensions, layout, and covered areas for each unit."
-                    />
-                  ) : anyProjectHasUnits ? (
-                    hasSelectedUnits && hasRoomDetails ? (
                       <div className="border-t border-zinc-200">
-                        <CompareSectionHeader label="Unit Details" />
-                        <div className="grid grid-cols-1 sm:grid-cols-2">
+                        <CompareSectionHeader label="Unit to compare" />
+                        <div className="grid grid-cols-2">
                           {[0, 1].map((col) => (
                             <div
                               key={col}
-                              className={`p-4 ${col === 0 ? "sm:border-r sm:border-zinc-100" : ""}`}
+                              className={cn("p-3 sm:p-4", col === 0 && "border-r border-zinc-100")}
                             >
-                              <CompareUnitRoomsTable unit={selectedUnits[col]} />
+                              <CompareUnitSelector
+                                project={projects[col]}
+                                unit={selectedUnits[col]}
+                                isLoggedIn={isLoggedIn}
+                              />
                             </div>
                           ))}
                         </div>
                       </div>
-                    ) : hasSelectedUnits ? (
-                      <div className="border-t border-zinc-200">
-                        <CompareSectionHeader label="Unit Details" />
-                        <p className="px-4 py-6 text-center text-sm text-zinc-400">
-                          No room details for the selected units.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="border-t border-zinc-200">
-                        <CompareSectionHeader label="Unit Details" />
-                        <p className="px-4 py-6 text-center text-sm text-zinc-500">
-                          {unitsLoaded
-                            ? "Select a unit to compare room details."
-                            : "Loading unit details…"}
-                        </p>
-                      </div>
-                    )
-                  ) : null}
 
-                  {showPlansGate ? (
-                    <CompareGatedSection
-                      label="Plans"
-                      title="Register or sign in to view this"
-                      description="See floor plans and payment schedules for each unit you compare."
-                    />
-                  ) : anyProjectHasUnits ? (
-                    hasPlanImages ? (
-                      <div>
-                        <CompareSectionHeader label="Plans" />
-                        <div className="grid grid-cols-1 sm:grid-cols-2">
-                          {[0, 1].map((col) => {
-                            const unit = selectedUnits[col];
-                            return (
-                              <div
-                                key={col}
-                                className={`space-y-4 p-4 ${
-                                  col === 0 ? "sm:border-r sm:border-zinc-100" : ""
-                                }`}
-                              >
-                                {unit?.floorPlanUrl && (
-                                  <div>
-                                    <p className="mb-2 text-xs font-semibold uppercase text-zinc-500">
-                                      Floor plan
-                                    </p>
-                                    <a
-                                      href={unit.floorPlanUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="block overflow-hidden rounded-lg border border-zinc-200"
-                                    >
-                                      <img
-                                        src={unit.floorPlanUrl}
-                                        alt="Floor plan"
-                                        className="max-h-48 w-full object-contain bg-zinc-50"
-                                      />
-                                    </a>
-                                  </div>
-                                )}
-                                {unit?.paymentPlanUrl && (
-                                  <div>
-                                    <p className="mb-2 text-xs font-semibold uppercase text-zinc-500">
-                                      Payment plan
-                                    </p>
-                                    <a
-                                      href={unit.paymentPlanUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="block overflow-hidden rounded-lg border border-zinc-200"
-                                    >
-                                      <img
-                                        src={unit.paymentPlanUrl}
-                                        alt="Payment plan"
-                                        className="max-h-48 w-full object-contain bg-zinc-50"
-                                      />
-                                    </a>
-                                  </div>
-                                )}
-                                {!unit?.floorPlanUrl && !unit?.paymentPlanUrl && (
-                                  <p className="text-sm text-zinc-400">No plans uploaded</p>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ) : hasSelectedUnits ? (
-                      <div className="border-t border-zinc-200">
-                        <CompareSectionHeader label="Plans" />
-                        <p className="px-4 py-6 text-center text-sm text-zinc-400">
-                          No plans uploaded for the selected units.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="border-t border-zinc-200">
-                        <CompareSectionHeader label="Plans" />
-                        <p className="px-4 py-6 text-center text-sm text-zinc-500">
-                          {unitsLoaded ? "Select a unit to view plans." : "Loading unit details…"}
-                        </p>
-                      </div>
-                    )
-                  ) : null}
+                      {showUnitPricingGate ? (
+                        <CompareGatedSection
+                          label="Unit & pricing"
+                          title="Register or sign in to view this"
+                          description="Compare unit prices, areas, installments, and room details side by side."
+                        />
+                      ) : anyProjectHasUnits ? (
+                        hasSelectedUnits ? (
+                          <CompareSpecGrid
+                            rows={UNIT_ROWS}
+                            values={unitValues}
+                            sectionLabel="Unit & pricing"
+                          />
+                        ) : (
+                          <div className="border-t border-zinc-200">
+                            <CompareSectionHeader label="Unit & pricing" />
+                            <CompareNotice>
+                              {unitsLoaded ? "Select a unit to compare pricing." : "Loading unit details…"}
+                            </CompareNotice>
+                          </div>
+                        )
+                      ) : null}
 
+                      {showUnitDetailsGate ? (
+                        <CompareGatedSection
+                          label="Unit Details"
+                          title="Register or sign in to view this"
+                          description="Compare room-by-room dimensions, layout, and covered areas for each unit."
+                        />
+                      ) : anyProjectHasUnits ? (
+                        hasSelectedUnits && hasRoomDetails ? (
+                          <div className="border-t border-zinc-200">
+                            <CompareSectionHeader label="Unit Details" />
+                            <div className="grid grid-cols-2">
+                              {[0, 1].map((col) => (
+                                <div
+                                  key={col}
+                                  className={cn("p-3 sm:p-4", col === 0 && "border-r border-zinc-100")}
+                                >
+                                  <CompareUnitRoomsTable unit={selectedUnits[col]} />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : hasSelectedUnits ? (
+                          <div className="border-t border-zinc-200">
+                            <CompareSectionHeader label="Unit Details" />
+                            <CompareNotice tone="faint">No room details for the selected units.</CompareNotice>
+                          </div>
+                        ) : (
+                          <div className="border-t border-zinc-200">
+                            <CompareSectionHeader label="Unit Details" />
+                            <CompareNotice>
+                              {unitsLoaded
+                                ? "Select a unit to compare room details."
+                                : "Loading unit details…"}
+                            </CompareNotice>
+                          </div>
+                        )
+                      ) : null}
+
+                      {showPlansGate ? (
+                        <CompareGatedSection
+                          label="Plans"
+                          title="Register or sign in to view this"
+                          description="See floor plans and payment schedules for each unit you compare."
+                        />
+                      ) : anyProjectHasUnits ? (
+                        hasPlanImages ? (
+                          <div>
+                            <CompareSectionHeader label="Plans" />
+                            <div className="grid grid-cols-2">
+                              {[0, 1].map((col) => {
+                                const unit = selectedUnits[col];
+                                return (
+                                  <div
+                                    key={col}
+                                    className={cn(
+                                      "space-y-4 p-3 sm:p-4",
+                                      col === 0 && "border-r border-zinc-100"
+                                    )}
+                                  >
+                                    {unit?.floorPlanUrl && (
+                                      <div>
+                                        <p className="mb-2 text-xs font-semibold uppercase text-zinc-500">
+                                          Floor plan
+                                        </p>
+                                        <a
+                                          href={unit.floorPlanUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="block overflow-hidden rounded-lg border border-zinc-200"
+                                        >
+                                          <img
+                                            src={unit.floorPlanUrl}
+                                            alt="Floor plan"
+                                            className="max-h-48 w-full object-contain bg-zinc-50"
+                                          />
+                                        </a>
+                                      </div>
+                                    )}
+                                    {unit?.paymentPlanUrl && (
+                                      <div>
+                                        <p className="mb-2 text-xs font-semibold uppercase text-zinc-500">
+                                          Payment plan
+                                        </p>
+                                        <a
+                                          href={unit.paymentPlanUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="block overflow-hidden rounded-lg border border-zinc-200"
+                                        >
+                                          <img
+                                            src={unit.paymentPlanUrl}
+                                            alt="Payment plan"
+                                            className="max-h-48 w-full object-contain bg-zinc-50"
+                                          />
+                                        </a>
+                                      </div>
+                                    )}
+                                    {!unit?.floorPlanUrl && !unit?.paymentPlanUrl && (
+                                      <p className="text-sm text-zinc-400">No plans uploaded</p>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : hasSelectedUnits ? (
+                          <div className="border-t border-zinc-200">
+                            <CompareSectionHeader label="Plans" />
+                            <CompareNotice tone="faint">No plans uploaded for the selected units.</CompareNotice>
+                          </div>
+                        ) : (
+                          <div className="border-t border-zinc-200">
+                            <CompareSectionHeader label="Plans" />
+                            <CompareNotice>
+                              {unitsLoaded ? "Select a unit to view plans." : "Loading unit details…"}
+                            </CompareNotice>
+                          </div>
+                        )
+                      ) : null}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {filled.length > 0 && (
+                <>
                   <div className="border-t border-zinc-200 bg-zinc-50/40">
                     <CompareSectionHeader label="Submit inquiry" />
                     <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
