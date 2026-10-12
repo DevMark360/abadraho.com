@@ -54,9 +54,15 @@ img.abadraho-map-pin-img {
   display: block;
 }
 
+/* Square logos fill the whole circle (their own background becomes the pin);
+   wide logos are shown whole on white. */
 .abadraho-map-pin.is-logo img {
+  object-fit: cover;
+}
+
+.abadraho-map-pin.is-logo.is-wide img {
   object-fit: contain;
-  padding: 3px;
+  padding: 2px;
 }
 
 .abadraho-map-pin.is-photo img {
@@ -169,9 +175,13 @@ img.abadraho-map-pin-img {
   height: 20px;
   flex-shrink: 0;
   border-radius: 9999px;
-  object-fit: contain;
+  object-fit: cover;
   background: #fff;
   box-shadow: 0 0 0 1px rgb(24 24 27 / 0.12);
+}
+
+.abadraho-map-popup-builder img.is-wide {
+  object-fit: contain;
 }
 
 .abadraho-map-popup-builder span {

@@ -77,6 +77,8 @@ scripts/*.log
 !/public/icons/brand/
 # Builder logos (map pins, builder pages), named by builder slug: roomi-builders.jpg
 !/public/builders-logos/
+# Site logo (header, sidebar, auth pages, schema)
+!/public/brand/
 
 # Misc
 *.pem

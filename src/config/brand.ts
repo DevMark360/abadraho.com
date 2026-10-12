@@ -1,8 +1,9 @@
 /** Brand logo — single source of truth (public path + intrinsic size). */
 export const BRAND_LOGO = {
-  src: "/assets/images/main-logo.png",
-  width: 252,
-  height: 101,
+  // Ships with the code (public/brand/ is tracked in git). Wordmark + "Search | Compare | Invest".
+  src: "/brand/abadraho-logo.png",
+  width: 900,
+  height: 270,
 } as const;
 
 export const BRAND_LOGO_ASPECT = BRAND_LOGO.width / BRAND_LOGO.height;

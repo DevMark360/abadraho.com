@@ -46,6 +46,10 @@ function formatPrice(n: number | null | undefined, currency = "PKR"): string {
 
 const FALLBACK_PROJECT_IMAGE = "/assets/images/home/northkarachi.jpg";
 
+/** Inline onload: marks a logo noticeably wider than tall (pin wrapper and the image itself). */
+const WIDE_LOGO_ONLOAD =
+  "if(this.naturalWidth>this.naturalHeight*1.15){this.classList.add('is-wide');this.parentNode.classList.add('is-wide')}";
+
 /** Pin = the builder's logo; projects whose builder has no logo yet keep the project photo. */
 function pinHtml(project: MapProject, selected: boolean, mobile: boolean): string {
   const logo = project.builderLogoUrl;
@@ -58,7 +62,9 @@ function pinHtml(project: MapProject, selected: boolean, mobile: boolean): strin
   ]
     .filter(Boolean)
     .join(" ");
-  return `<div class="${cls}"><img class="abadraho-map-pin-img" src="${escapeHtml(img)}" alt="" loading="lazy" /></div>`;
+  // Square logos fill the circle; wide ones (e.g. a wordmark) are flagged so CSS shows them whole.
+  const onload = logo ? ` onload="${WIDE_LOGO_ONLOAD}"` : "";
+  return `<div class="${cls}"><img class="abadraho-map-pin-img" src="${escapeHtml(img)}" alt="" loading="lazy"${onload} /></div>`;
 }
 
 const PIN_ICON_SVG =
@@ -84,7 +90,7 @@ function popupHtml(project: MapProject): string {
       ${
         builder
           ? `<span class="abadraho-map-popup-builder">${
-              logo ? `<img src="${logo}" alt="" loading="lazy" />` : ""
+              logo ? `<img src="${logo}" alt="" loading="lazy" onload="${WIDE_LOGO_ONLOAD}" />` : ""
             }<span>${builder}</span></span>`
           : ""
       }

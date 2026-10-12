@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { brandAssets, siteConfig } from "@/config/site";
+import { siteConfig } from "@/config/site";
+import { BRAND_LOGO } from "@/config/brand";
 import { businessConfig } from "@/config/business";
 
 const SITE_LOCALE = "en_PK";
@@ -181,8 +182,8 @@ export const rootMetadata: Metadata = {
       {
         url: absoluteUrl(siteConfig.defaultOgImage),
         alt: `${siteConfig.name} logo`,
-        width: brandAssets.logoAspect ? Math.round(brandAssets.logoAspect * 154) : 524,
-        height: 154,
+        width: BRAND_LOGO.width,
+        height: BRAND_LOGO.height,
       },
     ],
   },

@@ -8,6 +8,7 @@ import {
   Star,
 } from "lucide-react";
 import type { BuilderProfile } from "@/server/services/builder-page.service";
+import { BuilderLogoAvatar } from "@/components/builder/builder-logo-avatar";
 
 function VerifiedDeveloperTag() {
   return (
@@ -128,17 +129,7 @@ export function BuilderProfileHero({
             <div className="-mt-12 shrink-0 self-start sm:-mt-14 md:-mt-16">
               <div className="relative h-[88px] w-[88px] overflow-hidden rounded-full border-[3px] border-white bg-white shadow-[0_4px_20px_rgba(0,0,0,0.15)] ring-1 ring-zinc-200/80 sm:h-24 sm:w-24 md:h-28 md:w-28">
                 {profile.imageUrl ? (
-                  <Image
-                    src={profile.imageUrl}
-                    alt={profile.fullName}
-                    fill
-                    priority
-                    // Builder logos: show the whole mark inside the circle, never cropped.
-                    className="object-contain p-2"
-                    sizes="112px"
-                    // Small files; uploaded logos carry ?v= which the optimizer rejects.
-                    unoptimized
-                  />
+                  <BuilderLogoAvatar src={profile.imageUrl} alt={profile.fullName} />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-zinc-100">
                     <Building2 className="h-8 w-8 text-zinc-400" aria-hidden />
