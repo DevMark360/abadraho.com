@@ -113,6 +113,10 @@ export function AdminUnitFormClient({
   const [roomsNotice, setRoomsNotice] = useState("");
 
   const newRoomArea = useMemo(() => calcSqFt(newRoom), [newRoom]);
+  const roomsTotalSqFt = useMemo(
+    () => Math.round(rooms.reduce((sum, r) => sum + (Number(r.coveredArea) || 0), 0) * 100) / 100,
+    [rooms]
+  );
   const editRoomArea = useMemo(() => calcSqFt(editRoom), [editRoom]);
 
   const applyMetaFromJson = (json: Record<string, unknown>) => {
@@ -293,6 +297,18 @@ export function AdminUnitFormClient({
       setMeta((current) => (current ? { ...current, roomTypes } : current)),
     []
   );
+
+  const measurement =
+    meta?.measurements.find((m) => String(m.id) === measurementTypeId) ??
+    { id: 1, name: "Sq Ft", convertor: 1 };
+  const roomsTotalInUnit = Math.round((roomsTotalSqFt / (measurement.convertor || 1)) * 100) / 100;
+
+  function applyRoomsTotalAsNetArea() {
+    setNetArea(String(roomsTotalInUnit));
+    setRoomsNotice(
+      `Net area set to ${roomsTotalInUnit.toLocaleString("en-PK")} ${measurement.name}. Save the unit to keep it.`
+    );
+  }
 
   /** Refreshes only the rooms list, so unsaved edits elsewhere in the form are kept. */
   async function reloadRooms() {
@@ -676,6 +692,26 @@ export function AdminUnitFormClient({
                 ))}
               </ul>
             )}
+
+            {roomsTotalSqFt > 0 ? (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-clay-well px-4 py-3 shadow-clay-inset">
+                <p className="text-sm text-zinc-700">
+                  Total area of rooms:{" "}
+                  <strong className="text-zinc-900">
+                    {roomsTotalSqFt.toLocaleString("en-PK")} sq ft
+                  </strong>
+                  {measurement.convertor !== 1 ? (
+                    <span className="text-zinc-500">
+                      {" "}
+                      (= {roomsTotalInUnit.toLocaleString("en-PK")} {measurement.name})
+                    </span>
+                  ) : null}
+                </p>
+                <Button type="button" size="sm" variant="outline" onClick={applyRoomsTotalAsNetArea}>
+                  Use as net area
+                </Button>
+              </div>
+            ) : null}
 
             {roomsNotice ? <p className="mt-3 text-sm text-emerald-700">{roomsNotice}</p> : null}
 

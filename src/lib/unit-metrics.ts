@@ -1,8 +1,6 @@
 import { unitStartPrice } from "@/lib/project-list-card";
 import type { ProjectUnit } from "@/types/project-detail";
 
-type UnitAreaFields = Pick<ProjectUnit, "grossArea" | "netArea" | "roomBreakdown">;
-
 export function unitInstallmentMonths(
   unit: Pick<ProjectUnit, "installmentMonths">,
   projectMonths?: number | null
@@ -18,17 +16,14 @@ export function unitTotalCoveredArea(unit: Pick<ProjectUnit, "roomBreakdown">): 
   return total > 0 ? total : null;
 }
 
-export function unitAreaSqFt(unit: UnitAreaFields): number | null {
-  return unit.grossArea || unit.netArea || unitTotalCoveredArea(unit);
-}
-
-/** Rate on what the buyer pays in total (same basis as "Price from"). */
+/** Total amount (same basis as "Price from") over gross area; no gross area, no rate. */
 export function unitPricePerSqFt(
-  unit: UnitAreaFields & Pick<ProjectUnit, "price" | "totalUnitAmount">
+  unit: Pick<ProjectUnit, "grossArea" | "price" | "totalUnitAmount">
 ): number | null {
   const price = unitStartPrice(unit);
-  const area = unitAreaSqFt(unit);
-  return price != null && area ? Math.round(price / area) : null;
+  return price != null && unit.grossArea && unit.grossArea > 0
+    ? Math.round(price / unit.grossArea)
+    : null;
 }
 
 export function formatSqFt(value: number): string {

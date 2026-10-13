@@ -111,7 +111,7 @@ export function mapDbUnit(u: UnitRow, projectId?: number): ProjectUnit {
     downPayment: dec(u.downPayment),
     monthlyInstallment: dec(u.monthlyInstallment),
     installmentMonths: dec(u.installment) || null,
-    grossArea: dec(u.grossArea) ?? dec(u.size),
+    grossArea: dec(u.grossArea),
     netArea: dec(u.netArea),
     size: dec(u.grossArea) ?? dec(u.size),
     unitType: u.unitType?.title ?? null,
