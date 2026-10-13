@@ -504,6 +504,31 @@ export async function createUnitRoom(unitId: number, payload: UnitRoomPayload) {
   return { ok: true, id: row.id };
 }
 
+/** Adds several rooms in one statement (floor plan reader). */
+export async function createUnitRooms(unitId: number, payloads: UnitRoomPayload[]) {
+  const unit = await prisma.unit.findFirst({
+    where: { id: unitId, isArchive: false },
+    select: { id: true, projectId: true },
+  });
+  if (!unit) return { ok: false as const, error: "Unit not found" };
+
+  const result = await prisma.roomTypeUnit.createMany({
+    data: payloads.map((payload) => ({
+      unitId: unit.id,
+      projectId: unit.projectId,
+      roomTypeId: payload.roomTypeId,
+      widthFeet: payload.widthFeet,
+      widthInches: payload.widthInches,
+      lengthFeet: payload.lengthFeet,
+      lengthInches: payload.lengthInches,
+      coveredArea: calcRoomCoveredArea(payload),
+      extras: payload.extras ?? "1",
+      isDisplayOnListing: true,
+    })),
+  });
+  return { ok: true as const, count: result.count };
+}
+
 export async function updateUnitRoom(roomId: number, payload: UnitRoomPayload) {
   const existing = await prisma.roomTypeUnit.findFirst({
     where: { id: roomId, isArchive: false },

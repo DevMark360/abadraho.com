@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { ScanText } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdminFormSection, preventImplicitFormSubmit } from "@/components/admin/admin-form-section";
 import { AdminBackLink, AdminDbAlert, AdminErrorAlert, adminCard } from "@/components/admin/admin-ui";
+import { AdminFloorPlanRoomsDialog } from "@/components/admin/admin-floor-plan-rooms-dialog";
 
 type Meta = {
   projectTypes: { id: number; title: string }[];
@@ -107,6 +109,8 @@ export function AdminUnitFormClient({
   const [showNewRoomForm, setShowNewRoomForm] = useState(false);
   const [editingRoomId, setEditingRoomId] = useState<number | null>(null);
   const [editRoom, setEditRoom] = useState<RoomDraft>(emptyRoomDraft);
+  const [readingFloorPlan, setReadingFloorPlan] = useState(false);
+  const [roomsNotice, setRoomsNotice] = useState("");
 
   const newRoomArea = useMemo(() => calcSqFt(newRoom), [newRoom]);
   const editRoomArea = useMemo(() => calcSqFt(editRoom), [editRoom]);
@@ -282,6 +286,20 @@ export function AdminUnitFormClient({
     setNewRoom(emptyRoomDraft());
     setShowNewRoomForm(false);
     await loadUnit();
+  }
+
+  const updateRoomTypes = useCallback(
+    (roomTypes: { id: number; name: string }[]) =>
+      setMeta((current) => (current ? { ...current, roomTypes } : current)),
+    []
+  );
+
+  /** Refreshes only the rooms list, so unsaved edits elsewhere in the form are kept. */
+  async function reloadRooms() {
+    if (!unitId) return;
+    const res = await fetch(`/api/admin/units/${unitId}`);
+    const json = await res.json().catch(() => ({}));
+    if (json.success && json.unit) setRooms(json.unit.unitRooms ?? []);
   }
 
   function cancelNewRoom() {
@@ -659,11 +677,31 @@ export function AdminUnitFormClient({
               </ul>
             )}
 
+            {roomsNotice ? <p className="mt-3 text-sm text-emerald-700">{roomsNotice}</p> : null}
+
             <div className="mt-4">
               {!showNewRoomForm ? (
-                <Button type="button" variant="outline" onClick={() => setShowNewRoomForm(true)}>
-                  Add room
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button type="button" variant="outline" onClick={() => setShowNewRoomForm(true)}>
+                    Add room
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-1.5"
+                    disabled={!(floorPlanFile || (floorPlanUrl && !removeFloorPlan))}
+                    onClick={() => {
+                      setRoomsNotice("");
+                      setReadingFloorPlan(true);
+                    }}
+                  >
+                    <ScanText className="h-4 w-4" />
+                    Read rooms from floor plan
+                  </Button>
+                  {!(floorPlanFile || (floorPlanUrl && !removeFloorPlan)) ? (
+                    <span className="text-xs text-zinc-500">Add a floor plan image above first.</span>
+                  ) : null}
+                </div>
               ) : (
                 <div className="rounded-lg border border-dashed border-zinc-300 p-4">
                   <p className="mb-2 text-sm font-medium text-zinc-800">Add room</p>
@@ -684,6 +722,21 @@ export function AdminUnitFormClient({
                 </div>
               )}
             </div>
+            {readingFloorPlan ? (
+              <AdminFloorPlanRoomsDialog
+                unitId={unitId}
+                floorPlanFile={floorPlanFile}
+                floorPlanUrl={removeFloorPlan ? null : floorPlanUrl}
+                roomTypes={meta?.roomTypes ?? []}
+                onClose={() => setReadingFloorPlan(false)}
+                onRoomTypesChange={updateRoomTypes}
+                onAdded={(count) => {
+                  setReadingFloorPlan(false);
+                  setRoomsNotice(`${count} ${count === 1 ? "room" : "rooms"} added from the floor plan.`);
+                  void reloadRooms();
+                }}
+              />
+            ) : null}
           </AdminFormSection>
         )}
 
