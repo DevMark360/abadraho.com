@@ -90,7 +90,8 @@ export function ListingsSplitView({
   return (
     <div
       className={cn(
-        "listings-split-view",
+        // Same inset and rounded clay frame as the filter card above, with a gap between them.
+        "listings-split-view mx-3 my-3 overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay sm:mx-4 lg:mx-6",
         mapCollapsed && "listings-split-view--collapsed",
         mapExpanded && "listings-split-view--map-expanded"
       )}
