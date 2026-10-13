@@ -12,6 +12,8 @@ export type UnitListFilters = {
   q?: string;
   /** When set, only units belonging to these projects are returned (builder scope). */
   projectIds?: number[];
+  /** "live": project approved and not archived (same as Active Projects); "inactive": everything else. */
+  projectStatus?: "live" | "inactive";
 };
 
 export type UnitFormPayload = {
@@ -62,6 +64,25 @@ const DEFAULT_MEASUREMENTS = [
   { id: 4, name: "Marla", convertor: 272.251 },
   { id: 5, name: "Kanal", convertor: 5445 },
 ] as const;
+
+export type Measurement = { id: number; name: string; convertor: number };
+
+/** Area units from the `measurements` table, or the built-in defaults when it is missing or empty. */
+export async function listMeasurements(): Promise<Measurement[]> {
+  if (await tableExists("measurements")) {
+    const rows = await queryRaw<{ id: unknown; name: string; convertor: unknown }[]>(
+      `SELECT id, name, convertor FROM measurements ORDER BY id ASC`
+    );
+    if (rows.length) {
+      return rows.map((r) => ({
+        id: jsonNum(r.id),
+        name: r.name,
+        convertor: jsonNum(r.convertor) || 1,
+      }));
+    }
+  }
+  return [...DEFAULT_MEASUREMENTS];
+}
 
 async function measurementConvertor(id: number | null | undefined): Promise<number> {
   const numericId = jsonNumOrNull(id) ?? 1;
@@ -141,21 +162,7 @@ export async function loadUnitFormMeta(options?: { projectIds?: number[] }) {
       }),
     ]);
 
-    let measurements: { id: number; name: string; convertor: number }[] = [
-      ...DEFAULT_MEASUREMENTS,
-    ];
-    if (await tableExists("measurements")) {
-      const rows = await queryRaw<
-        { id: unknown; name: string; convertor: unknown }[]
-      >(`SELECT id, name, convertor FROM measurements ORDER BY id ASC`);
-      if (rows.length) {
-        measurements = rows.map((r) => ({
-          id: jsonNum(r.id),
-          name: r.name,
-          convertor: jsonNum(r.convertor) || 1,
-        }));
-      }
-    }
+    const measurements = await listMeasurements();
 
     let installmentTypes: { id: number; name: string }[] = [...DEFAULT_INSTALLMENT_TYPES];
     for (const table of ["installment_types", "installment_type"]) {
@@ -203,17 +210,8 @@ export async function loadUnitFormMeta(options?: { projectIds?: number[] }) {
   }
 }
 
-export async function listAdminUnits(filters: UnitListFilters = {}) {
-  if (!isDatabaseEnabled()) return { items: [], total: 0, error: "Database disabled" };
-
-  if (filters.projectIds && filters.projectIds.length === 0) {
-    return { items: [], total: 0 };
-  }
-
-  const page = filters.page ?? 1;
-  const perPage = Math.min(filters.perPage ?? 25, 100);
-  const skip = (page - 1) * perPage;
-
+/** SQL filter over `units u LEFT JOIN projects p`, shared by the list and the CSV export. */
+export function buildUnitListWhere(filters: UnitListFilters): { where: string; params: unknown[] } {
   const conditions = ["u.is_archive = 0"];
   const params: unknown[] = [];
 
@@ -225,13 +223,31 @@ export async function listAdminUnits(filters: UnitListFilters = {}) {
     conditions.push(`u.project_id IN (${filters.projectIds.map(() => "?").join(",")})`);
     params.push(...filters.projectIds);
   }
+  if (filters.projectStatus === "live") {
+    conditions.push("p.status = 1 AND p.is_archive = 0");
+  } else if (filters.projectStatus === "inactive") {
+    conditions.push("(p.id IS NULL OR p.status <> 1 OR p.is_archive = 1)");
+  }
   if (filters.q?.trim()) {
     conditions.push("(u.title LIKE ? OR p.name LIKE ?)");
     const like = `%${filters.q.trim()}%`;
     params.push(like, like);
   }
 
-  const where = conditions.join(" AND ");
+  return { where: conditions.join(" AND "), params };
+}
+
+export async function listAdminUnits(filters: UnitListFilters = {}) {
+  if (!isDatabaseEnabled()) return { items: [], total: 0, error: "Database disabled" };
+
+  if (filters.projectIds && filters.projectIds.length === 0) {
+    return { items: [], total: 0 };
+  }
+
+  const page = filters.page ?? 1;
+  const perPage = Math.min(filters.perPage ?? 25, 100);
+  const skip = (page - 1) * perPage;
+  const { where, params } = buildUnitListWhere(filters);
 
   try {
     const countRows = await queryRaw<{ cnt: bigint }[]>(

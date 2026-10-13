@@ -73,6 +73,8 @@ export async function GET(request: NextRequest) {
   const builderScoped = await builderProjectIdsForSession(auth.session);
 
   const projectId = Number(sp.get("projectId") ?? 0) || undefined;
+  const status = sp.get("projectStatus");
+  const projectStatus = status === "live" || status === "inactive" ? status : undefined;
   if (builderScoped !== undefined && projectId && !builderScoped.includes(projectId)) {
     return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
   }
@@ -84,6 +86,7 @@ export async function GET(request: NextRequest) {
       projectId,
       q: sp.get("q") ?? undefined,
       projectIds: builderScoped,
+      projectStatus,
     }),
     loadUnitFormMeta({ projectIds: builderScoped }),
   ]);

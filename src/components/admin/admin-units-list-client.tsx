@@ -8,11 +8,22 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useSearchParams } from "next/navigation";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Download, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { AdminDbAlert, AdminPageToolbar, AdminPagination, adminCard, adminTableHead } from "@/components/admin/admin-ui";
 import { AdminCan } from "@/components/admin/admin-permissions-provider";
+import { AdminUnitsCsvImport } from "@/components/admin/admin-units-csv-import";
 
 const PER_PAGE = 25;
+
+const PROJECT_STATUS_OPTIONS = [
+  { value: "", label: "All project statuses" },
+  { value: "live", label: "Live projects only" },
+  { value: "inactive", label: "Not live projects" },
+];
+
+function parseProjectStatus(value: string | null): string {
+  return value === "live" || value === "inactive" ? value : "";
+}
 
 type Row = {
   rowNum: number;
@@ -39,6 +50,10 @@ export function AdminUnitsListClient() {
   const [projectId, setProjectId] = useState(initialProjectId);
   const [appliedProjectId, setAppliedProjectId] = useState(initialProjectId);
   const [projects, setProjects] = useState<{ id: number; name: string }[]>([]);
+  const [projectStatus, setProjectStatus] = useState(() =>
+    parseProjectStatus(searchParams.get("projectStatus"))
+  );
+  const [importOpen, setImportOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -48,6 +63,7 @@ export function AdminUnitsListClient() {
     params.set("perPage", String(PER_PAGE));
     if (appliedQ) params.set("q", appliedQ);
     if (appliedProjectId) params.set("projectId", appliedProjectId);
+    if (projectStatus) params.set("projectStatus", projectStatus);
     const res = await fetch(`/api/admin/units?${params}`);
     const json = await res.json();
     if (!json.success) {
@@ -60,7 +76,7 @@ export function AdminUnitsListClient() {
       if (json.projects) setProjects(json.projects);
     }
     setLoading(false);
-  }, [page, appliedQ, appliedProjectId]);
+  }, [page, appliedQ, appliedProjectId, projectStatus]);
 
   useEffect(() => {
     load();
@@ -79,9 +95,34 @@ export function AdminUnitsListClient() {
     ? `/admin/units/create?projectId=${appliedProjectId}`
     : "/admin/units/create";
 
+  const exportParams = new URLSearchParams();
+  if (appliedQ) exportParams.set("q", appliedQ);
+  if (appliedProjectId) exportParams.set("projectId", appliedProjectId);
+  if (projectStatus) exportParams.set("projectStatus", projectStatus);
+  const exportQuery = exportParams.toString();
+  const exportHref = `/api/admin/units/csv${exportQuery ? `?${exportQuery}` : ""}`;
+
   return (
     <div className="space-y-4">
       <AdminPageToolbar total={total}>
+        <Button asChild variant="outline" className="gap-1.5">
+          <a href={exportHref} download>
+            <Download className="h-4 w-4" />
+            Export CSV
+          </a>
+        </Button>
+        <AdminCan module="units" action="edit">
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => setImportOpen((v) => !v)}
+            aria-expanded={importOpen}
+          >
+            <Upload className="h-4 w-4" />
+            Import CSV
+          </Button>
+        </AdminCan>
         <AdminCan module="units" action="add">
           <Button asChild className="gap-1.5">
             <Link href={createHref as Route}>
@@ -91,6 +132,10 @@ export function AdminUnitsListClient() {
           </Button>
         </AdminCan>
       </AdminPageToolbar>
+
+      {importOpen ? (
+        <AdminUnitsCsvImport onClose={() => setImportOpen(false)} onImported={load} />
+      ) : null}
 
       <div className={`${adminCard} p-4`}>
         <div className="flex flex-wrap gap-2">
@@ -103,6 +148,16 @@ export function AdminUnitsListClient() {
               { value: "", label: "All projects" },
               ...projects.map((p) => ({ value: String(p.id), label: p.name })),
             ]}
+          />
+          <AdminSelect
+            layout="field"
+            value={projectStatus}
+            onChange={(value) => {
+              setProjectStatus(value);
+              setPage(1);
+            }}
+            placeholder="All project statuses"
+            options={PROJECT_STATUS_OPTIONS}
           />
           <Input layout="field" placeholder="Search title or project…"
             value={q}
