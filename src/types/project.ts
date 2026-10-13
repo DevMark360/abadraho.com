@@ -84,6 +84,8 @@ export interface ProjectListItem {
   bedroomLabel?: string | null;
   minAreaSqFt?: number | null;
   maxAreaSqFt?: number | null;
+  /** Lowest total amount per gross sq.ft across units that have a gross area */
+  minPricePerSqFt?: number | null;
 }
 
 export interface ProjectFiltersState extends ProjectFilters {

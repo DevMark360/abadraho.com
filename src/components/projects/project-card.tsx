@@ -10,6 +10,7 @@ import {
   shouldShowMatchedUnitPrice,
 } from "@/lib/filter-match-tiers";
 import { formatAreaLabel } from "@/lib/project-list-card";
+import { useCardPricePerSqFt } from "@/lib/client/price-per-sqft-pref";
 import { cn, formatPrice } from "@/lib/utils";
 import { ProjectCardActions } from "@/components/projects/project-card-actions";
 import { ProjectCardCompareToggle } from "@/components/projects/project-card-compare-toggle";
@@ -32,6 +33,8 @@ export function ProjectCard({
   const useMatchedPrice =
     shouldShowMatchedUnitPrice(project.matchedFilters) && matched?.price != null;
   const price = useMatchedPrice ? matched.price : project.minPrice;
+  // Projects without a unit gross area keep the full price even with the toggle on.
+  const perSqFt = useCardPricePerSqFt() ? (project.minPricePerSqFt ?? null) : null;
   const beds = project.bedroomLabel;
   const size = formatAreaLabel(project.minAreaSqFt, project.maxAreaSqFt);
   const hasSpecs = Boolean(beds || size);
@@ -149,10 +152,19 @@ export function ProjectCard({
 
       <div className="flex items-baseline justify-between gap-2 border-t border-clay-line px-4 py-3">
         <span className="text-sm font-medium text-zinc-600">
-          {useMatchedPrice ? "Matched price" : "Price from"}
+          {perSqFt != null ? "Per sq.ft from" : useMatchedPrice ? "Matched price" : "Price from"}
         </span>
         <span className="text-right text-base font-bold text-zinc-900">
-          {price != null ? formatPrice(price, currency) : "On request"}
+          {perSqFt != null ? (
+            <>
+              {formatPrice(perSqFt, currency)}
+              <span className="ml-0.5 text-xs font-semibold text-zinc-500">/sq.ft</span>
+            </>
+          ) : price != null ? (
+            formatPrice(price, currency)
+          ) : (
+            "On request"
+          )}
         </span>
       </div>
 

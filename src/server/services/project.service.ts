@@ -103,6 +103,7 @@ function mapDbProject(
     bedroomLabel: unitSummary.bedroomLabel,
     minAreaSqFt: unitSummary.minAreaSqFt,
     maxAreaSqFt: unitSummary.maxAreaSqFt,
+    minPricePerSqFt: unitSummary.minPricePerSqFt,
   };
 }
 

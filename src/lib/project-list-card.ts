@@ -50,10 +50,15 @@ export function summarizeListingUnits(units: ListingUnitRow[] = []) {
   const installments: number[] = [];
   const areas: number[] = [];
   const bedCounts: number[] = [];
+  const perSqFt: number[] = [];
 
   for (const unit of units) {
     const price = unitStartPrice(unit);
     if (price != null) prices.push(price);
+
+    // Same rule as the unit's "Price per sq.ft": gross area only, no fallback.
+    const gross = toPositiveNumber(unit.grossArea);
+    if (price != null && gross != null) perSqFt.push(Math.round(price / gross));
 
     const monthly = toPositiveNumber(unit.monthlyInstallment);
     if (monthly != null) installments.push(monthly);
@@ -72,6 +77,7 @@ export function summarizeListingUnits(units: ListingUnitRow[] = []) {
     minAreaSqFt: areas.length ? Math.min(...areas) : null,
     maxAreaSqFt: areas.length ? Math.max(...areas) : null,
     bedroomLabel: formatBedroomLabel(bedCounts),
+    minPricePerSqFt: perSqFt.length ? Math.min(...perSqFt) : null,
   };
 }
 

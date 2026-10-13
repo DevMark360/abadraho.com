@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { FilterChipsBar } from "@/components/projects/filter-chips-bar";
 import { ListingsSeoFooter } from "@/components/marketing/listings-seo-footer";
 import { ListingsContent } from "@/components/projects/listings-content";
+import { PricePerSqFtScope } from "@/lib/client/price-per-sqft-pref";
 import type { RotationSlot } from "@/server/services/ad-serving.service";
 import type { FilterSummary } from "@/lib/filter-match-tiers";
 import type { ProjectListItem } from "@/types/project";
@@ -84,8 +85,10 @@ function ListingsPageShellInner({
 
 export function ListingsPageShell(props: ListingsPageShellProps) {
   return (
-    <Suspense fallback={<LoadingState size="lg" fullHeight className="flex-1" />}>
-      <ListingsPageShellInner {...props} />
-    </Suspense>
+    <PricePerSqFtScope.Provider value>
+      <Suspense fallback={<LoadingState size="lg" fullHeight className="flex-1" />}>
+        <ListingsPageShellInner {...props} />
+      </Suspense>
+    </PricePerSqFtScope.Provider>
   );
 }

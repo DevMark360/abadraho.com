@@ -17,6 +17,7 @@ import { AmountRangePanel } from "@/components/projects/filters/panels/amount-ra
 import { ChipPanel } from "@/components/projects/filters/panels/chip-panel";
 import { HousingBudgetCalculatorModal } from "@/components/projects/filters/panels/housing-budget-calculator-modal";
 import { clearHousingBudgetUrlParams } from "@/lib/housing-budget";
+import { setPricePerSqFtPref, usePricePerSqFtPref } from "@/lib/client/price-per-sqft-pref";
 
 const BEDROOMS = [
   { value: "studio", label: "Studio" },
@@ -47,6 +48,7 @@ export function FilterChipsBar() {
   const { user } = useAuth();
   const [viewPending, startViewTransition] = useTransition();
   const view = searchParams.get("view") ?? "list";
+  const pricePerSqFt = usePricePerSqFtPref();
 
   const {
     draft,
@@ -197,6 +199,33 @@ export function FilterChipsBar() {
             <Calculator className="h-4 w-4 shrink-0" aria-hidden />
             <span className="hidden whitespace-nowrap sm:inline">Budget Calculator</span>
             <span className="whitespace-nowrap sm:hidden">Budget</span>
+          </button>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={pricePerSqFt}
+            onClick={() => setPricePerSqFtPref(!pricePerSqFt)}
+            title="Show price per sq.ft on project cards (projects with a gross area)"
+            className="flex min-h-[44px] items-center gap-2 rounded-2xl border border-white/80 bg-clay-surface px-3 py-2 text-sm font-medium text-zinc-700 shadow-clay-sm transition-shadow hover:shadow-clay"
+          >
+            <span
+              aria-hidden
+              className={cn(
+                "relative h-5 w-9 shrink-0 rounded-full shadow-clay-inset transition-colors",
+                pricePerSqFt ? "bg-brand-accent" : "bg-zinc-200"
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-[left]",
+                  pricePerSqFt ? "left-[1.125rem]" : "left-0.5"
+                )}
+              />
+            </span>
+            <span className="whitespace-nowrap">
+              <span className="hidden sm:inline">Price per </span>sq.ft
+            </span>
           </button>
 
           <div className="flex min-h-[44px] rounded-2xl bg-clay-well p-1 shadow-clay-inset">
