@@ -29,12 +29,7 @@ import {
 } from "@/lib/client/compare-store";
 import { CompareHelpPanel } from "@/components/marketing/compare-help-panel";
 import { UnitRoomsTable } from "@/components/project-detail/unit-rooms-table";
-import {
-  formatSqFt,
-  unitInstallmentMonths,
-  unitPricePerSqFt,
-  unitTotalCoveredArea,
-} from "@/lib/unit-metrics";
+import { unitInstallmentMonths, unitPricePerSqFt } from "@/lib/unit-metrics";
 import { cn, formatPrice } from "@/lib/utils";
 import type { CompareProjectPayload } from "@/types/compare";
 import type { ProjectUnit } from "@/types/project-detail";
@@ -105,13 +100,6 @@ const UNIT_ROWS: UnitRow[] = [
   {
     label: "Loan amount",
     getValue: (u) => (u.loanAmount ? formatPrice(u.loanAmount) : "—"),
-  },
-  {
-    label: "Total area",
-    getValue: (u) => {
-      const area = unitTotalCoveredArea(u);
-      return area != null ? formatSqFt(area) : "—";
-    },
   },
   {
     label: "Price per sq.ft",
