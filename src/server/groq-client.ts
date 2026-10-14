@@ -3,6 +3,11 @@ const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 /** Enabled on the account and handles both text and images. */
 export const GROQ_DEFAULT_MODEL = "qwen/qwen3.8-27b";
 
+/** Key for the floor plan reader (and the default for any caller that doesn't pick one). */
+export const GROQ_KEY_ENV = "GROQ_API_KEY";
+/** Separate key for the Compare page (location / developer verdicts and the unit analysis). */
+export const GROQ_COMPARE_KEY_ENV = "GROQ_COMPARE_API_KEY";
+
 export type GroqErrorCode = "not_configured" | "auth" | "model" | "rate_limit" | "timeout" | "network" | "upstream";
 
 export class GroqError extends Error {
@@ -20,8 +25,8 @@ export type GroqContentPart =
   | { type: "text"; text: string }
   | { type: "image_url"; image_url: { url: string } };
 
-function errorForStatus(status: number, detail: string, retryAfter: string | null): GroqError {
-  if (status === 401) return new GroqError("The Groq API key was rejected. Check GROQ_API_KEY.", "auth", 502);
+function errorForStatus(status: number, detail: string, retryAfter: string | null, keyEnv: string): GroqError {
+  if (status === 401) return new GroqError(`The Groq API key was rejected. Check ${keyEnv}.`, "auth", 502);
   if (status === 403 || status === 404) {
     return new GroqError(
       "The Groq model is not available on this account. Enable it in the Groq console.",
@@ -47,9 +52,13 @@ type GroqChatOptions = {
   timeoutMs: number;
   /** Ask Groq to guarantee a JSON object reply. */
   json?: boolean;
+  /** Name of the env variable holding the API key; defaults to GROQ_API_KEY. */
+  apiKeyEnv?: string;
+  /** 0 by default; a little higher gives more natural prose. */
+  temperature?: number;
 };
 
-/** Models Groq refused on this account; skipped until the app restarts. */
+/** Models Groq refused, per key (each key can be a different account); skipped until restart. */
 const unavailableModels = new Set<string>();
 
 /**
@@ -58,12 +67,13 @@ const unavailableModels = new Set<string>();
  */
 export async function groqChatWithFallback(options: GroqChatOptions): Promise<{ content: string; model: string }> {
   const requested = options.model?.trim() || GROQ_DEFAULT_MODEL;
-  const wanted = unavailableModels.has(requested) ? GROQ_DEFAULT_MODEL : requested;
+  const keyEnv = options.apiKeyEnv ?? GROQ_KEY_ENV;
+  const wanted = unavailableModels.has(`${keyEnv}|${requested}`) ? GROQ_DEFAULT_MODEL : requested;
   try {
     return { content: await groqChat({ ...options, model: wanted }), model: wanted };
   } catch (e) {
     if (!(e instanceof GroqError) || e.code !== "model" || wanted === GROQ_DEFAULT_MODEL) throw e;
-    unavailableModels.add(wanted);
+    unavailableModels.add(`${keyEnv}|${wanted}`);
     console.warn(`[groq] model "${wanted}" is not available; using ${GROQ_DEFAULT_MODEL} until restart`);
     return { content: await groqChat({ ...options, model: GROQ_DEFAULT_MODEL }), model: GROQ_DEFAULT_MODEL };
   }
@@ -71,9 +81,10 @@ export async function groqChatWithFallback(options: GroqChatOptions): Promise<{ 
 
 /** One chat completion; returns the reply text. Throws GroqError with a message safe to show admins. */
 export async function groqChat(options: GroqChatOptions): Promise<string> {
-  const apiKey = process.env.GROQ_API_KEY?.trim();
+  const keyEnv = options.apiKeyEnv ?? GROQ_KEY_ENV;
+  const apiKey = process.env[keyEnv]?.trim();
   if (!apiKey) {
-    throw new GroqError("Groq is not set up. Add GROQ_API_KEY to the server .env.", "not_configured", 503);
+    throw new GroqError(`Groq is not set up. Add ${keyEnv} to the server .env.`, "not_configured", 503);
   }
   const model = options.model?.trim() || GROQ_DEFAULT_MODEL;
 
@@ -85,7 +96,7 @@ export async function groqChat(options: GroqChatOptions): Promise<string> {
       signal: AbortSignal.timeout(options.timeoutMs),
       body: JSON.stringify({
         model,
-        temperature: 0,
+        temperature: options.temperature ?? 0,
         max_tokens: options.maxTokens,
         // Qwen thinks out loud by default, which burns the free per-minute token budget.
         ...(model.startsWith("qwen/") ? { reasoning_effort: "none" } : {}),
@@ -104,7 +115,7 @@ export async function groqChat(options: GroqChatOptions): Promise<string> {
   }
 
   if (!res.ok) {
-    throw errorForStatus(res.status, await res.text().catch(() => ""), res.headers.get("retry-after"));
+    throw errorForStatus(res.status, await res.text().catch(() => ""), res.headers.get("retry-after"), keyEnv);
   }
   const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
   return json.choices?.[0]?.message?.content ?? "";

@@ -70,10 +70,6 @@ const UNIT_ROWS: UnitRow[] = [
     getValue: (u) => (u.grossArea ? `${u.grossArea} sq.ft` : "—"),
   },
   {
-    label: "Net area",
-    getValue: (u) => (u.netArea ? `${u.netArea} sq.ft` : "—"),
-  },
-  {
     label: "Price",
     getValue: (u) => (u.price ? formatPrice(u.price) : "—"),
   },

@@ -32,7 +32,6 @@ function UnitSpecs({ unit, installmentMonths }: { unit: ProjectUnit; installment
   const rows: { label: string; value: string }[] = [
     { label: "Project type", value: unit.unitType ?? "—" },
     { label: "Gross area", value: unit.grossArea ? `${unit.grossArea} sq.ft` : "—" },
-    { label: "Net area", value: unit.netArea ? `${unit.netArea} sq.ft` : "—" },
     {
       label: "Installment length",
       value: months ? `${months} months` : "—",

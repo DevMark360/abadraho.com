@@ -12,6 +12,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AdminFormSection, preventImplicitFormSubmit } from "@/components/admin/admin-form-section";
 import { AdminBackLink, AdminDbAlert, AdminErrorAlert, adminCard } from "@/components/admin/admin-ui";
 import { AdminFloorPlanRoomsDialog } from "@/components/admin/admin-floor-plan-rooms-dialog";
+import {
+  AdminRoomGroupsManager,
+  RoomGroupsSwitch,
+  type AdminRoomGroup,
+} from "@/components/admin/admin-unit-room-groups";
 
 type Meta = {
   projectTypes: { id: number; title: string }[];
@@ -31,6 +36,7 @@ type UnitRoom = {
   lengthInches: number | null;
   coveredArea: number | null;
   extras: string | null;
+  groupId: number | null;
 };
 
 type RoomDraft = {
@@ -87,7 +93,6 @@ export function AdminUnitFormClient({
   const [title, setTitle] = useState("");
   const [roomsLabel, setRoomsLabel] = useState("");
   const [grossArea, setGrossArea] = useState("");
-  const [netArea, setNetArea] = useState("");
   const [measurementTypeId, setMeasurementTypeId] = useState("1");
   const [unitTypeId, setUnitTypeId] = useState("");
   const [price, setPrice] = useState("");
@@ -111,6 +116,10 @@ export function AdminUnitFormClient({
   const [editRoom, setEditRoom] = useState<RoomDraft>(emptyRoomDraft);
   const [readingFloorPlan, setReadingFloorPlan] = useState(false);
   const [roomsNotice, setRoomsNotice] = useState("");
+  const [roomGroupsEnabled, setRoomGroupsEnabled] = useState(false);
+  const [roomGroups, setRoomGroups] = useState<AdminRoomGroup[]>([]);
+  const [groupingOn, setGroupingOn] = useState(false);
+  const [targetGroupId, setTargetGroupId] = useState("");
 
   const newRoomArea = useMemo(() => calcSqFt(newRoom), [newRoom]);
   const roomsTotalSqFt = useMemo(
@@ -135,6 +144,16 @@ export function AdminUnitFormClient({
     });
   };
 
+  /** Rooms plus room groups from a GET /api/admin/units/[id] unit. */
+  const applyRoomsFromUnit = (u: Record<string, unknown>) => {
+    const groups = (u.roomGroups as AdminRoomGroup[] | undefined) ?? [];
+    setRooms((u.unitRooms as UnitRoom[] | undefined) ?? []);
+    setRoomGroupsEnabled(Boolean(u.roomGroupsEnabled));
+    setRoomGroups(groups);
+    // Stays on while switched on, even before the first group is added.
+    if (groups.length) setGroupingOn(true);
+  };
+
   const loadUnit = useCallback(async () => {
     try {
       if (mode === "edit" && unitId) {
@@ -153,7 +172,6 @@ export function AdminUnitFormClient({
         setTitle(u.title ?? "");
         setRoomsLabel(u.rooms ?? "");
         setGrossArea(u.grossArea != null ? String(u.grossArea) : "");
-        setNetArea(u.netArea != null ? String(u.netArea) : "");
         setMeasurementTypeId(String(u.measurementTypeId ?? 1));
         setUnitTypeId(u.unitTypeId ? String(u.unitTypeId) : "");
         setPrice(String(u.price ?? ""));
@@ -167,7 +185,7 @@ export function AdminUnitFormClient({
         setDescription(u.description ?? "");
         setFloorPlanUrl(u.floorPlanUrl);
         setPaymentPlanUrl(u.paymentPlanUrl);
-        setRooms(u.unitRooms ?? []);
+        applyRoomsFromUnit(u);
         return true;
       }
 
@@ -207,7 +225,6 @@ export function AdminUnitFormClient({
       title,
       rooms: roomsLabel,
       grossArea: grossArea ? Number(grossArea) : null,
-      netArea: netArea ? Number(netArea) : null,
       measurementTypeId: Number(measurementTypeId),
       unitTypeId: Number(unitTypeId),
       price: Number(price),
@@ -280,6 +297,7 @@ export function AdminUnitFormClient({
         lengthInches: Number(newRoom.lengthInches),
         extras: newRoom.extras,
         coveredArea: newRoomArea,
+        groupId: newRoomsGroupId,
       }),
     });
     const json = await res.json();
@@ -303,19 +321,55 @@ export function AdminUnitFormClient({
     { id: 1, name: "Sq Ft", convertor: 1 };
   const roomsTotalInUnit = Math.round((roomsTotalSqFt / (measurement.convertor || 1)) * 100) / 100;
 
-  function applyRoomsTotalAsNetArea() {
-    setNetArea(String(roomsTotalInUnit));
-    setRoomsNotice(
-      `Net area set to ${roomsTotalInUnit.toLocaleString("en-PK")} ${measurement.name}. Save the unit to keep it.`
-    );
-  }
-
   /** Refreshes only the rooms list, so unsaved edits elsewhere in the form are kept. */
   async function reloadRooms() {
     if (!unitId) return;
     const res = await fetch(`/api/admin/units/${unitId}`);
     const json = await res.json().catch(() => ({}));
-    if (json.success && json.unit) setRooms(json.unit.unitRooms ?? []);
+    if (json.success && json.unit) applyRoomsFromUnit(json.unit);
+  }
+
+  // New rooms go to the picked group, or the first one when the pick no longer exists.
+  const groupsActive = roomGroupsEnabled && groupingOn && roomGroups.length > 0;
+  const newRoomsGroupId = groupsActive
+    ? (roomGroups.find((g) => String(g.id) === targetGroupId) ?? roomGroups[0]).id
+    : null;
+  const roomCountsByGroup = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const r of rooms) if (r.groupId != null) counts.set(r.groupId, (counts.get(r.groupId) ?? 0) + 1);
+    return counts;
+  }, [rooms]);
+
+  async function setGrouping(on: boolean) {
+    if (on) {
+      setGroupingOn(true);
+      return;
+    }
+    if (roomGroups.length) {
+      const ok = confirm(
+        `Turn off layouts / floors? The ${roomGroups.length} ${roomGroups.length === 1 ? "group is" : "groups are"} deleted; every room stays on the unit.`
+      );
+      if (!ok) return;
+      const res = await fetch(`/api/admin/units/${unitId}/room-groups`, { method: "DELETE" });
+      const json = await res.json().catch(() => ({}));
+      if (!json.success) {
+        alert(json.message ?? "Could not remove the groups");
+        return;
+      }
+    }
+    setGroupingOn(false);
+    await reloadRooms();
+  }
+
+  async function moveRoomToGroup(roomId: number, groupId: string) {
+    const res = await fetch(`/api/admin/units/${unitId}/rooms/${roomId}/group`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ groupId: groupId ? Number(groupId) : null }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!json.success) alert(json.message ?? "Could not move the room");
+    await reloadRooms();
   }
 
   function cancelNewRoom() {
@@ -373,6 +427,70 @@ export function AdminUnitFormClient({
       coveredArea: r.coveredArea != null ? String(r.coveredArea) : "",
     });
   }
+
+  const renderRoom = (r: UnitRoom) => (
+    <li
+      key={r.id}
+      className="rounded-lg border border-zinc-200 p-3 text-sm"
+    >
+      {editingRoomId === r.id ? (
+        <RoomFields
+          draft={editRoom}
+          setDraft={setEditRoom}
+          roomTypes={meta?.roomTypes ?? []}
+          area={editRoomArea}
+        />
+      ) : (
+        <div className="flex flex-wrap justify-between gap-2">
+          <div>
+            <strong>{r.roomTypeName}</strong>
+            <span className="ml-2 text-zinc-500">
+              {r.widthFeet}′{r.widthInches ?? 0}″ × {r.lengthFeet}′
+              {r.lengthInches ?? 0}″ · qty {r.extras ?? 1} ·{" "}
+              {r.coveredArea ?? "—"} sq ft
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {groupsActive ? (
+              <AdminSelect
+                layout="inline"
+                aria-label="Room group"
+                className="w-44"
+                value={r.groupId != null ? String(r.groupId) : ""}
+                onChange={(value) => void moveRoomToGroup(r.id, value)}
+                options={[
+                  ...roomGroups.map((g) => ({ value: String(g.id), label: g.name })),
+                  { value: "", label: "No group" },
+                ]}
+              />
+            ) : null}
+            <Button type="button" size="sm" variant="outline" onClick={() => startEditRoom(r)}>
+              Edit
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="text-red-600"
+              onClick={() => deleteRoom(r.id)}
+            >
+              Delete
+            </Button>
+          </div>
+        </div>
+      )}
+      {editingRoomId === r.id && (
+        <div className="mt-2 flex gap-2">
+          <Button type="button" size="sm" onClick={saveRoomEdit}>
+            Save room
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={() => setEditingRoomId(null)}>
+            Cancel
+          </Button>
+        </div>
+      )}
+    </li>
+  );
 
   if (loading) return <LoadingState size="sm" />;
 
@@ -460,16 +578,6 @@ export function AdminUnitFormClient({
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-zinc-700">Net area</span>
-              <Input layout="field"
-                type="number"
-                min={0}
-                step="any"
-                value={netArea}
-                onChange={(e) => setNetArea(e.target.value)}
-              />
-            </label>
-            <label className="block text-sm sm:col-span-2">
               <span className="font-medium text-zinc-700">Measurement unit</span>
               <AdminSelect
                 layout="field"
@@ -635,66 +743,68 @@ export function AdminUnitFormClient({
         )}
 
         {mode === "edit" && unitId && (
-          <AdminFormSection title="Unit rooms">
+          <AdminFormSection
+            title="Unit rooms"
+            actions={
+              roomGroupsEnabled ? (
+                <RoomGroupsSwitch checked={groupingOn} onChange={(on) => void setGrouping(on)} />
+              ) : null
+            }
+          >
+            {roomGroupsEnabled && groupingOn ? (
+              <AdminRoomGroupsManager
+                unitId={unitId}
+                groups={roomGroups}
+                roomCounts={roomCountsByGroup}
+                onChanged={async (created) => {
+                  if (created) setTargetGroupId(String(created.id));
+                  await reloadRooms();
+                }}
+              />
+            ) : null}
+
             {rooms.length === 0 ? (
               <p className="text-sm text-zinc-500">No rooms yet.</p>
+            ) : groupsActive ? (
+              <div className="space-y-5">
+                {[
+                  ...roomGroups.map((g) => ({
+                    key: String(g.id),
+                    name: g.name,
+                    rooms: rooms.filter((r) => r.groupId === g.id),
+                  })),
+                  {
+                    key: "none",
+                    name: "Not in a group",
+                    rooms: rooms.filter((r) => r.groupId == null || !roomGroups.some((g) => g.id === r.groupId)),
+                  },
+                ]
+                  .filter((section) => section.key !== "none" || section.rooms.length)
+                  .map((section) => (
+                    <div key={section.key}>
+                      <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-zinc-800">
+                        <span aria-hidden className="h-4 w-1 rounded-full bg-brand-accent" />
+                        {section.name}
+                        <span className="text-xs font-normal text-zinc-500">
+                          {section.rooms.length} {section.rooms.length === 1 ? "room" : "rooms"}
+                        </span>
+                      </p>
+                      {section.rooms.length ? (
+                        <ul className="space-y-3">{section.rooms.map(renderRoom)}</ul>
+                      ) : (
+                        <p className="rounded-lg border border-dashed border-zinc-200 px-3 py-2 text-xs text-zinc-500">
+                          No rooms yet. Add rooms to this group below, or move rooms here with their group menu.
+                        </p>
+                      )}
+                    </div>
+                  ))}
+              </div>
             ) : (
-              <ul className="space-y-3">
-                {rooms.map((r) => (
-                  <li
-                    key={r.id}
-                    className="rounded-lg border border-zinc-200 p-3 text-sm"
-                  >
-                    {editingRoomId === r.id ? (
-                      <RoomFields
-                        draft={editRoom}
-                        setDraft={setEditRoom}
-                        roomTypes={meta?.roomTypes ?? []}
-                        area={editRoomArea}
-                      />
-                    ) : (
-                      <div className="flex flex-wrap justify-between gap-2">
-                        <div>
-                          <strong>{r.roomTypeName}</strong>
-                          <span className="ml-2 text-zinc-500">
-                            {r.widthFeet}′{r.widthInches ?? 0}″ × {r.lengthFeet}′
-                            {r.lengthInches ?? 0}″ · qty {r.extras ?? 1} ·{" "}
-                            {r.coveredArea ?? "—"} sq ft
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button type="button" size="sm" variant="outline" onClick={() => startEditRoom(r)}>
-                            Edit
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="text-red-600"
-                            onClick={() => deleteRoom(r.id)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    {editingRoomId === r.id && (
-                      <div className="mt-2 flex gap-2">
-                        <Button type="button" size="sm" onClick={saveRoomEdit}>
-                          Save room
-                        </Button>
-                        <Button type="button" size="sm" variant="outline" onClick={() => setEditingRoomId(null)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <ul className="space-y-3">{rooms.map(renderRoom)}</ul>
             )}
 
             {roomsTotalSqFt > 0 ? (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-clay-well px-4 py-3 shadow-clay-inset">
+              <div className="mt-3 rounded-xl bg-clay-well px-4 py-3 shadow-clay-inset">
                 <p className="text-sm text-zinc-700">
                   Total area of rooms:{" "}
                   <strong className="text-zinc-900">
@@ -707,15 +817,25 @@ export function AdminUnitFormClient({
                     </span>
                   ) : null}
                 </p>
-                <Button type="button" size="sm" variant="outline" onClick={applyRoomsTotalAsNetArea}>
-                  Use as net area
-                </Button>
               </div>
             ) : null}
 
             {roomsNotice ? <p className="mt-3 text-sm text-emerald-700">{roomsNotice}</p> : null}
 
             <div className="mt-4">
+              {groupsActive ? (
+                <label className="mb-3 flex flex-wrap items-center gap-2 text-sm">
+                  <span className="font-medium text-zinc-700">Add new rooms to</span>
+                  <AdminSelect
+                    layout="inline"
+                    aria-label="Group for new rooms"
+                    className="w-52"
+                    value={String(newRoomsGroupId)}
+                    onChange={setTargetGroupId}
+                    options={roomGroups.map((g) => ({ value: String(g.id), label: g.name }))}
+                  />
+                </label>
+              ) : null}
               {!showNewRoomForm ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <Button type="button" variant="outline" onClick={() => setShowNewRoomForm(true)}>
@@ -764,6 +884,7 @@ export function AdminUnitFormClient({
                 floorPlanFile={floorPlanFile}
                 floorPlanUrl={removeFloorPlan ? null : floorPlanUrl}
                 roomTypes={meta?.roomTypes ?? []}
+                groupId={newRoomsGroupId}
                 onClose={() => setReadingFloorPlan(false)}
                 onRoomTypesChange={updateRoomTypes}
                 onAdded={(count) => {

@@ -20,7 +20,6 @@ function parsePayload(body: Record<string, unknown>) {
     title: String(body.title ?? "").trim(),
     rooms: body.rooms != null ? String(body.rooms) : undefined,
     grossArea: body.grossArea != null ? Number(body.grossArea) : null,
-    netArea: body.netArea != null ? Number(body.netArea) : null,
     measurementTypeId: body.measurementTypeId != null ? Number(body.measurementTypeId) : null,
     unitTypeId: Number(body.unitTypeId),
     price: Number(body.price ?? 0),

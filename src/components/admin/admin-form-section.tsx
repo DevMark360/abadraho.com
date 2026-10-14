@@ -16,17 +16,23 @@ export function preventImplicitFormSubmit(e: KeyboardEvent<HTMLFormElement>) {
 export function AdminFormSection({
   title,
   description,
+  actions,
   children,
 }: {
   title: string;
   description?: string;
+  /** Controls shown on the right of the section heading. */
+  actions?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <section className={adminPanel}>
-      <div className="border-b border-zinc-100 px-5 py-4">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-800">{title}</h3>
-        {description && <p className="mt-1 text-xs text-zinc-500">{description}</p>}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4">
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-800">{title}</h3>
+          {description && <p className="mt-1 text-xs text-zinc-500">{description}</p>}
+        </div>
+        {actions}
       </div>
       <div className="space-y-4 p-5">{children}</div>
     </section>

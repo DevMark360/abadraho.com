@@ -12,7 +12,6 @@ function toInquiryUnit(row: Record<string, unknown>): ProjectUnit {
     name: row.title != null ? String(row.title) : null,
     unitType: null,
     grossArea: null,
-    netArea: null,
     size: null,
     price: null,
     downPayment: null,

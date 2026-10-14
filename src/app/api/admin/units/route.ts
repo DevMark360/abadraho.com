@@ -37,7 +37,6 @@ function parsePayload(
       title: String(body.title ?? "").trim(),
       rooms: body.rooms != null ? String(body.rooms) : undefined,
       grossArea: num(body.grossArea),
-      netArea: num(body.netArea),
       measurementTypeId: num(body.measurementTypeId, 1),
       unitTypeId,
       price,

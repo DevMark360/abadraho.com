@@ -14,6 +14,7 @@ import { loadAreaNamesByProjectIds } from "@/server/services/project-area.servic
 import { prisma } from "@/lib/prisma";
 import { executeRaw, queryRaw } from "@/lib/prisma-raw";
 import { getSimilarProjects } from "@/server/services/similar-projects.service";
+import { attachRoomGroups } from "@/server/services/unit-room-group.service";
 import type { ProjectListItem } from "@/types/project";
 import type { ProjectDetail, ProjectVideoItem } from "@/types/project-detail";
 import type { Prisma } from "@prisma/client";
@@ -138,7 +139,9 @@ async function getProjectDetailFromDb(slug: string): Promise<ProjectDetail | nul
     loadOptionalVideos(project.id),
     loadDetailExtras(project.id),
   ]);
-  return mapDbProjectToDetail(project as ProjectRow, similar, videos, extras);
+  const detail = mapDbProjectToDetail(project as ProjectRow, similar, videos, extras);
+  await attachRoomGroups(detail.units);
+  return detail;
 }
 
 export async function getProjectDetail(slug: string): Promise<ProjectDetail | null> {

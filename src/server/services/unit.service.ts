@@ -1,6 +1,7 @@
 import { isDatabaseEnabled } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { mapDbUnit, mapRoomTypeUnit } from "@/server/services/project-mapper";
+import { attachRoomGroups } from "@/server/services/unit-room-group.service";
 import type { ProjectUnit } from "@/types/project-detail";
 
 const unitInclude = {
@@ -18,7 +19,9 @@ export async function getUnitsByProjectId(projectId: number): Promise<ProjectUni
     include: unitInclude,
     orderBy: { id: "asc" },
   });
-  return units.map((u) => mapDbUnit(u, projectId));
+  const mapped = units.map((u) => mapDbUnit(u, projectId));
+  await attachRoomGroups(mapped);
+  return mapped;
 }
 
 export async function getUnitById(unitId: number): Promise<ProjectUnit | null> {
@@ -27,7 +30,10 @@ export async function getUnitById(unitId: number): Promise<ProjectUnit | null> {
     where: { id: unitId, isArchive: false },
     include: unitInclude,
   });
-  return unit ? mapDbUnit(unit, unit.projectId) : null;
+  if (!unit) return null;
+  const mapped = mapDbUnit(unit, unit.projectId);
+  await attachRoomGroups([mapped]);
+  return mapped;
 }
 
 /** Raw unit rows for legacy /getunits JSON shape */
@@ -59,7 +65,6 @@ function serializeUnit(u: {
   downPayment: unknown;
   monthlyInstallment: unknown;
   grossArea?: unknown;
-  netArea?: unknown;
   size: unknown;
   isArchive: boolean;
   createdAt: Date | null;
@@ -82,7 +87,6 @@ function serializeUnit(u: {
     monthly_installment: n(u.monthlyInstallment),
     covered_area: n(u.grossArea) ?? n(u.size),
     gross_area: n(u.grossArea) ?? n(u.size),
-    net_area: n(u.netArea),
     is_archive: u.isArchive ? 1 : 0,
     created_at: u.createdAt?.toISOString() ?? null,
     updated_at: u.updatedAt?.toISOString() ?? null,

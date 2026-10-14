@@ -79,6 +79,7 @@ export function mapRoomTypeUnit(
   r: ProjectWithRelations["units"][0]["roomTypeUnits"][0]
 ): UnitRoomRow {
   return {
+    id: r.id,
     roomTypeName: r.roomType.name,
     icon: r.roomType.icon,
     count: r.extras,
@@ -112,7 +113,6 @@ export function mapDbUnit(u: UnitRow, projectId?: number): ProjectUnit {
     monthlyInstallment: dec(u.monthlyInstallment),
     installmentMonths: dec(u.installment) || null,
     grossArea: dec(u.grossArea),
-    netArea: dec(u.netArea),
     size: dec(u.grossArea) ?? dec(u.size),
     unitType: u.unitType?.title ?? null,
     unitTypeId: u.unitTypeId,

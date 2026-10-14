@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { tableExists } from "@/lib/db-table-exists";
 import { isDatabaseEnabled } from "@/lib/db";
 import { executeRaw, queryRaw } from "@/lib/prisma-raw";
-import { GroqError, groqChatWithFallback, parseJsonObject } from "@/server/groq-client";
+import { GROQ_COMPARE_KEY_ENV, GroqError, groqChatWithFallback, parseJsonObject } from "@/server/groq-client";
 
 export type VerdictKind = "location" | "developer";
 export const VERDICT_KINDS: readonly VerdictKind[] = ["location", "developer"];
@@ -167,6 +167,7 @@ async function askGroq(
 ): Promise<{ verdict: StoredVerdict; model: string }> {
   const { content, model } = await groqChatWithFallback({
     model: process.env.GROQ_TEXT_MODEL?.trim() || DEFAULT_TEXT_MODEL,
+    apiKeyEnv: GROQ_COMPARE_KEY_ENV,
     system: SYSTEM_PROMPT,
     content: buildPrompt(kind, purpose, nameA, nameB),
     json: true,

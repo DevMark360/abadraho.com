@@ -4,6 +4,13 @@ import { isDatabaseEnabled } from "@/lib/db";
 import { jsonNum, jsonNumOrNull } from "@/lib/prisma-json";
 import { tableExists } from "@/lib/db-table-exists";
 import { unitPlanImageUrl } from "@/lib/unit-media";
+import {
+  assignNewRooms,
+  assignRoomGroup,
+  lastRoomId,
+  loadAdminRoomGroups,
+  resolveNewRoomGroup,
+} from "@/server/services/unit-room-group.service";
 
 export type UnitListFilters = {
   page?: number;
@@ -21,7 +28,6 @@ export type UnitFormPayload = {
   title: string;
   rooms?: string;
   grossArea?: number | null;
-  netArea?: number | null;
   measurementTypeId?: number | null;
   unitTypeId: number;
   price: number;
@@ -41,6 +47,8 @@ export type UnitRoomPayload = {
   lengthInches: number;
   coveredArea?: number | null;
   extras?: string;
+  /** Room group to put a new room in (units with more than one layout / floor). */
+  groupId?: number | null;
 };
 
 function dec(v: unknown): number | null {
@@ -121,10 +129,6 @@ function unitGrossFromDb(
   const gross = dec(unit.grossArea);
   if (gross != null) return areaFromDb(gross, convertor);
   return areaFromDb(dec(unit.size), convertor);
-}
-
-function unitNetFromDb(unit: { netArea?: unknown }, convertor: number): number | null {
-  return areaFromDb(dec(unit.netArea), convertor);
 }
 
 export async function loadUnitFormMeta(options?: { projectIds?: number[] }) {
@@ -271,7 +275,7 @@ export async function listAdminUnits(filters: UnitListFilters = {}) {
       }[]
     >(
       `SELECT u.id, u.project_id, u.title, u.price, u.rooms,
-              u.gross_area, u.net_area, u.covered_area,
+              u.gross_area, u.covered_area,
               p.name AS project_name, pt.title AS unit_type_title
        FROM units u
        LEFT JOIN projects p ON p.id = u.project_id
@@ -293,7 +297,6 @@ export async function listAdminUnits(filters: UnitListFilters = {}) {
       price: dec(r.price),
       rooms: r.rooms,
       grossArea: dec((r as { gross_area?: unknown }).gross_area) ?? dec(r.covered_area),
-      netArea: dec((r as { net_area?: unknown }).net_area),
       unitTypeTitle: r.unit_type_title,
     }));
 
@@ -326,7 +329,10 @@ export async function getAdminUnit(id: number) {
 
   if (!unit) return { unit: null, error: "Not found" };
 
-  const convertor = await measurementConvertor(unit.measurementType);
+  const [convertor, roomGroups] = await Promise.all([
+    measurementConvertor(unit.measurementType),
+    loadAdminRoomGroups(id),
+  ]);
 
   const unitRooms = unit.roomTypeUnits.map((r) => ({
     id: jsonNum(r.id),
@@ -340,6 +346,7 @@ export async function getAdminUnit(id: number) {
     coveredArea: dec(r.coveredArea),
     extras: r.extras,
     isDisplayOnListing: r.isDisplayOnListing,
+    groupId: roomGroups.roomGroupIds.get(jsonNum(r.id)) ?? null,
   }));
 
   const projectId = jsonNum(unit.projectId);
@@ -354,7 +361,6 @@ export async function getAdminUnit(id: number) {
       title: unit.title ?? "",
       rooms: unit.rooms ?? "",
       grossArea: unitGrossFromDb(unit, convertor),
-      netArea: unitNetFromDb(unit, convertor),
       measurementTypeId: jsonNumOrNull(unit.measurementType),
       unitTypeId: jsonNumOrNull(unit.unitTypeId),
       unitTypeTitle: unit.unitType?.title ?? null,
@@ -371,6 +377,9 @@ export async function getAdminUnit(id: number) {
       floorPlanImg: unit.floorPlanImg,
       paymentPlanImg: unit.paymentPlanImg,
       unitRooms,
+      /** false until the room groups SQL is applied; the admin form hides the option then. */
+      roomGroupsEnabled: roomGroups.enabled,
+      roomGroups: roomGroups.groups,
     },
   };
 }
@@ -396,7 +405,6 @@ export async function createAdminUnit(payload: UnitFormPayload) {
   }
 
   const gross = await areaToDb(payload.grossArea, payload.measurementTypeId);
-  const net = await areaToDb(payload.netArea, payload.measurementTypeId);
   const price = payload.price ?? 0;
   const loan = payload.loanAmount ?? 0;
 
@@ -406,7 +414,6 @@ export async function createAdminUnit(payload: UnitFormPayload) {
       title: payload.title,
       rooms: payload.rooms ?? null,
       grossArea: gross,
-      netArea: net,
       size: gross,
       measurementType: payload.measurementTypeId ?? 1,
       unitTypeId: payload.unitTypeId,
@@ -430,7 +437,6 @@ export async function updateAdminUnit(id: number, payload: UnitFormPayload) {
   if (!existing) return { ok: false, error: "Not found" };
 
   const gross = await areaToDb(payload.grossArea, payload.measurementTypeId);
-  const net = await areaToDb(payload.netArea, payload.measurementTypeId);
   const price = payload.price ?? 0;
   const loan = payload.loanAmount ?? 0;
 
@@ -441,7 +447,6 @@ export async function updateAdminUnit(id: number, payload: UnitFormPayload) {
       title: payload.title,
       rooms: payload.rooms ?? null,
       grossArea: gross,
-      netArea: net,
       size: gross,
       measurementType: payload.measurementTypeId ?? 1,
       unitTypeId: payload.unitTypeId,
@@ -485,6 +490,7 @@ export async function createUnitRoom(unitId: number, payload: UnitRoomPayload) {
   });
   if (!unit) return { ok: false, error: "Unit not found" };
 
+  const groupId = await resolveNewRoomGroup(unit.id, payload.groupId);
   const covered = calcRoomCoveredArea(payload);
   const row = await prisma.roomTypeUnit.create({
     data: {
@@ -500,6 +506,7 @@ export async function createUnitRoom(unitId: number, payload: UnitRoomPayload) {
       isDisplayOnListing: true,
     },
   });
+  if (groupId != null) await assignRoomGroup(unit.id, row.id, groupId);
 
   return { ok: true, id: row.id };
 }
@@ -512,6 +519,8 @@ export async function createUnitRooms(unitId: number, payloads: UnitRoomPayload[
   });
   if (!unit) return { ok: false as const, error: "Unit not found" };
 
+  const groupId = await resolveNewRoomGroup(unit.id, payloads[0]?.groupId);
+  const afterRoomId = groupId != null ? await lastRoomId(unit.id) : 0;
   const result = await prisma.roomTypeUnit.createMany({
     data: payloads.map((payload) => ({
       unitId: unit.id,
@@ -526,6 +535,7 @@ export async function createUnitRooms(unitId: number, payloads: UnitRoomPayload[
       isDisplayOnListing: true,
     })),
   });
+  if (groupId != null) await assignNewRooms(unit.id, afterRoomId, groupId);
   return { ok: true as const, count: result.count };
 }
 

@@ -5,6 +5,7 @@ import {
   createUnitRooms,
   type UnitRoomPayload,
 } from "@/server/services/admin-unit.service";
+import { RoomGroupError } from "@/server/services/unit-room-group.service";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -19,6 +20,7 @@ function toPayload(body: Record<string, unknown>): UnitRoomPayload {
     lengthInches: Number(body.lengthInches ?? 0),
     coveredArea: body.coveredArea != null ? Number(body.coveredArea) : null,
     extras: body.extras != null ? String(body.extras) : "1",
+    groupId: body.groupId != null && body.groupId !== "" ? Number(body.groupId) : null,
   };
 }
 
@@ -33,8 +35,22 @@ function isValidRoom(room: UnitRoomPayload): boolean {
   );
 }
 
-/** Body: one room, or `{ rooms: [...] }` to add several at once. */
-export async function POST(request: NextRequest, { params }: Ctx) {
+/**
+ * Body: one room, or `{ rooms: [...] }` to add several at once. An optional `groupId` (top level)
+ * puts the new rooms in that room group.
+ */
+export async function POST(request: NextRequest, ctx: Ctx) {
+  try {
+    return await addRooms(request, ctx);
+  } catch (e) {
+    if (e instanceof RoomGroupError) {
+      return NextResponse.json({ success: false, message: e.message }, { status: 400 });
+    }
+    throw e;
+  }
+}
+
+async function addRooms(request: NextRequest, { params }: Ctx) {
   const unitId = Number((await params).id);
   const auth = await requireAdminUnitAccess(unitId);
   if (auth instanceof NextResponse) return auth;
@@ -45,7 +61,9 @@ export async function POST(request: NextRequest, { params }: Ctx) {
   }
 
   if (Array.isArray(body.rooms)) {
-    const rooms = (body.rooms as Record<string, unknown>[]).map(toPayload);
+    const rooms = (body.rooms as Record<string, unknown>[]).map((room) =>
+      toPayload({ ...room, groupId: body.groupId })
+    );
     if (!rooms.length || rooms.length > MAX_ROOMS_PER_REQUEST || !rooms.every(isValidRoom)) {
       return NextResponse.json(
         { success: false, message: "Every room needs a room type and whole-number sizes" },

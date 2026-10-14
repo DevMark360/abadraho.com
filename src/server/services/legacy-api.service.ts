@@ -17,7 +17,6 @@ export function getMockDetail(slug: string): ProjectDetail | null {
         monthlyInstallment: base.minPrice ? Math.round(base.minPrice / 36) : null,
         size: 1200,
         grossArea: 1200,
-        netArea: 1100,
         roomBreakdown: [],
       },
     ],

@@ -110,8 +110,11 @@ export function AdminFloorPlanRoomsDialog({
   onClose,
   onAdded,
   onRoomTypesChange,
+  groupId = null,
 }: {
   unitId: number;
+  /** Room group the added rooms go into (units with more than one layout / floor). */
+  groupId?: number | null;
   floorPlanFile: File | null;
   floorPlanUrl: string | null;
   roomTypes: RoomType[];
@@ -229,6 +232,7 @@ export function AdminFloorPlanRoomsDialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          groupId,
           rooms: selected.map((r) => ({
             roomTypeId: Number(r.roomTypeId),
             widthFeet: whole(r.widthFeet),

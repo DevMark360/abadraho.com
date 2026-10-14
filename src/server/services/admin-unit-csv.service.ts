@@ -22,7 +22,6 @@ const COLUMNS = {
   title: "Unit title",
   price: "Price",
   grossArea: "Gross area",
-  netArea: "Net area",
   measurement: "Measurement unit",
 } as const;
 
@@ -34,7 +33,6 @@ const HEADER_ALIASES: Record<ColumnKey, string[]> = {
   title: ["unittitle", "title", "unitname"],
   price: ["price", "unitprice"],
   grossArea: ["grossarea", "gross"],
-  netArea: ["netarea", "net"],
   measurement: ["measurementunit", "measurement", "areaunit", "unitofmeasure"],
 };
 
@@ -68,7 +66,6 @@ type ExistingUnit = {
   total: number | null;
   loan: number;
   gross: number | null;
-  net: number | null;
   measurementId: number;
 };
 
@@ -77,7 +74,6 @@ type PlannedCreate = {
   title: string;
   price: number;
   gross: number | null;
-  net: number | null;
   measurementId: number;
   unitTypeId: number | null;
 };
@@ -141,12 +137,11 @@ export async function exportUnitsCsv(filters: UnitListFilters): Promise<string> 
         price: unknown;
         gross_area: unknown;
         covered_area: unknown;
-        net_area: unknown;
         measurement_type: unknown;
         project_name: string | null;
       }[]
     >(
-      `SELECT u.id, u.title, u.price, u.gross_area, u.covered_area, u.net_area, u.measurement_type,
+      `SELECT u.id, u.title, u.price, u.gross_area, u.covered_area, u.measurement_type,
               p.name AS project_name
        FROM units u
        LEFT JOIN projects p ON p.id = u.project_id
@@ -173,7 +168,6 @@ export async function exportUnitsCsv(filters: UnitListFilters): Promise<string> 
         jsonNumOrNull(r.gross_area) ?? jsonNumOrNull(r.covered_area),
         m.convertor
       ),
-      [COLUMNS.netArea]: formatArea(jsonNumOrNull(r.net_area), m.convertor),
       [COLUMNS.measurement]: m.name,
     };
   });
@@ -203,12 +197,11 @@ async function loadImportContext(projectIds?: number[]) {
         loan_amount: unknown;
         gross_area: unknown;
         covered_area: unknown;
-        net_area: unknown;
         measurement_type: unknown;
       }[]
     >(
       `SELECT id, project_id, title, price, total_unit_amount, loan_amount, gross_area, covered_area,
-              net_area, measurement_type
+              measurement_type
        FROM units WHERE is_archive = 0 ${unitScope}`,
       ...scopeParams
     ),
@@ -238,7 +231,6 @@ async function loadImportContext(projectIds?: number[]) {
       total: jsonNumOrNull(r.total_unit_amount),
       loan: jsonNum(r.loan_amount),
       gross: jsonNumOrNull(r.gross_area) ?? jsonNumOrNull(r.covered_area),
-      net: jsonNumOrNull(r.net_area),
       measurementId: jsonNum(r.measurement_type) || 1,
     };
     unitsById.set(unit.id, unit);
@@ -309,10 +301,8 @@ function planRow(ctx: ImportContext, cell: CellReader): RowPlan {
 
   const price = parseAmount(cell("price"));
   const gross = parseAmount(cell("grossArea"));
-  const net = parseAmount(cell("netArea"));
   if (price === null) return error("Price is not a valid number");
   if (gross === null) return error("Gross area is not a valid number");
-  if (net === null) return error("Net area is not a valid number");
 
   const toStored = (value: number) => (value > 0 ? round2(value * measurement.convertor) : null);
 
@@ -326,14 +316,12 @@ function planRow(ctx: ImportContext, cell: CellReader): RowPlan {
       price: nextPrice,
       total: priceChanged ? round2(nextPrice + existing.loan) : existing.total,
       gross: gross === undefined ? existing.gross : toStored(gross),
-      net: net === undefined ? existing.net : toStored(net),
       measurementId: measurement.id,
     };
     const changed =
       next.title !== existing.title ||
       priceChanged ||
       !sameNumber(next.gross, existing.gross) ||
-      !sameNumber(next.net, existing.net) ||
       next.measurementId !== existing.measurementId;
     return changed ? { kind: "update", unit: next } : { kind: "unchanged", unitId: existing.id };
   }
@@ -348,7 +336,6 @@ function planRow(ctx: ImportContext, cell: CellReader): RowPlan {
       title,
       price,
       gross: gross === undefined ? null : toStored(gross),
-      net: net === undefined ? null : toStored(net),
       measurementId: measurement.id,
       unitTypeId: project.projectTypeId,
     },
@@ -367,7 +354,6 @@ const UPDATE_COLUMNS: [string, (u: PlannedUpdate) => unknown][] = [
   ["total_unit_amount", (u) => u.total],
   ["gross_area", (u) => u.gross],
   ["covered_area", (u) => u.gross],
-  ["net_area", (u) => u.net],
   ["measurement_type", (u) => u.measurementId],
 ];
 
@@ -425,7 +411,6 @@ async function writePlan(creates: PlannedCreate[], updates: PlannedUpdate[]) {
             loanAmount: 0,
             grossArea: c.gross,
             size: c.gross,
-            netArea: c.net,
             measurementType: c.measurementId,
             unitTypeId: c.unitTypeId,
             installmentType: 1,

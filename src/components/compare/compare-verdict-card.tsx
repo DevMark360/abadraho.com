@@ -2,6 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
+import {
+  CompareAnalysisBox,
+  type AnalysisState,
+  type CompareAnalysis,
+} from "@/components/compare/compare-analysis-box";
 import { Button } from "@/components/ui/button";
 import { designTw } from "@/config/design-tokens";
 import {
@@ -73,6 +78,59 @@ function useAiVerdicts(ids: [number, number], purpose: Purpose) {
   return { status, value: current?.value ?? undefined, ask };
 }
 
+/** Analyses per unit pair and purpose; only successful answers are kept. */
+const analysisCache = new Map<string, CompareAnalysis>();
+
+async function fetchAnalysis(
+  projectIds: [number, number],
+  unitIds: [number, number],
+  purpose: Purpose
+): Promise<AnalysisState> {
+  try {
+    const res = await fetch("/api/v1/compare/analysis", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectIds, unitIds, purpose }),
+    });
+    const json = (await res.json().catch(() => ({}))) as {
+      success?: boolean;
+      analysis?: CompareAnalysis;
+      message?: string;
+    };
+    if (json.success && json.analysis) return { status: "done", analysis: json.analysis };
+    return { status: "error", message: json.message || "The AI analysis is not available right now." };
+  } catch {
+    return { status: "error", message: "Could not reach the server." };
+  }
+}
+
+/** The written AI comparison of the two selected units; loads only when `ask` is called. */
+function useAnalysis(projectIds: [number, number], unitIds: [number, number], purpose: Purpose) {
+  const [p0, p1] = projectIds;
+  const [u0, u1] = unitIds;
+  const key = `${p0}:${u0}-${p1}:${u1}:${purpose}`;
+  const [state, setState] = useState<{ key: string; value: AnalysisState } | null>(null);
+  const latest = useRef(key);
+  useEffect(() => {
+    latest.current = key;
+  }, [key]);
+
+  const ask = useCallback(async () => {
+    const cached = analysisCache.get(key);
+    if (cached) {
+      setState({ key, value: { status: "done", analysis: cached } });
+      return;
+    }
+    setState({ key, value: { status: "loading" } });
+    const value = await fetchAnalysis([p0, p1], [u0, u1], purpose);
+    if (value.status === "done") analysisCache.set(key, value.analysis);
+    if (latest.current === key) setState({ key, value });
+  }, [key, p0, p1, u0, u1, purpose]);
+
+  return { state: state?.key === key ? state.value : null, ask };
+}
+
 function sideName(project: CompareProjectPayload, unit: ProjectUnit): string {
   const unitName = unit.title ?? unit.name;
   return unitName ? `${project.name} · ${unitName}` : project.name;
@@ -105,7 +163,9 @@ export function CompareVerdictCard({
 }) {
   const [purpose, setPurpose] = useState<Purpose>("living");
   const ai = useAiVerdicts([projects[0].id, projects[1].id], purpose);
-  const loading = ai.status === "loading";
+  const analysis = useAnalysis([projects[0].id, projects[1].id], [units[0].id, units[1].id], purpose);
+  const loading = ai.status === "loading" || analysis.state?.status === "loading";
+  const purposeLabel = PURPOSES.find((p) => p.value === purpose)?.label ?? "";
   const figures = figureVerdicts(units);
 
   // AI rows appear only after the button is clicked; rows without a verdict are left out.
@@ -148,7 +208,15 @@ export function CompareVerdictCard({
               </button>
             ))}
           </div>
-          <Button type="button" onClick={() => void ai.ask()} disabled={loading} className="gap-2">
+          <Button
+            type="button"
+            onClick={() => {
+              void ai.ask();
+              void analysis.ask();
+            }}
+            disabled={loading}
+            className="gap-2"
+          >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
             ) : (
@@ -158,9 +226,9 @@ export function CompareVerdictCard({
           </Button>
         </div>
         <p className="mt-2 text-xs text-zinc-500">
-          {ai.status === "idle"
-            ? "Price, area and loan are compared below. Click the button to add an AI view of the location and developer for your purpose."
-            : `Location and developer judged for ${purpose === "living" ? "living there" : "investment and rental yield"}.`}
+          {ai.status === "idle" && !analysis.state
+            ? "Price, area and loan are compared below. Click the button for an AI analysis of both units, including location and developer, for your purpose."
+            : `AI views written for ${purpose === "living" ? "living there" : "investment and rental yield"}.`}
         </p>
       </div>
 
@@ -226,10 +294,15 @@ export function CompareVerdictCard({
           </ul>
         ) : null}
 
+        {analysis.state ? (
+          <CompareAnalysisBox state={analysis.state} names={names} purposeLabel={purposeLabel} />
+        ) : null}
+
         <p className="text-xs leading-relaxed text-zinc-500">
           Total amount, price per sq.ft, gross area and loan amount are worked out from the listed
-          figures. Location and developer verdicts are AI opinions from general public knowledge
-          and can be wrong, so check them yourself before deciding.
+          figures. The AI recommendation and the location and developer verdicts are opinions based
+          on these figures and general public knowledge and can be wrong, so check them yourself
+          before deciding.
         </p>
       </div>
     </div>
