@@ -8,14 +8,25 @@ export const GROQ_KEY_ENV = "GROQ_API_KEY";
 /** Separate key for the Compare page (location / developer verdicts and the unit analysis). */
 export const GROQ_COMPARE_KEY_ENV = "GROQ_COMPARE_API_KEY";
 
-export type GroqErrorCode = "not_configured" | "auth" | "model" | "rate_limit" | "timeout" | "network" | "upstream";
+export type GroqErrorCode =
+  | "not_configured"
+  | "auth"
+  | "model"
+  | "rate_limit"
+  | "timeout"
+  | "network"
+  /** The model's reply failed Groq's JSON check (json mode); a retry usually works. */
+  | "bad_output"
+  | "upstream";
 
 export class GroqError extends Error {
   constructor(
     message: string,
     readonly code: GroqErrorCode,
     /** HTTP status to hand back to our own caller. */
-    readonly status: number
+    readonly status: number,
+    /** For rate_limit: seconds until Groq accepts requests again, when known. */
+    readonly retryAfterSec?: number
   ) {
     super(message);
   }
@@ -24,6 +35,12 @@ export class GroqError extends Error {
 export type GroqContentPart =
   | { type: "text"; text: string }
   | { type: "image_url"; image_url: { url: string } };
+
+/** Seconds to wait from a 429's Retry-After header, kept within a sensible range. */
+function retrySeconds(retryAfter: string | null): number {
+  const seconds = Math.ceil(Number(retryAfter));
+  return seconds > 0 && seconds < 600 ? seconds : 30;
+}
 
 function errorForStatus(status: number, detail: string, retryAfter: string | null, keyEnv: string): GroqError {
   if (status === 401) return new GroqError(`The Groq API key was rejected. Check ${keyEnv}.`, "auth", 502);
@@ -35,9 +52,16 @@ function errorForStatus(status: number, detail: string, retryAfter: string | nul
     );
   }
   if (status === 429) {
-    const seconds = Math.ceil(Number(retryAfter));
-    const wait = seconds > 0 && seconds < 600 ? `about ${seconds} seconds` : "a minute";
-    return new GroqError(`Groq's per-minute limit was reached. Wait ${wait} and try again.`, "rate_limit", 429);
+    const seconds = retrySeconds(retryAfter);
+    return new GroqError(
+      `Groq's per-minute limit was reached. Wait about ${seconds} seconds and try again.`,
+      "rate_limit",
+      429,
+      seconds
+    );
+  }
+  if (status === 400 && /json_validate_failed|failed to generate json/i.test(detail)) {
+    return new GroqError("The model's reply was not valid JSON.", "bad_output", 502);
   }
   console.error("[groq] error", status, detail.slice(0, 500));
   return new GroqError("Groq is unavailable right now. Try again shortly.", "upstream", 502);
@@ -60,6 +84,12 @@ type GroqChatOptions = {
 
 /** Models Groq refused, per key (each key can be a different account); skipped until restart. */
 const unavailableModels = new Set<string>();
+
+/**
+ * After a 429, calls with the same key and model wait out Retry-After here instead of hitting
+ * Groq again (on the free tier every refused call still counts against the minute).
+ */
+const coolingUntil = new Map<string, number>();
 
 /**
  * Like groqChat, but when `model` is not available on the account it retries once with
@@ -87,6 +117,17 @@ export async function groqChat(options: GroqChatOptions): Promise<string> {
     throw new GroqError(`Groq is not set up. Add ${keyEnv} to the server .env.`, "not_configured", 503);
   }
   const model = options.model?.trim() || GROQ_DEFAULT_MODEL;
+  const coolKey = `${keyEnv}|${model}`;
+  const waitMs = (coolingUntil.get(coolKey) ?? 0) - Date.now();
+  if (waitMs > 0) {
+    const seconds = Math.ceil(waitMs / 1000);
+    throw new GroqError(
+      `Groq's per-minute limit was reached. Wait about ${seconds} seconds and try again.`,
+      "rate_limit",
+      429,
+      seconds
+    );
+  }
 
   let res: Response;
   try {
@@ -115,7 +156,9 @@ export async function groqChat(options: GroqChatOptions): Promise<string> {
   }
 
   if (!res.ok) {
-    throw errorForStatus(res.status, await res.text().catch(() => ""), res.headers.get("retry-after"), keyEnv);
+    const error = errorForStatus(res.status, await res.text().catch(() => ""), res.headers.get("retry-after"), keyEnv);
+    if (error.retryAfterSec) coolingUntil.set(coolKey, Date.now() + error.retryAfterSec * 1000);
+    throw error;
   }
   const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
   return json.choices?.[0]?.message?.content ?? "";

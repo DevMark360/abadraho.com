@@ -7,7 +7,7 @@ import {
   CompareAnalysisInputError,
   analyzeUnits,
   isAnalysisCached,
-  loadUnitSpecs,
+  loadComparePayload,
 } from "@/server/services/compare-analysis.service";
 import { BUYER_PURPOSES, type BuyerPurpose } from "@/server/services/compare-verdict.service";
 
@@ -25,8 +25,12 @@ function fail(message: string, status: number, retryAfterSec?: number) {
 /** Visitor-facing wording; setup details (missing key, model) only go to the server log. */
 function groqFailure(e: GroqError) {
   console.warn("[compare/analysis]", e.code, e.message);
-  if (e.code === "rate_limit") return fail("Too many analyses right now. Try again in a minute.", 429);
+  if (e.code === "rate_limit") {
+    const wait = e.retryAfterSec && e.retryAfterSec < 120 ? `in about ${e.retryAfterSec} seconds` : "in a minute";
+    return fail(`The AI is busy right now. Try again ${wait}.`, 429, e.retryAfterSec ?? 60);
+  }
   if (e.code === "timeout" || e.code === "network") return fail("The analysis took too long. Try again.", 504);
+  if (e.code === "bad_output") return fail("The AI gave an unreadable answer. Try again.", 502);
   return fail("The AI analysis is not available right now.", 503);
 }
 
@@ -57,14 +61,14 @@ export async function POST(request: NextRequest) {
     : "living";
 
   try {
-    const specs = await loadUnitSpecs(projectIds, unitIds);
-    if (!isAnalysisCached(specs, purpose)) {
+    const payload = await loadComparePayload(projectIds, unitIds, purpose);
+    if (!isAnalysisCached(payload)) {
       const limit = checkRateLimit(`compare-analysis:${session.id}`, HOURLY_MAX, HOUR_MS);
       if (!limit.allowed) {
         return fail("You have reached the hourly limit for AI analyses. Try again later.", 429, limit.retryAfterSec);
       }
     }
-    const analysis = await analyzeUnits(specs, purpose);
+    const analysis = await analyzeUnits(payload);
     return NextResponse.json({ success: true, analysis });
   } catch (e) {
     if (e instanceof CompareAnalysisInputError) return fail(e.message, 404);
