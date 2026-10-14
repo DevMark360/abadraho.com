@@ -11,6 +11,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CompareInquiryPanel } from "@/components/compare/compare-inquiry-panel";
 import { CompareProjectPicker } from "@/components/compare/compare-project-picker";
+import { CompareVerdictCard } from "@/components/compare/compare-verdict-card";
 import { AuthGatePrompt } from "@/components/project-detail/auth-gate-prompt";
 import { Select } from "@/components/ui/select";
 import {
@@ -29,7 +30,7 @@ import {
 } from "@/lib/client/compare-store";
 import { CompareHelpPanel } from "@/components/marketing/compare-help-panel";
 import { UnitRoomsTable } from "@/components/project-detail/unit-rooms-table";
-import { unitInstallmentMonths, unitPricePerSqFt } from "@/lib/unit-metrics";
+import { summarizeRoomTypes, unitInstallmentMonths, unitPricePerSqFt } from "@/lib/unit-metrics";
 import { cn, formatPrice } from "@/lib/utils";
 import type { CompareProjectPayload } from "@/types/compare";
 import type { ProjectUnit } from "@/types/project-detail";
@@ -111,9 +112,7 @@ const UNIT_ROWS: UnitRow[] = [
   {
     label: "Room types",
     getValue: (u) =>
-      u.roomBreakdown.length
-        ? u.roomBreakdown.map((r) => r.roomTypeName).join(", ")
-        : "—",
+      u.roomBreakdown.length ? summarizeRoomTypes(u.roomBreakdown) : "—",
   },
 ];
 
@@ -748,6 +747,13 @@ export function CompareView({
 
               {filled.length > 0 && (
                 <>
+                  {isLoggedIn && projects[0] && projects[1] && selectedUnits[0] && selectedUnits[1] ? (
+                    <CompareVerdictCard
+                      projects={[projects[0], projects[1]]}
+                      units={[selectedUnits[0], selectedUnits[1]]}
+                    />
+                  ) : null}
+
                   <div className="border-t border-zinc-200 bg-zinc-50/40">
                     <CompareSectionHeader label="Submit inquiry" />
                     <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">

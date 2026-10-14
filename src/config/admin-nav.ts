@@ -50,6 +50,11 @@ const projectManagement: AdminNavGroup = {
     { href: "/admin/amenities", label: "Amenities" },
     { href: "/admin/utilities", label: "Utilities" },
     { href: "/admin/import", label: "Bulk import" },
+    {
+      href: "/admin/compare-verdicts",
+      label: "Compare AI verdicts",
+      permissionActions: ["view", "edit", "delete"],
+    },
   ],
 };
 

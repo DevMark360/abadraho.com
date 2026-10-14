@@ -1,7 +1,6 @@
 import type { FloorPlanReading } from "@/lib/floor-plan-rooms";
+import { GroqError, groqChat, parseJsonObject, type GroqErrorCode } from "@/server/groq-client";
 
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const DEFAULT_MODEL = "qwen/qwen3.8-27b";
 /** Groq rejects base64 images over 4 MB; base64 adds a third. */
 const MAX_RAW_IMAGE_BYTES = 3_000_000;
 const MAX_IMAGE_SIDE = 2000;
@@ -47,28 +46,8 @@ async function prepareImage(data: Buffer, mime: string): Promise<{ data: Buffer;
   }
 }
 
-function errorForStatus(status: number, detail: string, retryAfter: string | null): FloorPlanReadError {
-  if (status === 401) return new FloorPlanReadError("The Groq API key was rejected. Check GROQ_API_KEY.", 502);
-  if (status === 403 || status === 404) {
-    return new FloorPlanReadError(
-      "The Groq vision model is not available on this account. Enable it in the Groq console.",
-      502
-    );
-  }
-  if (status === 429) {
-    const seconds = Math.ceil(Number(retryAfter));
-    const wait = seconds > 0 && seconds < 600 ? `about ${seconds} seconds` : "a minute";
-    return new FloorPlanReadError(`Groq's per-minute limit was reached. Wait ${wait} and try again.`, 429);
-  }
-  console.error("[floor-plan-reader] Groq error", status, detail.slice(0, 500));
-  return new FloorPlanReadError("The floor plan reader is unavailable right now. Try again shortly.", 502);
-}
-
 function parseReadings(content: string): FloorPlanReading[] {
-  const start = content.indexOf("{");
-  const end = content.lastIndexOf("}");
-  if (start < 0 || end <= start) throw new Error("no JSON object");
-  const parsed = JSON.parse(content.slice(start, end + 1)) as { rooms?: unknown };
+  const parsed = parseJsonObject(content);
   if (!Array.isArray(parsed.rooms)) throw new Error("rooms is not an array");
 
   const readings: FloorPlanReading[] = [];
@@ -89,54 +68,40 @@ function parseReadings(content: string): FloorPlanReading[] {
   return readings;
 }
 
+/** Floor-plan wording for the shared Groq errors, so admins know which feature failed. */
+const READER_MESSAGES: Partial<Record<GroqErrorCode, string>> = {
+  not_configured: "Floor plan reading is not set up. Add GROQ_API_KEY to the server .env.",
+  model: "The Groq vision model is not available on this account. Enable it in the Groq console.",
+  timeout: "Reading the floor plan took too long. Try again.",
+  upstream: "The floor plan reader is unavailable right now. Try again shortly.",
+};
+
 export async function readFloorPlanRooms(image: Buffer, mime: string): Promise<FloorPlanReading[]> {
-  const apiKey = process.env.GROQ_API_KEY?.trim();
-  if (!apiKey) {
-    throw new FloorPlanReadError("Floor plan reading is not set up. Add GROQ_API_KEY to the server .env.", 503);
-  }
-  const model = process.env.GROQ_VISION_MODEL?.trim() || DEFAULT_MODEL;
   const prepared = await prepareImage(image, mime);
 
-  let res: Response;
+  let content: string;
   try {
-    res = await fetch(GROQ_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-      body: JSON.stringify({
-        model,
-        temperature: 0,
-        max_tokens: MAX_OUTPUT_TOKENS,
-        ...(model.startsWith("qwen/") ? { reasoning_effort: "none" } : {}),
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: PROMPT },
-              {
-                type: "image_url",
-                image_url: { url: `data:${prepared.mime};base64,${prepared.data.toString("base64")}` },
-              },
-            ],
-          },
-        ],
-      }),
+    content = await groqChat({
+      model: process.env.GROQ_VISION_MODEL,
+      maxTokens: MAX_OUTPUT_TOKENS,
+      timeoutMs: TIMEOUT_MS,
+      content: [
+        { type: "text", text: PROMPT },
+        {
+          type: "image_url",
+          image_url: { url: `data:${prepared.mime};base64,${prepared.data.toString("base64")}` },
+        },
+      ],
     });
   } catch (e) {
-    const timedOut = e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError");
-    throw new FloorPlanReadError(
-      timedOut ? "Reading the floor plan took too long. Try again." : "Could not reach Groq. Try again.",
-      504
-    );
+    if (e instanceof GroqError) {
+      throw new FloorPlanReadError(READER_MESSAGES[e.code] ?? e.message, e.status);
+    }
+    throw e;
   }
 
-  if (!res.ok) {
-    throw errorForStatus(res.status, await res.text().catch(() => ""), res.headers.get("retry-after"));
-  }
-
-  const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
   try {
-    return parseReadings(json.choices?.[0]?.message?.content ?? "");
+    return parseReadings(content);
   } catch (e) {
     console.error("[floor-plan-reader] unreadable reply", e);
     throw new FloorPlanReadError("Couldn't make out the rooms on this floor plan. Add them by hand.", 422);
