@@ -2,10 +2,29 @@ import { createHash } from "node:crypto";
 import { tableExists } from "@/lib/db-table-exists";
 import { isDatabaseEnabled } from "@/lib/db";
 import { executeRaw, queryRaw } from "@/lib/prisma-raw";
-import { GroqError, groqChat, parseJsonObject } from "@/server/groq-client";
+import { GroqError, groqChatWithFallback, parseJsonObject } from "@/server/groq-client";
 
 export type VerdictKind = "location" | "developer";
 export const VERDICT_KINDS: readonly VerdictKind[] = ["location", "developer"];
+
+/** What the buyer wants the unit for; the AI judges location and developer against it. */
+export type BuyerPurpose = "living" | "investment";
+export const BUYER_PURPOSES: readonly BuyerPurpose[] = ["living", "investment"];
+
+/** Text model for verdicts. Falls back to GROQ_DEFAULT_MODEL when Groq hasn't enabled it. */
+const DEFAULT_TEXT_MODEL = "llama-3.1-8b-instant";
+
+/** Stored in the `kind` column, e.g. "location:investment"; one cache entry per purpose. */
+const slotFor = (kind: VerdictKind, purpose: BuyerPurpose) => `${kind}:${purpose}`;
+
+function parseSlot(slot: string): { kind: VerdictKind; purpose: BuyerPurpose | null } {
+  const [kind, purpose] = slot.split(":");
+  return {
+    kind: kind === "developer" ? "developer" : "location",
+    // Rows saved before purposes existed have none.
+    purpose: BUYER_PURPOSES.includes(purpose as BuyerPurpose) ? (purpose as BuyerPurpose) : null,
+  };
+}
 
 /** Stored winner, relative to the pair's alphabetical order (name_a, name_b). */
 export type StoredWinner = "a" | "b" | "tie";
@@ -37,8 +56,8 @@ let groqPausedUntil = 0;
 const cleanName = (value: string) => value.replace(/\s+/g, " ").trim().slice(0, MAX_NAME);
 const nameKey = (value: string) => cleanName(value).toLowerCase();
 
-export function verdictPairKey(kind: VerdictKind, nameA: string, nameB: string): string {
-  return createHash("sha1").update(`${kind}|${nameKey(nameA)}|${nameKey(nameB)}`).digest("hex");
+export function verdictPairKey(slot: string, nameA: string, nameB: string): string {
+  return createHash("sha1").update(`${slot}|${nameKey(nameA)}|${nameKey(nameB)}`).digest("hex");
 }
 
 function remember(key: string, verdict: StoredVerdict) {
@@ -84,23 +103,23 @@ function toStored(row: VerdictRow): StoredVerdict {
   };
 }
 
-async function readStored(kind: VerdictKind, key: string): Promise<StoredVerdict | null> {
+async function readStored(slot: string, key: string): Promise<StoredVerdict | null> {
   if (!(await cacheTableReady())) return null;
   const rows = await queryRaw<VerdictRow[]>(
     `SELECT * FROM ${TABLE} WHERE kind = ? AND pair_key = ? LIMIT 1`,
-    kind,
+    slot,
     key
   );
   return rows[0] ? toStored(rows[0]) : null;
 }
 
-async function saveStored(kind: VerdictKind, key: string, verdict: StoredVerdict, model: string) {
+async function saveStored(slot: string, key: string, verdict: StoredVerdict, model: string) {
   if (!(await cacheTableReady())) return;
   // A row written meanwhile (another request, or an admin) wins.
   await executeRaw(
     `INSERT IGNORE INTO ${TABLE} (kind, pair_key, name_a, name_b, winner, reason, model, is_manual)
      VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
-    kind,
+    slot,
     key,
     verdict.nameA,
     verdict.nameB,
@@ -110,34 +129,49 @@ async function saveStored(kind: VerdictKind, key: string, verdict: StoredVerdict
   );
 }
 
-function buildPrompt(kind: VerdictKind, nameA: string, nameB: string): string {
+const FOCUS: Record<VerdictKind, Record<BuyerPurpose, string>> = {
+  location: {
+    living:
+      "The buyer will live there with family. Judge family infrastructure (schools, hospitals, parks), security, neighbourhood livability and daily convenience (markets, transport, commute).",
+    investment:
+      "The buyer is investing for capital growth and rental income. Judge expected capital growth, rental demand, commercial footfall and the value of planned or upcoming infrastructure.",
+  },
+  developer: {
+    living:
+      "The buyer will live in the unit. Judge on-time delivery, construction quality, finishing, maintenance after handover and buyer trust.",
+    investment:
+      "The buyer is investing. Judge on-time delivery, how well the developer's past projects held and grew in value, resale and rental appeal of their projects, and buyer trust.",
+  },
+};
+
+const SYSTEM_PROMPT = [
+  "You advise property buyers in Pakistan using well-known general knowledge only.",
+  "If you are not reasonably sure about either option, or they are similar for this buyer, answer tie.",
+  "The reason is one neutral sentence of at most 15 words that names them, never 'first' or 'second'.",
+  'Reply with JSON only: {"winner":"first"|"second"|"tie","reason":"..."}',
+].join(" ");
+
+function buildPrompt(kind: VerdictKind, purpose: BuyerPurpose, nameA: string, nameB: string): string {
   const subject =
     kind === "location"
-      ? [
-          `Compare two residential locations in Pakistan: first "${nameA}", second "${nameB}".`,
-          "For someone buying a home, which is the better location overall,",
-          "judging infrastructure, security, access, nearby amenities and demand?",
-        ]
-      : [
-          `Compare two property developers (builders) in Pakistan: first "${nameA}", second "${nameB}".`,
-          "For someone buying a home, which has the better reputation overall,",
-          "judging delivery on time, construction quality and buyer trust?",
-        ];
-  return [
-    ...subject,
-    "Use only well-known general knowledge. If you are not reasonably sure about either, or they are similar, answer tie.",
-    "The reason is one neutral sentence of at most 15 words that names them, never 'first' or 'second'.",
-    'Reply with JSON only: {"winner":"first"|"second"|"tie","reason":"..."}',
-  ].join(" ");
+      ? `Which is the better residential location: first "${nameA}" or second "${nameB}"?`
+      : `Which is the better property developer (builder): first "${nameA}" or second "${nameB}"?`;
+  return `${subject} ${FOCUS[kind][purpose]}`;
 }
 
-async function askGroq(kind: VerdictKind, nameA: string, nameB: string): Promise<{ verdict: StoredVerdict; model: string }> {
-  const model = process.env.GROQ_TEXT_MODEL?.trim() || process.env.GROQ_VISION_MODEL?.trim() || "";
-  const content = await groqChat({
-    model,
+async function askGroq(
+  kind: VerdictKind,
+  purpose: BuyerPurpose,
+  nameA: string,
+  nameB: string
+): Promise<{ verdict: StoredVerdict; model: string }> {
+  const { content, model } = await groqChatWithFallback({
+    model: process.env.GROQ_TEXT_MODEL?.trim() || DEFAULT_TEXT_MODEL,
+    system: SYSTEM_PROMPT,
+    content: buildPrompt(kind, purpose, nameA, nameB),
+    json: true,
     maxTokens: 150,
     timeoutMs: 20_000,
-    content: buildPrompt(kind, nameA, nameB),
   });
   const parsed = parseJsonObject(content);
   const raw = String(parsed.winner ?? "").trim().toLowerCase();
@@ -149,14 +183,21 @@ async function askGroq(kind: VerdictKind, nameA: string, nameB: string): Promise
         ? "Too close to call."
         : "";
   if (!reason) throw new Error("reply has no reason");
-  return { verdict: { nameA, nameB, winner, reason, manual: false }, model: model || "default" };
+  return { verdict: { nameA, nameB, winner, reason, manual: false }, model };
 }
 
-async function loadOrAsk(kind: VerdictKind, key: string, nameA: string, nameB: string): Promise<StoredVerdict | null> {
+async function loadOrAsk(
+  kind: VerdictKind,
+  purpose: BuyerPurpose,
+  key: string,
+  nameA: string,
+  nameB: string
+): Promise<StoredVerdict | null> {
+  const slot = slotFor(kind, purpose);
   const cached = memory.get(key);
   if (cached && cached.expires > Date.now()) return cached.verdict;
 
-  const stored = await readStored(kind, key).catch((e) => {
+  const stored = await readStored(slot, key).catch((e) => {
     console.error("[compare-verdict] read failed", e);
     return null;
   });
@@ -169,10 +210,10 @@ async function loadOrAsk(kind: VerdictKind, key: string, nameA: string, nameB: s
   if (now < groqPausedUntil || now < (failedUntil.get(key) ?? 0)) return null;
 
   try {
-    const { verdict, model } = await askGroq(kind, nameA, nameB);
-    await saveStored(kind, key, verdict, model).catch((e) => console.error("[compare-verdict] save failed", e));
+    const { verdict, model } = await askGroq(kind, purpose, nameA, nameB);
+    await saveStored(slot, key, verdict, model).catch((e) => console.error("[compare-verdict] save failed", e));
     // Re-read so a row an admin or another request saved first is what everyone sees.
-    const final = (await readStored(kind, key).catch(() => null)) ?? verdict;
+    const final = (await readStored(slot, key).catch(() => null)) ?? verdict;
     remember(key, final);
     return final;
   } catch (e) {
@@ -188,11 +229,13 @@ async function loadOrAsk(kind: VerdictKind, key: string, nameA: string, nameB: s
 }
 
 /**
- * Which of two areas / developers is better, from Groq's general knowledge (names only).
- * Asked once per pair and cached; null when it can't be answered right now.
+ * Which of two areas / developers is better for the buyer's purpose, from Groq's general
+ * knowledge (names only). Asked once per pair and purpose, then cached; null when it can't be
+ * answered right now.
  */
 export async function getCompareVerdict(
   kind: VerdictKind,
+  purpose: BuyerPurpose,
   first: string | null | undefined,
   second: string | null | undefined
 ): Promise<CompareVerdict | null> {
@@ -205,11 +248,11 @@ export async function getCompareVerdict(
 
   const firstIsA = nameKey(a) < nameKey(b);
   const [nameA, nameB] = firstIsA ? [a, b] : [b, a];
-  const key = verdictPairKey(kind, nameA, nameB);
+  const key = verdictPairKey(slotFor(kind, purpose), nameA, nameB);
 
   let pending = inFlight.get(key);
   if (!pending) {
-    pending = loadOrAsk(kind, key, nameA, nameB).finally(() => inFlight.delete(key));
+    pending = loadOrAsk(kind, purpose, key, nameA, nameB).finally(() => inFlight.delete(key));
     inFlight.set(key, pending);
   }
   const stored = await pending;
@@ -227,6 +270,8 @@ export async function getCompareVerdict(
 export type AdminVerdict = {
   id: number;
   kind: VerdictKind;
+  /** null for verdicts saved before buyer purposes existed. */
+  purpose: BuyerPurpose | null;
   nameA: string;
   nameB: string;
   winner: StoredWinner;
@@ -250,6 +295,7 @@ async function requireTable() {
 
 export async function listVerdicts(filters: {
   kind?: VerdictKind;
+  purpose?: BuyerPurpose;
   q?: string;
   page: number;
   perPage: number;
@@ -257,9 +303,15 @@ export async function listVerdicts(filters: {
   await requireTable();
   const where: string[] = [];
   const params: unknown[] = [];
-  if (filters.kind) {
+  if (filters.kind && filters.purpose) {
     where.push("kind = ?");
-    params.push(filters.kind);
+    params.push(slotFor(filters.kind, filters.purpose));
+  } else if (filters.kind) {
+    where.push("(kind = ? OR kind LIKE ?)");
+    params.push(filters.kind, `${filters.kind}:%`);
+  } else if (filters.purpose) {
+    where.push("kind LIKE ?");
+    params.push(`%:${filters.purpose}`);
   }
   const q = filters.q?.trim();
   if (q) {
@@ -284,7 +336,7 @@ export async function listVerdicts(filters: {
     total: Number(countRows[0]?.total ?? 0),
     items: rows.map((row) => ({
       id: Number(row.id),
-      kind: row.kind === "developer" ? "developer" : "location",
+      ...parseSlot(row.kind),
       nameA: row.name_a,
       nameB: row.name_b,
       winner: toStored(row).winner,

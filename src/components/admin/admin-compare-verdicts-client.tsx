@@ -19,6 +19,7 @@ type Winner = "a" | "b" | "tie";
 type Verdict = {
   id: number;
   kind: "location" | "developer";
+  purpose: "living" | "investment" | null;
   nameA: string;
   nameB: string;
   winner: Winner;
@@ -35,6 +36,16 @@ type ListResponse = {
   total?: number;
   perPage?: number;
 };
+
+const PURPOSE_OPTIONS = [
+  { value: "", label: "Any purpose" },
+  { value: "living", label: "End-user living" },
+  { value: "investment", label: "Investment" },
+];
+
+function purposeLabel(purpose: Verdict["purpose"]) {
+  return purpose === "living" ? "Living" : purpose === "investment" ? "Investment" : "General (older)";
+}
 
 const KIND_OPTIONS = [
   { value: "", label: "Location and developer" },
@@ -80,7 +91,10 @@ function EditRow({
 
   return (
     <tr className="border-t border-zinc-100 bg-amber-50/40 align-top">
-      <td className="px-3 py-3 text-sm capitalize text-zinc-600">{verdict.kind}</td>
+      <td className="px-3 py-3 text-sm text-zinc-600">
+        <span className="capitalize">{verdict.kind}</span>
+        <p className="text-xs text-zinc-400">{purposeLabel(verdict.purpose)}</p>
+      </td>
       <td className="px-3 py-3 text-sm text-zinc-900">
         {verdict.nameA} <span className="text-zinc-400">vs</span> {verdict.nameB}
       </td>
@@ -124,6 +138,7 @@ function EditRow({
 /** Cached AI verdicts from the Compare page: correct one, or delete it so the AI is asked again. */
 export function AdminCompareVerdictsClient() {
   const [kind, setKind] = useState("");
+  const [purpose, setPurpose] = useState("");
   const [query, setQuery] = useState("");
   const q = useDebouncedValue(query, 300);
   const [page, setPage] = useState(1);
@@ -139,6 +154,7 @@ export function AdminCompareVerdictsClient() {
     setError("");
     const params = new URLSearchParams({ page: String(page) });
     if (kind) params.set("kind", kind);
+    if (purpose) params.set("purpose", purpose);
     if (q.trim()) params.set("q", q.trim());
     try {
       const res = await fetch(`/api/admin/compare-verdicts?${params.toString()}`);
@@ -154,7 +170,7 @@ export function AdminCompareVerdictsClient() {
     } finally {
       setLoading(false);
     }
-  }, [kind, q, page]);
+  }, [kind, purpose, q, page]);
 
   useEffect(() => {
     void load();
@@ -182,8 +198,8 @@ export function AdminCompareVerdictsClient() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-zinc-600">
-        The Compare page asks the AI once per pair of areas or developers and saves the answer
-        here. Edit a verdict to correct it (edited verdicts are never replaced by the AI), or
+        The Compare page asks the AI once per pair of areas or developers and buying purpose
+        (living or investment), and saves the answer here. Edit a verdict to correct it (edited verdicts are never replaced by the AI), or
         delete it to have the AI asked again. Changes show on the Compare page within 2 minutes.
       </p>
 
@@ -198,6 +214,17 @@ export function AdminCompareVerdictsClient() {
           options={KIND_OPTIONS}
           aria-label="Verdict type"
           className="w-56"
+        />
+        <AdminSelect
+          layout="inline"
+          value={purpose}
+          onChange={(value) => {
+            setPurpose(value);
+            setPage(1);
+          }}
+          options={PURPOSE_OPTIONS}
+          aria-label="Buying purpose"
+          className="w-48"
         />
         <Input
           layout="inline"
@@ -220,7 +247,7 @@ export function AdminCompareVerdictsClient() {
           <table className="min-w-full text-sm">
             <thead>
               <tr>
-                <th className={adminTableHead}>Type</th>
+                <th className={adminTableHead}>Type / for</th>
                 <th className={adminTableHead}>Compared</th>
                 <th className={adminTableHead}>Winner</th>
                 <th className={adminTableHead}>Reason</th>
@@ -255,7 +282,10 @@ export function AdminCompareVerdictsClient() {
                     />
                   ) : (
                     <tr key={v.id} className="border-t border-zinc-100 align-top">
-                      <td className="px-3 py-3 capitalize text-zinc-600">{v.kind}</td>
+                      <td className="px-3 py-3 text-zinc-600">
+                        <span className="capitalize">{v.kind}</span>
+                        <p className="text-xs text-zinc-400">{purposeLabel(v.purpose)}</p>
+                      </td>
                       <td className="px-3 py-3 text-zinc-900">
                         {v.nameA} <span className="text-zinc-400">vs</span> {v.nameB}
                       </td>

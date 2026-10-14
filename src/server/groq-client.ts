@@ -38,13 +38,39 @@ function errorForStatus(status: number, detail: string, retryAfter: string | nul
   return new GroqError("Groq is unavailable right now. Try again shortly.", "upstream", 502);
 }
 
-/** One chat completion; returns the reply text. Throws GroqError with a message safe to show admins. */
-export async function groqChat(options: {
+type GroqChatOptions = {
   content: string | GroqContentPart[];
+  /** Optional system message sent before the user content. */
+  system?: string;
   model?: string;
   maxTokens: number;
   timeoutMs: number;
-}): Promise<string> {
+  /** Ask Groq to guarantee a JSON object reply. */
+  json?: boolean;
+};
+
+/** Models Groq refused on this account; skipped until the app restarts. */
+const unavailableModels = new Set<string>();
+
+/**
+ * Like groqChat, but when `model` is not available on the account it retries once with
+ * GROQ_DEFAULT_MODEL, so a model setting Groq hasn't enabled never breaks the feature.
+ */
+export async function groqChatWithFallback(options: GroqChatOptions): Promise<{ content: string; model: string }> {
+  const requested = options.model?.trim() || GROQ_DEFAULT_MODEL;
+  const wanted = unavailableModels.has(requested) ? GROQ_DEFAULT_MODEL : requested;
+  try {
+    return { content: await groqChat({ ...options, model: wanted }), model: wanted };
+  } catch (e) {
+    if (!(e instanceof GroqError) || e.code !== "model" || wanted === GROQ_DEFAULT_MODEL) throw e;
+    unavailableModels.add(wanted);
+    console.warn(`[groq] model "${wanted}" is not available; using ${GROQ_DEFAULT_MODEL} until restart`);
+    return { content: await groqChat({ ...options, model: GROQ_DEFAULT_MODEL }), model: GROQ_DEFAULT_MODEL };
+  }
+}
+
+/** One chat completion; returns the reply text. Throws GroqError with a message safe to show admins. */
+export async function groqChat(options: GroqChatOptions): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY?.trim();
   if (!apiKey) {
     throw new GroqError("Groq is not set up. Add GROQ_API_KEY to the server .env.", "not_configured", 503);
@@ -63,7 +89,11 @@ export async function groqChat(options: {
         max_tokens: options.maxTokens,
         // Qwen thinks out loud by default, which burns the free per-minute token budget.
         ...(model.startsWith("qwen/") ? { reasoning_effort: "none" } : {}),
-        messages: [{ role: "user", content: options.content }],
+        ...(options.json ? { response_format: { type: "json_object" } } : {}),
+        messages: [
+          ...(options.system ? [{ role: "system", content: options.system }] : []),
+          { role: "user", content: options.content },
+        ],
       }),
     });
   } catch (e) {

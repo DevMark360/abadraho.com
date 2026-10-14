@@ -4,12 +4,14 @@ import { requireModulePermission } from "@/lib/admin-api-permissions";
 import { isDatabaseEnabled } from "@/lib/db";
 import type { PermissionAction } from "@/config/admin-permissions";
 import {
+  BUYER_PURPOSES,
   STORED_WINNERS,
   VERDICT_KINDS,
   VerdictTableMissingError,
   deleteVerdict,
   listVerdicts,
   updateVerdict,
+  type BuyerPurpose,
   type StoredWinner,
   type VerdictKind,
 } from "@/server/services/compare-verdict.service";
@@ -40,10 +42,12 @@ export async function GET(request: NextRequest) {
 
   const sp = request.nextUrl.searchParams;
   const kind = sp.get("kind");
+  const purpose = sp.get("purpose");
   const page = Math.max(1, Number(sp.get("page")) || 1);
   try {
     const result = await listVerdicts({
       kind: VERDICT_KINDS.includes(kind as VerdictKind) ? (kind as VerdictKind) : undefined,
+      purpose: BUYER_PURPOSES.includes(purpose as BuyerPurpose) ? (purpose as BuyerPurpose) : undefined,
       q: sp.get("q")?.slice(0, 100),
       page,
       perPage: PER_PAGE,

@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { isDatabaseEnabled } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { getCompareVerdict } from "@/server/services/compare-verdict.service";
+import {
+  BUYER_PURPOSES,
+  getCompareVerdict,
+  type BuyerPurpose,
+} from "@/server/services/compare-verdict.service";
 
 function locationLabel(area: { name: string; city: { name: string } | null } | null): string | null {
   const name = area?.name.trim();
@@ -12,7 +16,8 @@ function locationLabel(area: { name: string; city: { name: string } | null } | n
 }
 
 /**
- * AI verdicts for the "Which unit wins" card: location and developer of two compared projects.
+ * AI verdicts for the "Which unit wins" card: location and developer of two compared projects,
+ * judged for the buyer's purpose ("living" or "investment"). Called only when the visitor asks.
  * Only project ids come in; names are read here so the endpoint can't be used as a free Groq proxy.
  */
 export async function POST(request: NextRequest) {
@@ -24,7 +29,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, location: null, developer: null });
   }
 
-  const body = (await request.json().catch(() => ({}))) as { ids?: unknown };
+  const body = (await request.json().catch(() => ({}))) as { ids?: unknown; purpose?: unknown };
+  const purpose: BuyerPurpose = BUYER_PURPOSES.includes(body.purpose as BuyerPurpose)
+    ? (body.purpose as BuyerPurpose)
+    : "living";
   const ids = Array.isArray(body.ids) ? body.ids.map(Number) : [];
   if (ids.length !== 2 || !ids.every((id) => Number.isInteger(id) && id > 0) || ids[0] === ids[1]) {
     return NextResponse.json({ success: false, message: "Two project ids required" }, { status: 400 });
@@ -44,9 +52,10 @@ export async function POST(request: NextRequest) {
   }
 
   const [location, developer] = await Promise.all([
-    getCompareVerdict("location", locationLabel(first.location), locationLabel(second.location)),
+    getCompareVerdict("location", purpose, locationLabel(first.location), locationLabel(second.location)),
     getCompareVerdict(
       "developer",
+      purpose,
       first.owners[0]?.builder.fullName,
       second.owners[0]?.builder.fullName
     ),
