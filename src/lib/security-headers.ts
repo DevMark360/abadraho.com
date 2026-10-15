@@ -18,6 +18,14 @@ function buildContentSecurityPolicy(): string {
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
     "frame-ancestors": ["'none'"],
+    // Iframes on our pages: the project Location map (Google Maps embed) and project videos (YouTube).
+    "frame-src": [
+      "'self'",
+      "https://www.google.com",
+      "https://maps.google.com",
+      "https://www.youtube.com",
+      "https://www.youtube-nocookie.com",
+    ],
     "object-src": ["'none'"],
     "script-src": ["'self'", "'unsafe-inline'", ...(dev ? ["'unsafe-eval'"] : [])],
     "style-src": ["'self'", "'unsafe-inline'"],

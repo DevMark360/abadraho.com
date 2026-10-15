@@ -512,7 +512,7 @@ export function AdminProjectFormClient({
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block">
-            <FieldLabel required>Latitude</FieldLabel>
+            <FieldLabel>Latitude</FieldLabel>
             <Input layout="field"
               type="number"
               step="any"
@@ -522,7 +522,7 @@ export function AdminProjectFormClient({
             />
           </label>
           <label className="block">
-            <FieldLabel required>Longitude</FieldLabel>
+            <FieldLabel>Longitude</FieldLabel>
             <Input layout="field"
               type="number"
               step="any"
