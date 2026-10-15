@@ -13,9 +13,15 @@ import type { ProjectListItem } from "@/types/project";
 export function CompareProjectPicker({
   slotLabel,
   className,
+  onPick,
+  onCancel,
 }: {
   slotLabel: string;
   className?: string;
+  /** Replaces the default "add to compare" (used to change a project already compared). */
+  onPick?: (project: ProjectListItem) => void;
+  /** Shows a Cancel button (when changing a project). */
+  onCancel?: () => void;
 }) {
   const inputId = useId();
   const listId = useId();
@@ -71,7 +77,8 @@ export function CompareProjectPicker({
   }, []);
 
   function pick(project: ProjectListItem) {
-    requestToggleCompare(project.id, project.slug);
+    if (onPick) onPick(project);
+    else requestToggleCompare(project.id, project.slug);
     setQuery("");
     setResults([]);
     setOpen(false);
@@ -112,8 +119,12 @@ export function CompareProjectPicker({
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape" && onCancel) onCancel();
+          }}
           className="pl-9"
           autoComplete="off"
+          autoFocus={Boolean(onCancel)}
         />
 
         {open && (query.trim().length >= 2 || loading) ? (
@@ -173,13 +184,25 @@ export function CompareProjectPicker({
         ) : null}
       </div>
 
-      <p className="mt-auto pt-6 text-center text-xs text-zinc-400">
-        Or browse{" "}
-        <Link href="/projects" className="font-medium text-brand-accent hover:underline">
-          all listings
-        </Link>{" "}
-        and tick Compare on any card.
-      </p>
+      {onCancel ? (
+        <div className="mt-auto flex justify-center pt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-sm font-medium text-zinc-600 underline hover:text-zinc-900"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <p className="mt-auto pt-6 text-center text-xs text-zinc-400">
+          Or browse{" "}
+          <Link href="/projects" className="font-medium text-brand-accent hover:underline">
+            all listings
+          </Link>{" "}
+          and tick Compare on any card.
+        </p>
+      )}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { executeRaw, queryRaw } from "@/lib/prisma-raw";
 import { getSimilarProjects } from "@/server/services/similar-projects.service";
 import { attachRoomGroups } from "@/server/services/unit-room-group.service";
+import { loadProjectMapEmbed } from "@/server/services/project-map-embed.service";
 import type { ProjectListItem } from "@/types/project";
 import type { ProjectDetail, ProjectVideoItem } from "@/types/project-detail";
 import type { Prisma } from "@prisma/client";
@@ -100,7 +101,7 @@ async function loadDetailExtras(projectId: number) {
     marketed_by: string | null;
   };
 
-  const [areaNamesMap, infoRows, extraRows] = await Promise.all([
+  const [areaNamesMap, infoRows, extraRows, mapEmbedUrl] = await Promise.all([
     loadAreaNamesByProjectIds([projectId]),
     queryRaw<InfoRow[]>(
       `SELECT main_heading, sub_heading, bullet_1, bullet_2, bullet_3, bullet_4, bullet_5, bullet_6
@@ -111,6 +112,7 @@ async function loadDetailExtras(projectId: number) {
       `SELECT meta_tags, marketed_by FROM projects WHERE id = ? LIMIT 1`,
       projectId
     ),
+    loadProjectMapEmbed(projectId),
   ]);
 
         return {
@@ -118,6 +120,7 @@ async function loadDetailExtras(projectId: number) {
     projectInfo: projectInfoFromRaw(infoRows[0]),
     marketedBy: extraRows[0]?.marketed_by?.trim() || null,
     metaKeywords: extraRows[0]?.meta_tags?.trim() || null,
+    mapEmbedUrl,
   };
 }
 

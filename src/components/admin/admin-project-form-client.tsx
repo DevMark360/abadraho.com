@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FileText, RotateCcw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GOOGLE_MAP_EMBED_HELP, parseGoogleMapEmbed } from "@/lib/google-map-embed";
 import { useAuth } from "@/components/auth/auth-provider";
 import { userTypeIds } from "@/config/site";
 import { PROJECT_STATUS_LABELS } from "@/config/project-status";
@@ -62,6 +63,7 @@ type FormState = {
   areaIds: string[];
   latitude: string;
   longitude: string;
+  mapEmbed: string;
   projectTypeId: string;
   progressStatusId: string;
   projectVideo: string;
@@ -97,6 +99,7 @@ const defaultForm: FormState = {
   areaIds: [],
   latitude: "",
   longitude: "",
+  mapEmbed: "",
   projectTypeId: "",
   progressStatusId: "",
   projectVideo: "",
@@ -206,6 +209,7 @@ export function AdminProjectFormClient({
           areaIds: p.areaIds ?? [],
           latitude: p.latitude != null ? String(p.latitude) : "",
           longitude: p.longitude != null ? String(p.longitude) : "",
+          mapEmbed: typeof p.mapEmbed === "string" ? p.mapEmbed : "",
           projectTypeId: p.projectTypeId != null ? String(p.projectTypeId) : "",
           progressStatusId: p.progressStatusId != null ? String(p.progressStatusId) : "",
           projectVideo: p.projectVideo ?? "",
@@ -275,6 +279,20 @@ export function AdminProjectFormClient({
     }
     if (!next.length) return;
     setDocFiles((prev) => [...prev, ...next].slice(0, ADMIN_MAX_PROJECT_PDF_FILES));
+  }
+
+  const mapEmbedParsed = useMemo(() => parseGoogleMapEmbed(form.mapEmbed), [form.mapEmbed]);
+
+  /** Pasting an embed also fills latitude / longitude from its pin. */
+  function setMapEmbed(value: string) {
+    const parsed = parseGoogleMapEmbed(value);
+    setForm((prev) => ({
+      ...prev,
+      mapEmbed: value,
+      ...(parsed && "src" in parsed && parsed.lat != null && parsed.lng != null
+        ? { latitude: String(parsed.lat), longitude: String(parsed.lng) }
+        : {}),
+    }));
   }
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -513,6 +531,37 @@ export function AdminProjectFormClient({
               onChange={(e) => update("longitude", e.target.value)}
             />
           </label>
+        </div>
+        <div>
+          <label className="block">
+            <FieldLabel>Google Maps embed</FieldLabel>
+            <Textarea
+              layout="field"
+              value={form.mapEmbed}
+              onChange={(e) => setMapEmbed(e.target.value)}
+              rows={3}
+              placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." ...></iframe>'
+              className={`${inputClass} font-mono text-xs`}
+            />
+          </label>
+          <p className={cn("mt-1 text-xs", mapEmbedParsed && "error" in mapEmbedParsed ? "text-red-600" : "text-zinc-500")}>
+            {mapEmbedParsed && "error" in mapEmbedParsed
+              ? mapEmbedParsed.error
+              : mapEmbedParsed
+                ? mapEmbedParsed.lat != null
+                  ? "The project page shows this Google map. Latitude and longitude were filled in from it."
+                  : "The project page shows this Google map."
+                : `Optional. Shows the exact Google Maps place on the project page. ${GOOGLE_MAP_EMBED_HELP}`}
+          </p>
+          {mapEmbedParsed && "src" in mapEmbedParsed ? (
+            <iframe
+              src={mapEmbedParsed.src}
+              title="Google Maps preview"
+              className="mt-3 h-56 w-full rounded-xl border border-zinc-200"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          ) : null}
         </div>
         <label className="block">
           <FieldLabel>Progress</FieldLabel>

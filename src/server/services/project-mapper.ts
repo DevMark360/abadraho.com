@@ -48,6 +48,7 @@ export type ProjectDetailExtras = {
   projectInfo?: ProjectInfoBlock | null;
   marketedBy?: string | null;
   metaKeywords?: string | null;
+  mapEmbedUrl?: string | null;
 };
 
 function dec(v: { toNumber?: () => number } | number | null | undefined): number | null {
@@ -233,6 +234,7 @@ export function mapDbProjectToDetail(
     metaTitle: p.metaTitle ?? null,
     metaDescription: p.metaDescription ?? null,
     metaKeywords: extras.metaKeywords ?? null,
+    mapEmbedUrl: extras.mapEmbedUrl ?? null,
     discountPrice: dec(p.discountPrice),
   };
 }

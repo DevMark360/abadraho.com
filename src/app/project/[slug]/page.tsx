@@ -373,6 +373,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                   latitude={project.latitude}
                   longitude={project.longitude}
                   imageUrl={project.imageUrl}
+                  mapEmbedUrl={project.mapEmbedUrl}
                 />
               </TrackedSection>
 

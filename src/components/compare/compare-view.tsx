@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Building2, GitCompare, Link2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowLeftRight, Building2, GitCompare, Link2, X } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CompareInquiryPanel } from "@/components/compare/compare-inquiry-panel";
@@ -15,6 +15,7 @@ import { CompareVerdictCard } from "@/components/compare/compare-verdict-card";
 import { AuthGatePrompt } from "@/components/project-detail/auth-gate-prompt";
 import { Select } from "@/components/ui/select";
 import {
+  confirmCompareSwap,
   requestClearCompare,
   requestRemoveFromCompare,
   requestSetCompareUnit,
@@ -30,7 +31,7 @@ import {
 } from "@/lib/client/compare-store";
 import { CompareHelpPanel } from "@/components/marketing/compare-help-panel";
 import { UnitRoomsTable } from "@/components/project-detail/unit-rooms-table";
-import { summarizeRoomTypes, unitInstallmentMonths, unitPricePerSqFt } from "@/lib/unit-metrics";
+import { summarizeRoomTypesByGroup, unitInstallmentMonths, unitPricePerSqFt } from "@/lib/unit-metrics";
 import { cn, formatPrice } from "@/lib/utils";
 import type { CompareProjectPayload } from "@/types/compare";
 import type { ProjectUnit } from "@/types/project-detail";
@@ -108,7 +109,7 @@ const UNIT_ROWS: UnitRow[] = [
   {
     label: "Room types",
     getValue: (u) =>
-      u.roomBreakdown.length ? summarizeRoomTypes(u.roomBreakdown) : "—",
+      u.roomBreakdown.length ? summarizeRoomTypesByGroup(u) || "—" : "—",
   },
 ];
 
@@ -308,7 +309,7 @@ function CompareSpecGrid({
                     differs && "bg-amber-50/70"
                   )}
                 >
-                  <p className="text-sm font-medium text-zinc-900">
+                  <p className="whitespace-pre-line text-sm font-medium text-zinc-900">
                     {values[i][col] ?? "—"}
                   </p>
                 </div>
@@ -340,6 +341,8 @@ export function CompareView({
   const [loading, setLoading] = useState(false);
   const [shareMsg, setShareMsg] = useState<string | null>(null);
   const [urlHydrated, setUrlHydrated] = useState(false);
+  /** Column whose project is being changed (shows the search there). */
+  const [changingCol, setChangingCol] = useState<number | null>(null);
 
   useEffect(() => {
     if (!initialUrlIds.length || urlHydrated) return;
@@ -524,7 +527,16 @@ export function CompareView({
                           key={col}
                           className={cn("relative p-3 sm:p-5", col === 0 && "border-r border-zinc-200")}
                         >
-                          {entry && project ? (
+                          {entry && project && project.id === entry.id && changingCol === col ? (
+                            <CompareProjectPicker
+                              slotLabel={`Replace ${project.name}`}
+                              onPick={(next) => {
+                                confirmCompareSwap(project.id, { id: next.id, slug: next.slug });
+                                setChangingCol(null);
+                              }}
+                              onCancel={() => setChangingCol(null)}
+                            />
+                          ) : entry && project && project.id === entry.id ? (
                             <>
                               <button
                                 type="button"
@@ -555,8 +567,16 @@ export function CompareView({
                                 </h2>
                                 <p className="mt-1 text-sm text-zinc-500">{project.area}</p>
                               </Link>
+                              <button
+                                type="button"
+                                onClick={() => setChangingCol(col)}
+                                className="mt-3 inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm hover:border-zinc-300 hover:text-zinc-900"
+                              >
+                                <ArrowLeftRight className="h-4 w-4" aria-hidden />
+                                Change project
+                              </button>
                             </>
-                          ) : entry && !project ? (
+                          ) : entry ? (
                             <div className="flex min-h-[280px] items-center justify-center">
                               <LoadingState size="sm" label="Loading project…" />
                             </div>

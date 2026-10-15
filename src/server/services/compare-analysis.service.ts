@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { tableExists } from "@/lib/db-table-exists";
 import { prisma } from "@/lib/prisma";
 import { queryRaw } from "@/lib/prisma-raw";
-import { summarizeRoomTypes } from "@/lib/unit-metrics";
+import { summarizeRoomTypesByGroup } from "@/lib/unit-metrics";
 import { formatPrice } from "@/lib/utils";
 import { GROQ_COMPARE_KEY_ENV, GroqError, groqChatWithFallback, parseJsonObject } from "@/server/groq-client";
 import type { BuyerPurpose } from "@/server/services/compare-verdict.service";
@@ -410,7 +410,19 @@ async function unitFacts(u: UnitRow, name: string, typeNames: Record<number, str
     grossAreaSqFt: gross != null ? round(gross) : undefined,
     roomsCoveredSqFt: covered > 0 ? round(covered) : undefined,
     roomSummary:
-      summarizeRoomTypes(u.roomTypeUnits.map((r) => ({ roomTypeName: r.roomType.name, count: r.extras }))) ||
+      // Per layout / floor for grouped units, so two floors aren't added up into one.
+      summarizeRoomTypesByGroup({
+        roomGroups: groups.groups,
+        roomBreakdown: u.roomTypeUnits.map((r) => ({
+          id: r.id,
+          roomTypeName: r.roomType.name,
+          icon: null,
+          count: r.extras,
+          dimensions: null,
+          coveredArea: null,
+          groupId: groups.roomGroupIds.get(r.id) ?? null,
+        })),
+      }) ||
       plain(u.rooms, 60),
     rooms: roomFacts(u, groups),
     plan: planFacts(u, typeNames),

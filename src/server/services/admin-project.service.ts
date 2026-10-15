@@ -25,6 +25,11 @@ import {
 import { toJsonSafe } from "@/lib/prisma-json";
 import { DEFAULT_ADMIN_TIMEZONE, parseDatetimeLocalInTimeZone } from "@/lib/admin-datetime-tz";
 import { slugify } from "@/lib/slugify";
+import {
+  checkMapEmbedInput,
+  loadProjectMapEmbed,
+  saveProjectMapEmbed,
+} from "@/server/services/project-map-embed.service";
 
 async function uniqueProjectSlug(base: string, excludeId?: number): Promise<string> {
   let slug = slugify(base) || "project";
@@ -223,6 +228,7 @@ export async function getAdminProjectDetail(id: number) {
 
     const areaIds = await loadAreaIdsForProject(id);
     const areaNamesMap = await loadAreaNamesByProjectIds([id]);
+    const mapEmbed = await loadProjectMapEmbed(id);
 
     type ExtraRow = {
       meta_tags: string | null;
@@ -277,6 +283,7 @@ export async function getAdminProjectDetail(id: number) {
         projectInfo,
         metaTags: extras?.meta_tags ?? "",
         marketedBy: extras?.marketed_by ?? "",
+        mapEmbed: mapEmbed ?? "",
         addedTime: extras?.added_time
           ? new Date(extras.added_time).toISOString()
           : "",
@@ -471,6 +478,16 @@ export async function saveAdminProject(
   const mapped = mapProjectFormToWriteData(body);
   const builderSession = session && isBuilderSession(session);
 
+  // Google Maps embed: checked before anything is written; its pin fills empty coordinates.
+  const mapEmbedSent = body.mapEmbed !== undefined;
+  const mapEmbed = mapEmbedSent ? await checkMapEmbedInput(body.mapEmbed) : null;
+  if (mapEmbed?.error) return { project: null, error: mapEmbed.error };
+  const embed = mapEmbed && "embed" in mapEmbed ? mapEmbed.embed : null;
+  if (embed?.lat != null && embed.lng != null && mapped.latitude == null && mapped.longitude == null) {
+    mapped.latitude = embed.lat;
+    mapped.longitude = embed.lng;
+  }
+
   if (builderSession) {
     mapped.status = undefined;
     const builderId = await resolveBuilderRecordId(session.id);
@@ -565,6 +582,7 @@ export async function saveAdminProject(
       );
     }
 
+    if (mapEmbedSent) await saveProjectMapEmbed(projectId, embed);
     await upsertProjectInfo(projectId, mapped);
     await syncProjectOwners(projectId, mapped.ownerIds);
     await syncProjectTags(projectId, mapped.tagIds);

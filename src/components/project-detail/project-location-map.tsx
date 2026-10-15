@@ -3,6 +3,7 @@
 import "@/styles/leaflet-map.css";
 import { useEffect, useRef } from "react";
 import { ExternalLink, MapPin } from "lucide-react";
+import { googleMapEmbedSrc } from "@/lib/google-map-embed";
 
 interface ProjectLocationMapProps {
   name: string;
@@ -11,6 +12,8 @@ interface ProjectLocationMapProps {
   latitude: number | null | undefined;
   longitude: number | null | undefined;
   imageUrl?: string | null;
+  /** Google Maps embed src; when set it replaces the coordinate map. */
+  mapEmbedUrl?: string | null;
 }
 
 function escapeHtml(s: string): string {
@@ -44,6 +47,7 @@ export function ProjectLocationMap({
   latitude,
   longitude,
   imageUrl,
+  mapEmbedUrl,
 }: ProjectLocationMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
@@ -52,12 +56,15 @@ export function ProjectLocationMap({
   const lng = longitude != null ? Number(longitude) : null;
   const hasCoords =
     lat != null && lng != null && !Number.isNaN(lat) && !Number.isNaN(lng);
+  // Re-checked here so only a google.com/maps/embed page can load in the iframe.
+  const embedSrc = googleMapEmbedSrc(mapEmbedUrl);
+  const showLeaflet = hasCoords && !embedSrc;
 
   const mapsLink = googleMapsUrl(lat, lng, address, area);
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!hasCoords || !el || mapRef.current) return;
+    if (!showLeaflet || !el || mapRef.current) return;
 
     let cancelled = false;
     let resizeObserver: ResizeObserver | null = null;
@@ -114,9 +121,9 @@ export function ProjectLocationMap({
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, [hasCoords, lat, lng, name, imageUrl]);
+  }, [showLeaflet, lat, lng, name, imageUrl]);
 
-  if (!hasCoords && !address && !area) return null;
+  if (!embedSrc && !hasCoords && !address && !area) return null;
 
   return (
     <section className="overflow-hidden rounded-clay-lg border border-white/80 bg-clay-surface shadow-clay">
@@ -134,7 +141,16 @@ export function ProjectLocationMap({
           </div>
         )}
 
-        {hasCoords ? (
+        {embedSrc ? (
+          <iframe
+            src={embedSrc}
+            title={`${name} on Google Maps`}
+            className="h-[400px] w-full rounded-xl border border-zinc-200 bg-zinc-100"
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        ) : hasCoords ? (
           <div
             ref={containerRef}
             className="abadraho-project-location-map h-[400px] w-full overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100"

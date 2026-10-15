@@ -75,5 +75,7 @@ export interface ProjectDetail extends ProjectListItem {
   metaTitle: string | null;
   metaDescription: string | null;
   metaKeywords: string | null;
+  /** Google Maps embed src for the Location map; null shows the coordinate map. */
+  mapEmbedUrl: string | null;
   discountPrice: number | null;
 }

@@ -40,6 +40,7 @@ export function getMockDetail(slug: string): ProjectDetail | null {
     metaTitle: null,
     metaDescription: null,
     metaKeywords: null,
+    mapEmbedUrl: null,
     discountPrice: null,
   };
 }

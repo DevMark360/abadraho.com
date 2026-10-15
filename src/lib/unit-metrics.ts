@@ -41,3 +41,28 @@ export function summarizeRoomTypes(rooms: Pick<UnitRoomRow, "roomTypeName" | "co
   }
   return [...totals].map(([name, qty]) => `${qty} ${name}`).join(", ");
 }
+
+/**
+ * Room types per layout / floor for a unit with room groups, one line each:
+ * "Layout 1: 1 Lounge, 4 Bed" and "Layout 2: 1 Lounge, 4 Bed" on separate lines.
+ * Units without groups get the plain summary.
+ */
+export function summarizeRoomTypesByGroup(
+  unit: Pick<ProjectUnit, "roomBreakdown" | "roomGroups">
+): string {
+  const groups = unit.roomGroups ?? [];
+  if (!groups.length) return summarizeRoomTypes(unit.roomBreakdown);
+  const known = new Set(groups.map((g) => g.id));
+  const sections = [
+    ...groups.map((g) => ({ name: g.name, rooms: unit.roomBreakdown.filter((r) => r.groupId === g.id) })),
+    {
+      name: "Other rooms",
+      rooms: unit.roomBreakdown.filter((r) => r.groupId == null || !known.has(r.groupId)),
+    },
+  ]
+    .map((s) => ({ name: s.name, summary: summarizeRoomTypes(s.rooms) }))
+    .filter((s) => s.summary);
+  if (sections.length <= 1) return sections[0]?.summary ?? "";
+  return sections.map((s) => `${s.name}: ${s.summary}`).join("\n");
+}
+
