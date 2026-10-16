@@ -32,7 +32,7 @@ export const DETAIL_CORE_INCLUDE = {
     include: {
       unitType: true,
       roomTypeUnits: {
-        where: { isArchive: false, isDisplayOnListing: true },
+        where: { isArchive: false },
         include: { roomType: true },
       },
     },

@@ -259,9 +259,9 @@ function queryUnits(unitIds: number[]) {
       floorPlanImg: true,
       paymentPlanImg: true,
       unitType: { select: { title: true } },
-      // Only rooms visitors can see on the project page.
+      // The same rooms the admin unit form lists.
       roomTypeUnits: {
-        where: { isArchive: false, isDisplayOnListing: true },
+        where: { isArchive: false },
         orderBy: { id: "asc" },
         select: {
           id: true,

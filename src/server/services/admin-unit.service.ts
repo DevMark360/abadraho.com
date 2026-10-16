@@ -557,6 +557,7 @@ export async function updateUnitRoom(roomId: number, payload: UnitRoomPayload) {
       lengthInches: payload.lengthInches,
       coveredArea: covered,
       extras: payload.extras ?? "1",
+      isDisplayOnListing: true,
     },
   });
 

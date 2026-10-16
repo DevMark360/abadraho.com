@@ -7,7 +7,7 @@ import type { ProjectUnit } from "@/types/project-detail";
 const unitInclude = {
   unitType: true,
   roomTypeUnits: {
-    where: { isArchive: false, isDisplayOnListing: true },
+    where: { isArchive: false },
     include: { roomType: true },
   },
 } as const;

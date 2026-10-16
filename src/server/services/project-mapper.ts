@@ -103,7 +103,7 @@ type UnitRow = ProjectWithRelations["units"][0] & {
 
 export function mapDbUnit(u: UnitRow, projectId?: number): ProjectUnit {
   const rooms = (u.roomTypeUnits ?? [])
-    .filter((r) => !r.isArchive && r.isDisplayOnListing)
+    .filter((r) => !r.isArchive)
     .map(mapRoomTypeUnit);
 
   return {
